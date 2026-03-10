@@ -10,28 +10,28 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 1 of 8 (Audio Pipeline Foundation)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-10 — Completed 01-01-PLAN.md (Project Scaffold and Core Types)
+Last activity: 2026-03-10 — Completed 01-02-PLAN.md (iOS-Safe Audio Pipeline)
 
-Progress: [█░░░░░░░░░] 3% (1/40 total plans estimated)
+Progress: [██░░░░░░░░] 5% (2/40 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 2m 22s
-- Total execution time: ~2 minutes
+- Total plans completed: 2
+- Average duration: 2m 17s
+- Total execution time: ~4 minutes 34s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 - Audio Pipeline Foundation | 1/5 | 2m 22s | 2m 22s |
+| 01 - Audio Pipeline Foundation | 2/5 | 4m 34s | 2m 17s |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2m 22s)
-- Trend: Baseline established
+- Last 5 plans: 01-01 (2m 22s), 01-02 (2m 12s)
+- Trend: Consistent sub-3min per plan
 
 *Updated after each plan completion*
 
@@ -49,6 +49,9 @@ Recent decisions affecting current work:
 - [D-01-01-1]: Tailwind 4 CSS-first via @tailwindcss/vite — no tailwind.config.js needed
 - [D-01-01-2]: AudioStateRef in useRef only — Web Audio objects non-serializable, animation loop reads ref at 60fps
 - [D-01-01-3]: fftSize=4096 fixed — 2048 frequency bins, ~21.5Hz resolution per bin at 44.1kHz
+- [D-01-02-1]: AudioContext created synchronously in click handler before any await — iOS user gesture requirement
+- [D-01-02-2]: sampleRate always read from audioCtx.sampleRate after creation — iOS may return 48000 despite requesting 44100
+- [D-01-02-3]: Previous AudioContext closed before creating new one — prevents resource leaks on file re-load
 
 ### Pending Todos
 
@@ -63,6 +66,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10 23:50:57Z
-Stopped at: Completed 01-01-PLAN.md — scaffold, types, and store done. Ready for 01-02 (Audio Engine).
+Last session: 2026-03-10T23:55:40Z
+Stopped at: Completed 01-02-PLAN.md — AudioEngine, useAudioRef, FileUpload, App wired. Ready for 01-03 (AnalyserNode setup).
 Resume file: None
