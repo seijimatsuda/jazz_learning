@@ -33,14 +33,14 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. The 3-second calibration pass runs on load and sets per-instrument thresholds before playback starts
   4. Canvas animation runs at 60fps on desktop and does not drop below 40fps on iPhone (no shadowBlur, no per-frame GC, HiDPI scaling correct)
   5. All FFT bin math uses `hzToBin(hz, audioCtx.sampleRate, fftSize)` — no hardcoded indices — confirmed by reading `audioCtx.sampleRate` on both platforms
-**Plans**: TBD
+**Plans**: 5 plans in 5 waves (sequential dependency chain)
 
 Plans:
-- [ ] 01-01: Vite + React + TypeScript scaffold with Tailwind 4 CSS-first config, Zustand, Meyda.js, port 5555
-- [ ] 01-02: iOS-safe AudioContext creation, FileReader upload, decodeAudioData, AudioBufferSourceNode pipeline
-- [ ] 01-03: Dual AnalyserNode setup (smoothed + raw), FrequencyBandSplitter with sample-rate-aware hzToBin
-- [ ] 01-04: audioStateRef TypeScript interface, calibration pass, transport controls, timeline scrubber
-- [ ] 01-05: Performance baseline — offscreen canvas glow strategy, typed array pre-allocation, devicePixelRatio scaling, iOS smoke test
+- [ ] 01-01-PLAN.md — Vite + React + TypeScript scaffold, Tailwind 4, Zustand, Meyda.js, core types (Wave 1)
+- [ ] 01-02-PLAN.md — iOS-safe AudioContext, FileReader upload, decodeAudioData, useAudioRef hook (Wave 2)
+- [ ] 01-03-PLAN.md — Dual AnalyserNode setup, FrequencyBandSplitter, hzToBin, typed array pre-allocation (Wave 3)
+- [ ] 01-04-PLAN.md — CalibrationPass, transport controls (play/pause/seek), timeline scrubber (Wave 4)
+- [ ] 01-05-PLAN.md — Canvas renderer, offscreen glow, tension heatmap, HiDPI scaling, iOS smoke test (Wave 5)
 
 ### Phase 2: Instrument Activity Analysis
 **Goal**: Users can see each instrument's real-time activity level and role classification update as the music plays, with keyboard vs guitar correctly disambiguated
