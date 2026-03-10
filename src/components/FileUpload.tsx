@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import type { AudioStateRef } from '../audio/types';
-import { createAudioContext, decodeAudioFile } from '../audio/AudioEngine';
+import { createAudioContext, decodeAudioFile, createDualAnalysers, allocateTypedArrays } from '../audio/AudioEngine';
+import { buildDefaultBands } from '../audio/FrequencyBandSplitter';
 import { useAppStore } from '../store/useAppStore';
 
 interface FileUploadProps {
@@ -72,11 +73,29 @@ export function FileUpload({ audioStateRef }: FileUploadProps) {
       const audioCtx = await createAudioContext();
       const audioBuffer = await decodeAudioFile(audioCtx, file);
 
+      // Create dual analysers (smoothed for viz, raw for transients)
+      const { smoothed, raw } = createDualAnalysers(audioCtx, audioStateRef.current.fftSize);
+
+      // Pre-allocate typed arrays — reused every animation frame to avoid GC pressure
+      const { smoothedFreqData, rawFreqData, rawTimeData } = allocateTypedArrays(
+        audioStateRef.current.fftSize
+      );
+
+      // Build frequency bands using actual sampleRate (may be 48000 on iOS)
+      const bands = buildDefaultBands(audioCtx.sampleRate, audioStateRef.current.fftSize);
+
       // Update ref (no re-render)
+      // NOTE: connectSourceToGraph is NOT called here — happens at play time (Plan 01-04)
       audioStateRef.current.audioCtx = audioCtx;
       audioStateRef.current.sampleRate = audioCtx.sampleRate;
       audioStateRef.current.transport.buffer = audioBuffer;
       audioStateRef.current.transport.duration = audioBuffer.duration;
+      audioStateRef.current.smoothedAnalyser = smoothed;
+      audioStateRef.current.rawAnalyser = raw;
+      audioStateRef.current.smoothedFreqData = smoothedFreqData;
+      audioStateRef.current.rawFreqData = rawFreqData;
+      audioStateRef.current.rawTimeData = rawTimeData;
+      audioStateRef.current.bands = bands;
 
       // Update Zustand for UI display (triggers re-render)
       setFile(file.name, audioBuffer.duration);
