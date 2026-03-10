@@ -165,108 +165,108 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUDIO-01 | Pending | Pending |
-| AUDIO-02 | Pending | Pending |
-| AUDIO-03 | Pending | Pending |
-| AUDIO-04 | Pending | Pending |
-| AUDIO-05 | Pending | Pending |
-| AUDIO-06 | Pending | Pending |
-| AUDIO-07 | Pending | Pending |
-| AUDIO-08 | Pending | Pending |
-| AUDIO-09 | Pending | Pending |
-| INST-01 | Pending | Pending |
-| INST-02 | Pending | Pending |
-| INST-03 | Pending | Pending |
-| INST-04 | Pending | Pending |
-| INST-05 | Pending | Pending |
-| INST-06 | Pending | Pending |
-| INST-07 | Pending | Pending |
-| INST-08 | Pending | Pending |
-| INST-09 | Pending | Pending |
-| CHORD-01 | Pending | Pending |
-| CHORD-02 | Pending | Pending |
-| CHORD-03 | Pending | Pending |
-| CHORD-04 | Pending | Pending |
-| CHORD-05 | Pending | Pending |
-| CHORD-06 | Pending | Pending |
-| CHORD-07 | Pending | Pending |
-| CHORD-08 | Pending | Pending |
-| CHORD-09 | Pending | Pending |
-| CHORD-10 | Pending | Pending |
-| CHORD-11 | Pending | Pending |
-| TENS-01 | Pending | Pending |
-| TENS-02 | Pending | Pending |
-| TENS-03 | Pending | Pending |
-| TENS-04 | Pending | Pending |
-| TENS-05 | Pending | Pending |
-| TENS-06 | Pending | Pending |
-| BEAT-01 | Pending | Pending |
-| BEAT-02 | Pending | Pending |
-| BEAT-03 | Pending | Pending |
-| BEAT-04 | Pending | Pending |
-| BEAT-05 | Pending | Pending |
-| BEAT-06 | Pending | Pending |
-| BEAT-07 | Pending | Pending |
-| BEAT-08 | Pending | Pending |
-| BEAT-09 | Pending | Pending |
-| BEAT-10 | Pending | Pending |
-| VIZ-01 | Pending | Pending |
-| VIZ-02 | Pending | Pending |
-| VIZ-03 | Pending | Pending |
-| VIZ-04 | Pending | Pending |
-| VIZ-05 | Pending | Pending |
-| VIZ-06 | Pending | Pending |
-| VIZ-07 | Pending | Pending |
-| VIZ-08 | Pending | Pending |
-| VIZ-09 | Pending | Pending |
-| VIZ-10 | Pending | Pending |
-| VIZ-11 | Pending | Pending |
-| VIZ-12 | Pending | Pending |
-| VIZ-13 | Pending | Pending |
-| EDGE-01 | Pending | Pending |
-| EDGE-02 | Pending | Pending |
-| EDGE-03 | Pending | Pending |
-| EDGE-04 | Pending | Pending |
-| EDGE-05 | Pending | Pending |
-| EDGE-06 | Pending | Pending |
-| EDGE-07 | Pending | Pending |
-| EDGE-08 | Pending | Pending |
-| EDGE-09 | Pending | Pending |
-| EDGE-10 | Pending | Pending |
-| UI-01 | Pending | Pending |
-| UI-02 | Pending | Pending |
-| UI-03 | Pending | Pending |
-| UI-04 | Pending | Pending |
-| UI-05 | Pending | Pending |
-| UI-06 | Pending | Pending |
-| UI-07 | Pending | Pending |
-| UI-08 | Pending | Pending |
-| UI-09 | Pending | Pending |
-| UI-10 | Pending | Pending |
-| UI-11 | Pending | Pending |
-| UI-12 | Pending | Pending |
-| KEY-01 | Pending | Pending |
-| KEY-02 | Pending | Pending |
-| KEY-03 | Pending | Pending |
-| MEL-01 | Pending | Pending |
-| MEL-02 | Pending | Pending |
-| MEL-03 | Pending | Pending |
-| MEL-04 | Pending | Pending |
-| MEL-05 | Pending | Pending |
-| USER-01 | Pending | Pending |
-| USER-02 | Pending | Pending |
-| USER-03 | Pending | Pending |
-| USER-04 | Pending | Pending |
-| XCUT-01 | Pending | Pending |
-| XCUT-02 | Pending | Pending |
-| XCUT-03 | Pending | Pending |
-| XCUT-04 | Pending | Pending |
+| AUDIO-01 | Phase 1 | Pending |
+| AUDIO-02 | Phase 1 | Pending |
+| AUDIO-03 | Phase 1 | Pending |
+| AUDIO-04 | Phase 1 | Pending |
+| AUDIO-05 | Phase 1 | Pending |
+| AUDIO-06 | Phase 1 | Pending |
+| AUDIO-07 | Phase 1 | Pending |
+| AUDIO-08 | Phase 1 | Pending |
+| AUDIO-09 | Phase 1 | Pending |
+| XCUT-01 | Phase 1 | Pending |
+| XCUT-02 | Phase 1 | Pending |
+| XCUT-03 | Phase 1 | Pending |
+| XCUT-04 | Phase 1 | Pending |
+| INST-01 | Phase 2 | Pending |
+| INST-02 | Phase 2 | Pending |
+| INST-03 | Phase 2 | Pending |
+| INST-04 | Phase 2 | Pending |
+| INST-05 | Phase 2 | Pending |
+| INST-06 | Phase 2 | Pending |
+| INST-07 | Phase 2 | Pending |
+| INST-08 | Phase 2 | Pending |
+| INST-09 | Phase 2 | Pending |
+| CHORD-01 | Phase 3 | Pending |
+| CHORD-02 | Phase 3 | Pending |
+| CHORD-03 | Phase 3 | Pending |
+| CHORD-04 | Phase 3 | Pending |
+| CHORD-05 | Phase 3 | Pending |
+| CHORD-06 | Phase 3 | Pending |
+| CHORD-07 | Phase 3 | Pending |
+| CHORD-08 | Phase 3 | Pending |
+| CHORD-09 | Phase 3 | Pending |
+| CHORD-10 | Phase 3 | Pending |
+| CHORD-11 | Phase 3 | Pending |
+| TENS-01 | Phase 3 | Pending |
+| TENS-02 | Phase 3 | Pending |
+| TENS-03 | Phase 3 | Pending |
+| TENS-04 | Phase 3 | Pending |
+| TENS-05 | Phase 3 | Pending |
+| TENS-06 | Phase 3 | Pending |
+| BEAT-01 | Phase 4 | Pending |
+| BEAT-02 | Phase 4 | Pending |
+| BEAT-03 | Phase 4 | Pending |
+| BEAT-04 | Phase 4 | Pending |
+| BEAT-05 | Phase 4 | Pending |
+| BEAT-06 | Phase 4 | Pending |
+| BEAT-07 | Phase 4 | Pending |
+| BEAT-08 | Phase 4 | Pending |
+| BEAT-09 | Phase 4 | Pending |
+| BEAT-10 | Phase 4 | Pending |
+| VIZ-01 | Phase 5 | Pending |
+| VIZ-02 | Phase 5 | Pending |
+| VIZ-03 | Phase 5 | Pending |
+| VIZ-04 | Phase 5 | Pending |
+| VIZ-05 | Phase 5 | Pending |
+| VIZ-06 | Phase 5 | Pending |
+| VIZ-07 | Phase 5 | Pending |
+| VIZ-08 | Phase 5 | Pending |
+| VIZ-09 | Phase 5 | Pending |
+| VIZ-10 | Phase 5 | Pending |
+| VIZ-11 | Phase 5 | Pending |
+| VIZ-12 | Phase 5 | Pending |
+| VIZ-13 | Phase 5 | Pending |
+| EDGE-01 | Phase 6 | Pending |
+| EDGE-02 | Phase 6 | Pending |
+| EDGE-03 | Phase 6 | Pending |
+| EDGE-04 | Phase 6 | Pending |
+| EDGE-05 | Phase 6 | Pending |
+| EDGE-06 | Phase 6 | Pending |
+| EDGE-07 | Phase 6 | Pending |
+| EDGE-08 | Phase 6 | Pending |
+| EDGE-09 | Phase 6 | Pending |
+| EDGE-10 | Phase 6 | Pending |
+| UI-01 | Phase 7 | Pending |
+| UI-02 | Phase 7 | Pending |
+| UI-03 | Phase 7 | Pending |
+| UI-04 | Phase 7 | Pending |
+| UI-05 | Phase 7 | Pending |
+| UI-06 | Phase 7 | Pending |
+| UI-07 | Phase 7 | Pending |
+| UI-08 | Phase 7 | Pending |
+| UI-09 | Phase 7 | Pending |
+| UI-10 | Phase 7 | Pending |
+| UI-11 | Phase 7 | Pending |
+| UI-12 | Phase 7 | Pending |
+| KEY-01 | Phase 7 | Pending |
+| KEY-02 | Phase 7 | Pending |
+| KEY-03 | Phase 7 | Pending |
+| MEL-01 | Phase 8 | Pending |
+| MEL-02 | Phase 8 | Pending |
+| MEL-03 | Phase 8 | Pending |
+| MEL-04 | Phase 8 | Pending |
+| MEL-05 | Phase 8 | Pending |
+| USER-01 | Phase 8 | Pending |
+| USER-02 | Phase 8 | Pending |
+| USER-03 | Phase 8 | Pending |
+| USER-04 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 83 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 83
+- v1 requirements: 96 total (note: header previously said 83 — recount confirmed 96 entries across all categories)
+- Mapped to phases: 96/96
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-10*
-*Last updated: 2026-03-10 after initial definition*
+*Last updated: 2026-03-10 after roadmap creation — all requirements mapped to phases*
