@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 4 of 8 (Beat Detection, BPM & Pocket Score)
-Plan: 0 of 4 in current phase
-Status: Ready to plan
-Last activity: 2026-03-11 — Phase 3 complete and verified (5/5 must-haves passed). Gap closure fixed chord display names and tension update staleness.
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-03-10 — Completed 04-01-PLAN.md (BeatState interface + DrumTransientDetector)
 
-Progress: [███████████████░░░░░] 37.5% (15/40 total plans estimated)
+Progress: [████████████████░░░░] 40% (16/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -30,10 +30,11 @@ Progress: [███████████████░░░░░] 37.5% (
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
 | 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
 | 03 - Chord Detection & Harmonic Analysis | 5/5 COMPLETE | ~8m 13s | ~1m 38s |
+| 04 - Beat Detection, BPM & Pocket Score | 1/4 | ~2m | ~2m |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (~3m), 03-02 (1m 14s), 03-03 (~3m), 03-04 (unknown), 03-05 (~1m)
-- Trend: Consistent sub-3min per plan; Phase 3 complete
+- Last 5 plans: 03-02 (1m 14s), 03-03 (~3m), 03-04 (unknown), 03-05 (~1m), 04-01 (~2m)
+- Trend: Consistent sub-3min per plan; Phase 4 in progress
 
 *Updated after each plan completion*
 
@@ -98,6 +99,10 @@ Recent decisions affecting current work:
 - [D-03-05-1]: No badge rendered when currentChord is '--' — prevents badge showing against placeholder dash on initial/reset state
 - [D-03-05-2]: tensionColor thresholds (0.3, 0.6, 0.85) align with TENSION_TARGETS midpoints — tonic=0.1, sub=0.325, dom=0.65, alt=0.875; color bands semantically consistent with tension zone boundaries
 - [D-03-05-3]: ChordDisplay in max-w-2xl container (narrower than canvas max-w-4xl) — mirrors file info and transport controls layout
+- [D-04-01-1]: drums_high (2000-8000Hz) + ride (6000-10000Hz) for drum flux — not snare fundamental (200-800Hz) which overlaps bass/piano in jazz
+- [D-04-01-2]: adaptiveThreshold returns Infinity when n<3 — prevents cold-start false onsets during first 300ms of analysis
+- [D-04-01-3]: OSS buffer populated every tick (not just on onset) — downstream autocorrelation needs full signal density
+- [D-04-01-4]: beatCounter increments on onset then wraps mod 4; downbeat fires at counter==0 post-increment
 
 ### Pending Todos
 
@@ -112,6 +117,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11
-Stopped at: Phase 3 complete and verified. Ready for Phase 4 (Beat Detection, BPM & Pocket Score).
+Last session: 2026-03-10
+Stopped at: Completed 04-01-PLAN.md. BeatState + DrumTransientDetector complete. Ready for 04-02 (BPM derivation).
 Resume file: None
