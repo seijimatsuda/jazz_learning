@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 2 of 8 (Instrument Activity Analysis)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-11 — Completed 02-01-PLAN.md — types.ts Phase 2 types, InstrumentActivityScorer with INST-05 fallback, EMA scoring, ring buffer history, pre-allocated init factory.
+Last activity: 2026-03-11 — Completed 02-02-PLAN.md — RoleClassifier state machine with hysteresis (INST-03, INST-09). classifyRole + updateTimeInRole, pure functions, zero allocations.
 
-Progress: [██████░░░░] 15% (6/40 total plans estimated)
+Progress: [███████░░░] 17% (7/40 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: ~2m 22s
-- Total execution time: ~14m 7s
+- Total plans completed: 7
+- Average duration: ~2m 8s
+- Total execution time: ~15m 9s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
-| 02 - Instrument Activity Analysis | 1/4 | 2m 7s | 2m 7s |
+| 02 - Instrument Activity Analysis | 2/4 | ~3m 9s | ~1m 35s |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (2m 12s), 01-03 (~3m), 01-04 (2m 12s), 01-05 (~3m), 02-01 (2m 7s)
-- Trend: Consistent sub-3min per plan
+- Last 5 plans: 01-03 (~3m), 01-04 (2m 12s), 01-05 (~3m), 02-01 (2m 7s), 02-02 (1m 2s)
+- Trend: Consistent sub-3min per plan; 02-02 notably fast at ~1min (single pure-function module)
 
 *Updated after each plan completion*
 
@@ -67,6 +67,8 @@ Recent decisions affecting current work:
 - [D-02-01-1]: RoleLabel as union type (not enum) — matches existing type convention in types.ts
 - [D-02-01-2]: prevRawFreqData and rawTimeDataFloat placed on AnalysisState (not top-level AudioStateRef) — keeps analysis-related state cohesive under one nullable object
 - [D-02-01-3]: smoothingAlpha=0.7 as default in computeActivityScore — snappy 10fps response; callers can override
+- [D-02-02-1]: Upward role transitions have no hysteresis barrier — instruments enter higher roles immediately at threshold; only downward transitions gated to prevent flicker
+- [D-02-02-2]: Hysteresis boundary check uses strict less-than — score exactly equal to (threshold - hysteresis) stays in current role (e.g. 0.05 stays 'holding' when T_HOLD-hysteresis=0.05)
 
 ### Pending Todos
 
@@ -81,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T01:25:00Z
-Stopped at: Completed 02-01-PLAN.md — types.ts Phase 2 types (RoleLabel, InstrumentAnalysis, AnalysisState) + InstrumentActivityScorer. Ready for 02-02 (RoleClassifier).
+Last session: 2026-03-11T01:28:09Z
+Stopped at: Completed 02-02-PLAN.md — RoleClassifier with hysteresis state machine (classifyRole + updateTimeInRole). Ready for 02-03 (InstrumentActivityCoordinator).
 Resume file: None
