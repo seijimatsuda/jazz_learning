@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 5 — Canvas Node Graph
+**Current focus:** Phase 6 — Edge Visualization
 
 ## Current Position
 
-Phase: 5 of 8 (Canvas Node Graph) — COMPLETE
-Plan: 5 of 5 complete
-Status: Phase complete — ready for Phase 6
-Last activity: 2026-03-11 — Completed 05-05 (all-node beat pulse VIZ-10, background breath VIZ-11, checkpoint approved)
+Phase: 6 of 8 (Edge Visualization) — In progress
+Plan: 1 of 4 complete
+Status: In progress — 06-01 complete, pocket line (EDGE-01 through EDGE-06) done
+Last activity: 2026-03-11 — Completed 06-01 (edge foundation, pocket line visualization)
 
-Progress: [█████████████████████████░] 62.5% (25/40 total plans estimated)
+Progress: [██████████████████████████░] 65% (26/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -32,6 +32,7 @@ Progress: [███████████████████████
 | 03 - Chord Detection & Harmonic Analysis | 5/5 COMPLETE | ~8m 13s | ~1m 38s |
 | 04 - Beat Detection, BPM & Pocket Score | 4/4 COMPLETE | ~11m | ~2m 45s |
 | 05 - Canvas Node Graph | 5/5 COMPLETE | ~15m | ~3m |
+| 06 - Edge Visualization | 1/4 in progress | ~3m | ~3m |
 
 **Recent Trend:**
 - Last 5 plans: 05-01 (~3m), 05-02 (~3m), 05-03 (~3m), 05-04 (~3m), 05-05 (~3m)
@@ -131,6 +132,11 @@ Recent decisions affecting current work:
 - [D-05-05-1]: Single onset detection before per-node loop — beatPulse and bgPulseProgress set once at top of frame, not rechecked per instrument
 - [D-05-05-2]: Downbeat check after drum onset check — downbeat sets beatPulse=4 overriding beat's 2px; bgPulseProgress already set by drum onset (downbeat is coincident)
 - [D-05-05-3]: Linear decay for bgPulseProgress (Math.max subtract deltaMs/200) vs lerpExp for beatPulse — linear gives exact 200ms window, lerpExp gives organic snap for radius
+- [D-06-01-1]: EdgeAnimState pre-creates two glow canvases at factory time (flashGlowCanvas, resolutionGlowCanvas) — never per frame, mirrors NodeAnimState pattern
+- [D-06-01-2]: lastSyncEventSec written when score > 0 in PocketScorer — any non-zero sync pair triggers visual flash (EDGE-05)
+- [D-06-01-3]: ctx.save()/ctx.restore() wraps ALL lineDash operations in drawPocketLine — iOS Safari lineDash leaks across draw calls without explicit reset
+- [D-06-01-4]: Line terminates at node circumference via normalized direction vector offset — prevents pocket line overlapping node fill circle
+- [D-06-01-5]: All 6 edgeAnimStates initialized at CanvasRenderer construction — Plan 02 adds drawCommunicationEdges at same insertion point without architectural change
 
 ### Pending Todos
 
@@ -146,5 +152,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: 05-05 complete — Phase 5 all 5 plans done. Checkpoint approved by user. Ready for Phase 6 (06-pocket-tension-line).
+Stopped at: 06-01 complete — Edge foundation and pocket line (EDGE-01 through EDGE-06) done.
 Resume file: None
