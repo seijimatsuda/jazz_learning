@@ -4,6 +4,7 @@ import { FileUpload } from './components/FileUpload';
 import { TransportControls } from './components/TransportControls';
 import { Timeline } from './components/Timeline';
 import { VisualizerCanvas } from './components/VisualizerCanvas';
+import { InstrumentRoleOverlay } from './components/InstrumentRoleOverlay';
 import { useAppStore } from './store/useAppStore';
 import { runCalibrationPass } from './audio/CalibrationPass';
 import { computeTensionHeatmap } from './audio/TensionHeatmap';
@@ -71,6 +72,10 @@ function App() {
       {isFileLoaded && (
         <div className="w-full max-w-4xl">
           <VisualizerCanvas audioStateRef={audioStateRef} />
+          {/* Phase 2 gap closure — replaced by Phase 5 Canvas Node Graph */}
+          {!isCalibrating && (
+            <InstrumentRoleOverlay audioStateRef={audioStateRef} />
+          )}
         </div>
       )}
 
