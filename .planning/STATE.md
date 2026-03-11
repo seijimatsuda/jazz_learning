@@ -92,6 +92,9 @@ Recent decisions affecting current work:
 - [D-03-03-2]: Offline heatmap uses center-of-second windowing — centers FFT_SIZE frame at midpoint of each second to avoid boundary artifacts
 - [D-03-03-3]: TENSION_MIDPOINTS match TensionScorer TENSION_TARGETS midpoints — tonic=0.1, sub=0.325, dom=0.65, alt=0.875 for consistent offline/live scale
 - [D-03-03-4]: ChordChangeCallback type defined in CanvasRenderer.ts not types.ts — UI callback signature is not an audio domain type
+- [D-03-04-1]: drawImage from 1-pixel-wide off-DOM gradient canvas for tension fill instead of createLinearGradient per frame — zero gradient allocations in hot rAF path
+- [D-03-04-2]: TensionMeter.render() takes currentTension and ghostTension as explicit params — no direct AudioStateRef or Zustand access inside component
+- [D-03-04-3]: tensionMeter.resize() called inside CanvasRenderer.resize() propagating height changes — gradient canvas stays in sync with canvas layout
 - [D-03-05-1]: No badge rendered when currentChord is '--' — prevents badge showing against placeholder dash on initial/reset state
 - [D-03-05-2]: tensionColor thresholds (0.3, 0.6, 0.85) align with TENSION_TARGETS midpoints — tonic=0.1, sub=0.325, dom=0.65, alt=0.875; color bands semantically consistent with tension zone boundaries
 - [D-03-05-3]: ChordDisplay in max-w-2xl container (narrower than canvas max-w-4xl) — mirrors file info and transport controls layout
@@ -109,6 +112,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T03:49:47Z
-Stopped at: Completed 03-05-PLAN.md. Phase 3 fully complete. ChordDisplay component wired to Zustand, integrated in App.tsx between canvas and transport. Next: Phase 4 (tension arc visualization).
+Last session: 2026-03-11T03:50:15Z
+Stopped at: Completed 03-04-PLAN.md. TensionMeter canvas component created with off-DOM gradient canvas pattern; integrated into CanvasRenderer rAF loop at right edge (x=w-40, y=20, h-40). Next: 03-05 (chord display UI).
 Resume file: None
