@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { CallResponseEntry } from '../audio/types';
 
 // Phase 8: user annotations (UI-only, not audio hot-path)
 export interface Annotation {
@@ -45,6 +46,9 @@ interface AppState {
   // Phase 8: user annotations
   annotations: Annotation[];
 
+  // Phase 8: call-and-response event log (MEL-03)
+  callResponseLog: CallResponseEntry[];
+
   // Actions
   setFile: (name: string, duration: number) => void;
   setCalibrating: (val: boolean) => void;
@@ -59,6 +63,7 @@ interface AppState {
   setMelodyState: (kbMelodic: boolean, gtMelodic: boolean) => void;
   addAnnotation: (timeSec: number, text: string) => void;
   removeAnnotation: (id: string) => void;
+  addCallResponseEntry: (entry: CallResponseEntry) => void;
   reset: () => void;
 }
 
@@ -92,6 +97,7 @@ export const useAppStore = create<AppState>((set) => ({
   kbIsMelodic: false,
   gtIsMelodic: false,
   annotations: [],
+  callResponseLog: [],
 
   setFile: (name, duration) => set({ fileName: name, isFileLoaded: true, duration }),
   setCalibrating: (val) => set({ isCalibrating: val }),
@@ -116,6 +122,9 @@ export const useAppStore = create<AppState>((set) => ({
   removeAnnotation: (id) => set((state) => ({
     annotations: state.annotations.filter(a => a.id !== id)
   })),
+  addCallResponseEntry: (entry) => set((state) => ({
+    callResponseLog: [...state.callResponseLog, entry].slice(-200),  // cap at 200 entries
+  })),
   reset: () => set({
     fileName: null,
     isFileLoaded: false,
@@ -138,5 +147,6 @@ export const useAppStore = create<AppState>((set) => ({
     kbIsMelodic: false,
     gtIsMelodic: false,
     annotations: [],
+    callResponseLog: [],
   }),
 }));

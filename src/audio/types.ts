@@ -106,6 +106,19 @@ export interface PitchAnalysisState {
   guitar: InstrumentPitchState;
 }
 
+// CallResponseEntry: a single call-and-response event (Phase 8)
+export interface CallResponseEntry {
+  callSec: number;       // audioCtx.currentTime when keyboard went melodic
+  responseSec: number;   // audioCtx.currentTime when guitar responded
+  gapSec: number;        // responseSec - callSec
+}
+
+// CallResponseState: sliding window state for call-response detection (Phase 8)
+export interface CallResponseState {
+  lastKbMelodicSec: number;          // -1 = no active call
+  lastDetectedResponseSec: number;   // debounce: don't log same response twice
+}
+
 // InstrumentAnalysis: per-instrument analysis state, updated at 10fps
 export interface InstrumentAnalysis {
   instrument: string;           // 'bass' | 'drums' | 'keyboard' | 'guitar'
@@ -178,6 +191,7 @@ export interface AudioStateRef {
   tension: TensionState | null;         // Phase 3: harmonic tension state
   beat: BeatState | null;              // Phase 4: beat detection and pocket scoring state
   pitch: PitchAnalysisState | null;    // Phase 8: pitch detection for keyboard and guitar
+  callResponse: CallResponseState | null; // Phase 8: call-and-response detection state
 }
 
 // Factory function for initial AudioStateRef
@@ -208,5 +222,6 @@ export function createInitialAudioState(): AudioStateRef {
     tension: null,
     beat: null,
     pitch: null,
+    callResponse: null,
   };
 }
