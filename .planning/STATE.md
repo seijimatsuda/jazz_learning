@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 6 — Edge Visualization — COMPLETE
+**Current focus:** Phase 7 — React UI Panels & Key Detection — In progress
 
 ## Current Position
 
-Phase: 6 of 8 (Edge Visualization) — COMPLETE
-Plan: 3 of 3 complete
-Status: Phase complete — ready for Phase 7
-Last activity: 2026-03-11 — Phase 6 verified (4/4 must-haves passed)
+Phase: 7 of 8 (React UI Panels & Key Detection) — In progress
+Plan: 5 of 6 complete
+Status: In progress
+Last activity: 2026-03-11 — Completed 07-05-PLAN.md (KEY-01 detectKey, KEY-02 chordFunctionInKey)
 
-Progress: [████████████████████████████░] 70% (28/40 total plans estimated)
+Progress: [█████████████████████████████░] 82% (33/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -145,6 +145,10 @@ Recent decisions affecting current work:
 - [D-06-03-2]: tintFactor > 0.01 guard before getTintedColor — skips string allocation when tint is perceptually invisible
 - [D-06-03-3]: Resolution flash triggers on all visible edges (weight >= 0.3) plus bass_drums — harmonic resolution illuminates the whole graph
 - [D-06-03-4]: prevTension crossing check: prevTension > 0.3 && currentTension <= 0.3 — fires once per resolution event, not continuously
+- [D-07-05-1]: NOTE_NAMES not duplicated in KeyDetector — imported from ChordDetector; single source of truth for pitch class names
+- [D-07-05-2]: Mode detection splits major-leaning (major, maj7, dom7) vs minor-leaning (all others) — mirrors assignChordFunction logic in ChordDetector
+- [D-07-05-3]: confidenceGap as vote weight in detectKey — high-confidence chords drive key inference more than ambiguous ones
+- [D-07-05-4]: chordFunctionInKey returns plain string (not enum) — consistent with D-03-02-3 (chordFunction in Zustand is plain string)
 
 ### Pending Todos
 
@@ -160,5 +164,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Phase 6 complete — All 10 EDGE requirements verified (4/4 must-haves passed). Ready for Phase 7 (React UI Panels & Key Detection).
+Stopped at: Completed 07-05-PLAN.md — KeyDetector.ts created (detectKey KEY-01, chordFunctionInKey KEY-02). Plan 5 of 6 in Phase 7 done.
 Resume file: None
