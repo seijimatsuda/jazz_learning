@@ -7,6 +7,7 @@ import { VisualizerCanvas } from './components/VisualizerCanvas';
 import { BandSetupPanel } from './components/BandSetupPanel';
 import { ChordDisplay } from './components/ChordDisplay';
 import { NodeDetailPanel } from './components/NodeDetailPanel';
+import { ChordLogPanel } from './components/ChordLogPanel';
 import { useAppStore } from './store/useAppStore';
 import { runCalibrationPass } from './audio/CalibrationPass';
 import { computeTensionHeatmap } from './audio/TensionHeatmap';
@@ -137,6 +138,11 @@ function App() {
           {/* Timeline scrubber — full width, keyed by heatmapVersion to re-read ref after heatmap ready */}
           {!isCalibrating && (
             <Timeline key={heatmapVersion} audioStateRef={audioStateRef} />
+          )}
+
+          {/* Chord log drawer — below timeline, expandable */}
+          {!isCalibrating && (
+            <ChordLogPanel audioStateRef={audioStateRef} />
           )}
         </div>
       )}

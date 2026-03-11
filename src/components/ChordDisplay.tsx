@@ -14,6 +14,8 @@
  */
 
 import { useAppStore } from '../store/useAppStore';
+import { CHORD_TEMPLATES } from '../audio/ChordDetector';
+import { chordFunctionInKey } from '../audio/KeyDetector';
 
 type ConfidenceLevel = 'low' | 'medium' | 'high';
 
@@ -59,12 +61,24 @@ export function ChordDisplay() {
   const currentChord     = useAppStore((s) => s.currentChord);
   const chordConfidence  = useAppStore((s) => s.chordConfidence);
   const chordFunction    = useAppStore((s) => s.chordFunction);
+  const currentChordIdx  = useAppStore((s) => s.currentChordIdx);
   const currentTension   = useAppStore((s) => s.currentTension);
   const currentBpm       = useAppStore((s) => s.currentBpm);
   const pocketScore      = useAppStore((s) => s.pocketScore);
+  const detectedKey      = useAppStore((s) => s.detectedKey);
+  const detectedKeyMode  = useAppStore((s) => s.detectedKeyMode);
 
   const noChord = currentChord === '--';
   const style   = CONFIDENCE_STYLES[chordConfidence];
+
+  // Build key context label (KEY-02 display)
+  let keyContextLabel: string | null = null;
+  if (!noChord && currentChordIdx >= 0 && detectedKey && detectedKeyMode) {
+    const tmpl = CHORD_TEMPLATES[currentChordIdx];
+    if (tmpl) {
+      keyContextLabel = chordFunctionInKey(tmpl.root, tmpl.type, detectedKey, detectedKeyMode);
+    }
+  }
 
   return (
     <div
@@ -106,6 +120,16 @@ export function ChordDisplay() {
           style={{ color: '#a78bfa' }}   // violet-400
         >
           {chordFunction}
+        </p>
+      )}
+
+      {/* Key context label — chord function relative to detected key (KEY-02) */}
+      {!noChord && keyContextLabel && (
+        <p
+          className="text-xs text-center italic"
+          style={{ color: 'rgba(167,139,250,0.6)' }}   // violet-400 at 60% opacity
+        >
+          {keyContextLabel}
         </p>
       )}
 
