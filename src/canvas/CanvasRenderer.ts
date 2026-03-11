@@ -17,8 +17,9 @@ import { TensionMeter } from './TensionMeter';
 import { getGhostTension } from '../audio/TensionScorer';
 import { computeNodePositions, INSTRUMENT_ORDER } from './nodes/NodeLayout';
 import type { NodePosition } from './nodes/NodeLayout';
-import { createNodeAnimState } from './nodes/NodeAnimState';
+import { createNodeAnimState, lerpExp } from './nodes/NodeAnimState';
 import type { NodeAnimState } from './nodes/NodeAnimState';
+import { drawNode, getRoleRadius, getRoleFillColor } from './nodes/drawNode';
 
 type ChordChangeCallback = (
   chord: string,
@@ -28,17 +29,10 @@ type ChordChangeCallback = (
 ) => void;
 
 // ---------------------------------------------------------------------------
-// Instrument node colors (holding state — role-based sizing/color from 05-02)
+// Instrument node initial radius (holding state — role-based sizing from 05-02)
 // ---------------------------------------------------------------------------
 
-const INSTRUMENT_COLORS: Record<string, string> = {
-  guitar:   '#64748b', // slate
-  drums:    '#60a5fa', // blue
-  keyboard: '#0d9488', // teal
-  bass:     '#b45309', // amber
-};
-
-/** Initial base radius for all nodes in holding state. Role-based sizing in 05-02. */
+/** Initial base radius for all nodes in holding state. Role-based sizing active from 05-02. */
 const INITIAL_BASE_RADIUS = 28;
 
 // ---------------------------------------------------------------------------
@@ -100,9 +94,9 @@ export class CanvasRenderer {
     // Compute diamond layout for 4 instruments (hardcoded jazz quartet)
     this.nodePositions = computeNodePositions(4);
 
-    // Create per-instrument animation state objects
-    this.nodeAnimStates = INSTRUMENT_ORDER.map((instrument) =>
-      createNodeAnimState(INSTRUMENT_COLORS[instrument] ?? '#64748b', INITIAL_BASE_RADIUS)
+    // Create per-instrument animation state objects — initial glow color uses holding state color
+    this.nodeAnimStates = INSTRUMENT_ORDER.map((_instrument) =>
+      createNodeAnimState(getRoleFillColor('holding'), INITIAL_BASE_RADIUS)
     );
 
     // Pre-create tension meter — gradient built once, reused every frame (TENS-04)
@@ -225,8 +219,6 @@ export class CanvasRenderer {
     const deltaMs = Math.min(rawDelta, 100);
     this.prevTimestamp = timestamp;
 
-    // Suppress unused variable lint warning for deltaMs — used in 05-02+ animations
-    void deltaMs;
     // Suppress unused variable lint warning for bgPulseProgress — wired in 05-05
     void this.bgPulseProgress;
 
@@ -255,6 +247,7 @@ export class CanvasRenderer {
     }
 
     // -- Draw instrument nodes -----------------------------------------------
+    const instruments = state.analysis?.instruments ?? null;
     for (let i = 0; i < INSTRUMENT_ORDER.length; i++) {
       const instrument = INSTRUMENT_ORDER[i];
       const pos = this.nodePositions[i];
@@ -262,19 +255,28 @@ export class CanvasRenderer {
       const x = pos.x * w;
       const y = pos.y * h;
 
-      // Placeholder circle rendering — 05-02 adds role-based sizing and glow,
-      // 05-03/04 add bass/drum animations driven by beat timestamps
-      ctx.beginPath();
-      ctx.arc(x, y, animState.currentRadius, 0, Math.PI * 2);
-      ctx.fillStyle = INSTRUMENT_COLORS[instrument] ?? '#64748b';
-      ctx.fill();
+      // Look up current role from analysis state — default to 'silent' if unavailable
+      const instrAnalysis = instruments?.find((ia) => ia.instrument === instrument) ?? null;
+      const role = instrAnalysis?.role ?? 'silent';
 
-      // Instrument label below the node
-      ctx.fillStyle = 'rgba(255,255,255,0.7)';
-      ctx.font = '11px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillText(instrument, x, y + animState.currentRadius + 4);
+      // Update target radius and smoothly transition current radius (VIZ-12)
+      const targetRadius = getRoleRadius(role);
+      animState.baseRadius = targetRadius;
+      animState.currentRadius = lerpExp(
+        animState.currentRadius,
+        targetRadius + animState.radiusNudge,
+        0.15,
+        deltaMs,
+      );
+
+      // Role-based fill color (VIZ-12)
+      const fillColor = getRoleFillColor(role);
+
+      // Capitalize label: 'guitar' → 'Guitar'
+      const label = instrument.charAt(0).toUpperCase() + instrument.slice(1);
+
+      // Draw node circle + label (05-03/05-04 will add glow and ripples above this)
+      drawNode(ctx, x, y, animState.currentRadius, fillColor, label);
     }
 
     // -- Tension meter -------------------------------------------------------
