@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 3 of 8 (Chord Detection & Harmonic Analysis)
-Plan: 2 of 5 in current phase
+Plan: 3 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-11 — Completed 03-02-PLAN.md (TensionScorer: lerp, ring buffer, ghost line; Zustand chord/tension state)
+Last activity: 2026-03-11 — Completed 03-03-PLAN.md (Phase 3 pipeline integration: chord+tension wired into 10fps loop, offline heatmap replaced)
 
-Progress: [████████████░░░░░░░░] 30% (12/40 total plans estimated)
+Progress: [████████████░░░░░░░░] 32% (13/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -29,10 +29,10 @@ Progress: [████████████░░░░░░░░] 30% (12
 |-------|-------|-------|----------|
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
 | 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
-| 03 - Chord Detection & Harmonic Analysis | 2/5 | ~4m 14s | ~2m 7s |
+| 03 - Chord Detection & Harmonic Analysis | 3/5 | ~7m 14s | ~2m 25s |
 
 **Recent Trend:**
-- Last 5 plans: 02-03 (~1m), 02-04 (3m 4s), 02-05 (1m 24s), 03-01 (~3m), 03-02 (1m 14s)
+- Last 5 plans: 02-04 (3m 4s), 02-05 (1m 24s), 03-01 (~3m), 03-02 (1m 14s), 03-03 (~3m)
 - Trend: Consistent sub-3min per plan
 
 *Updated after each plan completion*
@@ -88,6 +88,10 @@ Recent decisions affecting current work:
 - [D-03-02-2]: Tension target is midpoint of TENSION_TARGETS range — lerp traverses zone smoothly rather than snapping to range extremes
 - [D-03-02-3]: chordFunction in Zustand is plain string not ChordFunction enum — AnalysisTick (03-03) computes human-readable label before pushing to UI
 - [D-03-02-4]: reset() sets currentChord='--' and chordConfidence='low' (not null) — avoids null checks in chord display components
+- [D-03-03-1]: rawTimeDataFloat population moved to explicit else-branch in disambiguation block — guarantees population for Phase 3 Meyda chroma extraction when no keyboard+guitar pair is present
+- [D-03-03-2]: Offline heatmap uses center-of-second windowing — centers FFT_SIZE frame at midpoint of each second to avoid boundary artifacts
+- [D-03-03-3]: TENSION_MIDPOINTS match TensionScorer TENSION_TARGETS midpoints — tonic=0.1, sub=0.325, dom=0.65, alt=0.875 for consistent offline/live scale
+- [D-03-03-4]: ChordChangeCallback type defined in CanvasRenderer.ts not types.ts — UI callback signature is not an audio domain type
 
 ### Pending Todos
 
@@ -102,6 +106,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T03:40:35Z
-Stopped at: Completed 03-02-PLAN.md. TensionScorer and Zustand chord/tension state ready. Next: 03-03 (wire extractAndMatchChord + updateTension into AnalysisTick 10fps loop, push chord/tension to Zustand).
+Last session: 2026-03-11T03:46:01Z
+Stopped at: Completed 03-03-PLAN.md. Chord+tension pipeline fully wired: AnalysisTick calls extractAndMatchChord+updateTension, onChordChange pushes to Zustand, TensionHeatmap uses chord-function offline analysis. Next: 03-04 (chord display UI components reading Zustand currentChord/chordConfidence/chordFunction).
 Resume file: None
