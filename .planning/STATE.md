@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 1 of 8 (Audio Pipeline Foundation)
-Plan: 3 of 5 in current phase
+Plan: 4 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-10 — Completed 01-03-PLAN.md (Dual AnalyserNode + FrequencyBandSplitter)
+Last activity: 2026-03-11 — Completed 01-04-PLAN.md (CalibrationPass + Transport Controls + Timeline)
 
-Progress: [███░░░░░░░] 7.5% (3/40 total plans estimated)
+Progress: [████░░░░░░] 10% (4/40 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: ~2m 20s
-- Total execution time: ~7 minutes
+- Total plans completed: 4
+- Average duration: ~2m 17s
+- Total execution time: ~9 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 - Audio Pipeline Foundation | 3/5 | ~7m | ~2m 20s |
+| 01 - Audio Pipeline Foundation | 4/5 | ~9m | ~2m 17s |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2m 22s), 01-02 (2m 12s), 01-03 (~3m)
+- Last 5 plans: 01-01 (2m 22s), 01-02 (2m 12s), 01-03 (~3m), 01-04 (2m 12s)
 - Trend: Consistent sub-3min per plan
 
 *Updated after each plan completion*
@@ -55,6 +55,10 @@ Recent decisions affecting current work:
 - [D-01-03-1]: raw AnalyserNode NOT connected to destination — silent measurement tap only (connecting would double volume)
 - [D-01-03-2]: connectSourceToGraph deferred to play time (01-04) — source nodes created fresh on each play
 - [D-01-03-3]: 6 overlapping frequency bands including drums_low/drums_high — overlapping lets beat detection use dedicated bands
+- [D-01-04-1]: CalibrationPass receives setCalibrating as parameter — keeps audio module Zustand-free and testable
+- [D-01-04-2]: Calibration source connected only to rawAnalyser (not destination) — silent pass, no audible noise
+- [D-01-04-3]: AudioBufferSourceNode single-use — fresh source created on every play call
+- [D-01-04-4]: Timeline 10fps setInterval polling — consistent with ref-based audio state pattern, off React hot-path
 
 ### Pending Todos
 
@@ -69,6 +73,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T00:00:00Z
-Stopped at: Completed 01-03-PLAN.md — FrequencyBandSplitter, dual AnalyserNodes, pre-allocated typed arrays. Ready for 01-04 (transport / play-pause).
+Last session: 2026-03-11T00:04:13Z
+Stopped at: Completed 01-04-PLAN.md — CalibrationPass, TransportControls, Timeline, and full app wiring. Ready for 01-05 (analysis loop / Meyda integration).
 Resume file: None
