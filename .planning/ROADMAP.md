@@ -12,7 +12,7 @@ The build proceeds as a strict dependency chain through the audio pipeline, then
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Audio Pipeline Foundation** - iOS-safe AudioContext, dual AnalyserNode, FrequencyBandSplitter, audioStateRef shape, all performance constraints locked in
+- [x] **Phase 1: Audio Pipeline Foundation** - iOS-safe AudioContext, dual AnalyserNode, FrequencyBandSplitter, audioStateRef shape, all performance constraints locked in
 - [ ] **Phase 2: Instrument Activity Analysis** - Per-instrument frequency band analysis, activity scoring, role classification, cross-correlation edge detection
 - [ ] **Phase 3: Chord Detection & Harmonic Analysis** - Chroma extraction, 8-chord template matching, tension scoring, smoothing and confidence display
 - [ ] **Phase 4: Beat Detection, BPM & Pocket Score** - Dual-stream beat detection, swing ratio handling, BPM derivation, pocket score with rubato suppression
@@ -36,11 +36,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 5 plans in 5 waves (sequential dependency chain)
 
 Plans:
-- [ ] 01-01-PLAN.md — Vite + React + TypeScript scaffold, Tailwind 4, Zustand, Meyda.js, core types (Wave 1)
-- [ ] 01-02-PLAN.md — iOS-safe AudioContext, FileReader upload, decodeAudioData, useAudioRef hook (Wave 2)
-- [ ] 01-03-PLAN.md — Dual AnalyserNode setup, FrequencyBandSplitter, hzToBin, typed array pre-allocation (Wave 3)
-- [ ] 01-04-PLAN.md — CalibrationPass, transport controls (play/pause/seek), timeline scrubber (Wave 4)
-- [ ] 01-05-PLAN.md — Canvas renderer, offscreen glow, tension heatmap, HiDPI scaling, iOS smoke test (Wave 5)
+- [x] 01-01-PLAN.md — Vite + React + TypeScript scaffold, Tailwind 4, Zustand, Meyda.js, core types (Wave 1)
+- [x] 01-02-PLAN.md — iOS-safe AudioContext, FileReader upload, decodeAudioData, useAudioRef hook (Wave 2)
+- [x] 01-03-PLAN.md — Dual AnalyserNode setup, FrequencyBandSplitter, hzToBin, typed array pre-allocation (Wave 3)
+- [x] 01-04-PLAN.md — CalibrationPass, transport controls (play/pause/seek), timeline scrubber (Wave 4)
+- [x] 01-05-PLAN.md — Canvas renderer, offscreen glow, tension heatmap, HiDPI scaling, iOS smoke test (Wave 5)
 
 ### Phase 2: Instrument Activity Analysis
 **Goal**: Users can see each instrument's real-time activity level and role classification update as the music plays, with keyboard vs guitar correctly disambiguated
@@ -178,7 +178,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Audio Pipeline Foundation | 0/5 | Not started | - |
+| 1. Audio Pipeline Foundation | 5/5 | Complete | 2026-03-10 |
 | 2. Instrument Activity Analysis | 0/4 | Not started | - |
 | 3. Chord Detection & Harmonic Analysis | 0/5 | Not started | - |
 | 4. Beat Detection, BPM & Pocket Score | 0/4 | Not started | - |

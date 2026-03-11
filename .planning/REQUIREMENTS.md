@@ -165,19 +165,19 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUDIO-01 | Phase 1 | Pending |
-| AUDIO-02 | Phase 1 | Pending |
-| AUDIO-03 | Phase 1 | Pending |
-| AUDIO-04 | Phase 1 | Pending |
-| AUDIO-05 | Phase 1 | Pending |
-| AUDIO-06 | Phase 1 | Pending |
-| AUDIO-07 | Phase 1 | Pending |
-| AUDIO-08 | Phase 1 | Pending |
-| AUDIO-09 | Phase 1 | Pending |
-| XCUT-01 | Phase 1 | Pending |
-| XCUT-02 | Phase 1 | Pending |
-| XCUT-03 | Phase 1 | Pending |
-| XCUT-04 | Phase 1 | Pending |
+| AUDIO-01 | Phase 1 | Complete |
+| AUDIO-02 | Phase 1 | Complete |
+| AUDIO-03 | Phase 1 | Complete |
+| AUDIO-04 | Phase 1 | Complete |
+| AUDIO-05 | Phase 1 | Complete |
+| AUDIO-06 | Phase 1 | Complete |
+| AUDIO-07 | Phase 1 | Complete |
+| AUDIO-08 | Phase 1 | Complete |
+| AUDIO-09 | Phase 1 | Complete |
+| XCUT-01 | Phase 1 | Complete |
+| XCUT-02 | Phase 1 | Complete |
+| XCUT-03 | Phase 1 | Complete |
+| XCUT-04 | Phase 1 | Complete |
 | INST-01 | Phase 2 | Pending |
 | INST-02 | Phase 2 | Pending |
 | INST-03 | Phase 2 | Pending |

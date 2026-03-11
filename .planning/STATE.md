@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 1 — Audio Pipeline Foundation
+**Current focus:** Phase 2 — Instrument Activity Analysis
 
 ## Current Position
 
-Phase: 1 of 8 (Audio Pipeline Foundation)
-Plan: 5 of 5 in current phase
-Status: Phase complete — ready for Phase 2
-Last activity: 2026-03-11 — Completed 01-05-PLAN.md (Canvas Renderer + Tension Heatmap + Full App Layout)
+Phase: 2 of 8 (Instrument Activity Analysis)
+Plan: 0 of 4 in current phase
+Status: Ready to plan
+Last activity: 2026-03-11 — Phase 1 complete and verified. Gaps fixed (iOS AudioContext, FFT read hoisting).
 
 Progress: [█████░░░░░] 13% (5/40 total plans estimated)
 
