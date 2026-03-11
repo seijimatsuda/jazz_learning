@@ -60,6 +60,8 @@ export function ChordDisplay() {
   const chordConfidence  = useAppStore((s) => s.chordConfidence);
   const chordFunction    = useAppStore((s) => s.chordFunction);
   const currentTension   = useAppStore((s) => s.currentTension);
+  const currentBpm       = useAppStore((s) => s.currentBpm);
+  const pocketScore      = useAppStore((s) => s.pocketScore);
 
   const noChord = currentChord === '--';
   const style   = CONFIDENCE_STYLES[chordConfidence];
@@ -116,6 +118,30 @@ export function ChordDisplay() {
             style={{ color: tensionColor(currentTension) }}
           >
             {currentTension.toFixed(2)}
+          </span>
+        </div>
+      )}
+
+      {/* BPM readout (BEAT-05: shows "♩ = —" when null/rubato) */}
+      <div className="flex items-center gap-2 mt-1">
+        <span className="text-xs" style={{ color: '#6b7280' }}>♩ =</span>
+        <span
+          className="text-sm font-semibold tabular-nums"
+          style={{ color: currentBpm !== null ? '#f3f4f6' : '#6b7280' }}
+        >
+          {currentBpm !== null ? currentBpm : '—'}
+        </span>
+      </div>
+
+      {/* Pocket score readout */}
+      {currentBpm !== null && (
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-xs" style={{ color: '#6b7280' }}>pocket</span>
+          <span
+            className="text-sm font-semibold tabular-nums"
+            style={{ color: pocketScore >= 0.7 ? '#4ade80' : pocketScore >= 0.4 ? '#fbbf24' : '#f87171' }}
+          >
+            {pocketScore.toFixed(2)}
           </span>
         </div>
       )}
