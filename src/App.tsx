@@ -16,6 +16,7 @@ import type { InstrumentName } from './audio/InstrumentActivityScorer';
 import { initChordDetector, initChordState } from './audio/ChordDetector';
 import { initTensionState } from './audio/TensionScorer';
 import { initBeatState } from './audio/DrumTransientDetector';
+import { initInstrumentPitchState } from './audio/PitchDetector';
 
 function App() {
   const audioStateRef = useAudioRef();
@@ -59,6 +60,21 @@ function App() {
         // Initialize Phase 4: beat detection and pocket scoring state
         audioStateRef.current.beat = initBeatState();
         console.log('[App] Phase 4 beat state initialized.');
+
+        // Initialize Phase 8: pitch detection state (only when keyboard and guitar are in lineup)
+        const hasKeyboard = lineup.includes('keyboard' as InstrumentName);
+        const hasGuitar   = lineup.includes('guitar' as InstrumentName);
+        if (hasKeyboard && hasGuitar) {
+          const pitchFftSize = audioStateRef.current.fftSize;
+          audioStateRef.current.pitch = {
+            keyboard: initInstrumentPitchState(pitchFftSize),
+            guitar:   initInstrumentPitchState(pitchFftSize),
+          };
+          console.log('[App] Phase 8 pitch state initialized for keyboard + guitar.');
+        } else {
+          audioStateRef.current.pitch = null;
+          console.log('[App] Phase 8 pitch state skipped (keyboard+guitar not both in lineup).');
+        }
 
         return computeTensionHeatmap(buffer, sampleRate);
       })

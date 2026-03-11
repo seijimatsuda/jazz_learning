@@ -16,6 +16,7 @@
  *   9. BPM derivation — updateBpm via autocorrelation (Phase 4)
  *  10. Rubato gate — applyRubatoGate via IOI CV (Phase 4)
  *  11. Pocket score — updatePocketScore via bass↔drums sync (Phase 4)
+ *  12. Pitch detection — updatePitchState for keyboard and guitar (Phase 8)
  *
  * CRITICAL: This function must NOT allocate any new typed arrays. All buffers
  * (historyBuffer, prevRawFreqData, rawTimeDataFloat) are pre-allocated in
@@ -37,6 +38,7 @@ import { detectDrumOnset, computeDrumFlux } from './DrumTransientDetector';
 import { updateBpm, detectBassOnset } from './BpmTracker';
 import { applyRubatoGate } from './SwingAnalyzer';
 import { updatePocketScore } from './PocketScorer';
+import { updatePitchState } from './PitchDetector';
 
 // ---------------------------------------------------------------------------
 // Chord display label maps (module-level constants — zero allocations in tick)
@@ -83,13 +85,15 @@ const FAMILY_LABELS: Record<ChordFunction, string> = {
  * @param onChordChange   - Optional callback fired when displayed chord changes
  * @param onTensionUpdate - Optional callback fired every tick with current tension
  * @param onBeatUpdate    - Optional callback fired when BPM or pocket score changes (Phase 4)
+ * @param onMelodyUpdate  - Optional callback fired with keyboard/guitar melodic state (Phase 8)
  */
 export function runAnalysisTick(
   state: AudioStateRef,
   onRoleChange?: (instrument: string, role: RoleLabel) => void,
   onChordChange?: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, tension: number, chordIdx: number) => void,
   onTensionUpdate?: (tension: number) => void,
-  onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void
+  onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void,
+  onMelodyUpdate?: (kbMelodic: boolean, gtMelodic: boolean) => void
 ): void {
   // Guard: must be calibrated and have all required state before analysis can run
   if (
@@ -290,6 +294,43 @@ export function runAnalysisTick(
         onBeatUpdate(beat.bpm, beat.pocketScore, beat.timingOffsetMs);
       }
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Phase 8: Pitch detection on keyboard and guitar
+  // ---------------------------------------------------------------------------
+
+  if (state.pitch) {
+    // rawTimeDataFloat is already populated above (by disambiguation or fallback conversion).
+    // We use the full-spectrum time-domain data and gate via activity score — not band-filtered.
+    // ACF2+ will detect the dominant pitch in the mix; the 3-frame stability window
+    // distinguishes real melodic notes from transient energy (drum bleed, etc.).
+
+    const kbInstr = instrs.find(i => i.instrument === 'keyboard');
+    const gtInstr = instrs.find(i => i.instrument === 'guitar');
+
+    if (kbInstr && kbInstr.activityScore > 0.15) {
+      updatePitchState(state.pitch.keyboard, analysis.rawTimeDataFloat, state.sampleRate);
+    } else {
+      // Reset melodic state when keyboard is quiet — no pitch detection on silence
+      state.pitch.keyboard.isMelodic = false;
+      state.pitch.keyboard.pitchFrameCount = 0;
+      state.pitch.keyboard.pitchHz = -1;
+      state.pitch.keyboard.stablePitchHz = -1;
+    }
+
+    if (gtInstr && gtInstr.activityScore > 0.15) {
+      updatePitchState(state.pitch.guitar, analysis.rawTimeDataFloat, state.sampleRate);
+    } else {
+      // Reset melodic state when guitar is quiet — no pitch detection on silence
+      state.pitch.guitar.isMelodic = false;
+      state.pitch.guitar.pitchFrameCount = 0;
+      state.pitch.guitar.pitchHz = -1;
+      state.pitch.guitar.stablePitchHz = -1;
+    }
+
+    // Push melodic state to Zustand via callback (only fires when pitch state is initialized)
+    onMelodyUpdate?.(state.pitch.keyboard.isMelodic, state.pitch.guitar.isMelodic);
   }
 
   // Save current rawFreqData as previous for next tick's spectral flux computation

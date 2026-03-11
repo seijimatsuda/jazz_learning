@@ -54,6 +54,12 @@ export function VisualizerCanvas({ audioStateRef }: VisualizerCanvasProps) {
       useAppStore.getState().setBeatInfo(bpm, pocket, offset);
     });
 
+    // Wire melody update callback — pushes keyboard/guitar melodic state to Zustand (Phase 8)
+    // Fires every tick when pitch state is initialized (keyboard+guitar in lineup)
+    renderer.setOnMelodyUpdate((kbMelodic, gtMelodic) => {
+      useAppStore.getState().setMelodyState(kbMelodic, gtMelodic);
+    });
+
     // Resize observer keeps HiDPI scaling correct when element resizes
     const observer = new ResizeObserver(() => {
       renderer.resize();

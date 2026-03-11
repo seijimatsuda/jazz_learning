@@ -31,6 +31,10 @@ interface AppState {
   detectedKey: string | null;                    // null = no key detected yet
   detectedKeyMode: 'major' | 'minor' | null;    // null = no key detected yet
 
+  // Phase 8: pitch/melody state for UI
+  kbIsMelodic: boolean;
+  gtIsMelodic: boolean;
+
   // Actions
   setFile: (name: string, duration: number) => void;
   setCalibrating: (val: boolean) => void;
@@ -42,6 +46,7 @@ interface AppState {
   setLineup: (lineup: string[]) => void;
   setSelectedInstrument: (name: string | null) => void;
   setDetectedKey: (key: string | null, mode: 'major' | 'minor' | null) => void;
+  setMelodyState: (kbMelodic: boolean, gtMelodic: boolean) => void;
   reset: () => void;
 }
 
@@ -71,6 +76,10 @@ export const useAppStore = create<AppState>((set) => ({
   detectedKey: null,
   detectedKeyMode: null,
 
+  // Phase 8 initial state
+  kbIsMelodic: false,
+  gtIsMelodic: false,
+
   setFile: (name, duration) => set({ fileName: name, isFileLoaded: true, duration }),
   setCalibrating: (val) => set({ isCalibrating: val }),
   setCurrentTime: (time) => set({ currentTime: time }),
@@ -83,6 +92,7 @@ export const useAppStore = create<AppState>((set) => ({
   setLineup: (lineup) => set({ lineup }),
   setSelectedInstrument: (name) => set({ selectedInstrument: name }),
   setDetectedKey: (key, mode) => set({ detectedKey: key, detectedKeyMode: mode }),
+  setMelodyState: (kbMelodic, gtMelodic) => set({ kbIsMelodic: kbMelodic, gtIsMelodic: gtMelodic }),
   reset: () => set({
     fileName: null,
     isFileLoaded: false,
@@ -102,5 +112,7 @@ export const useAppStore = create<AppState>((set) => ({
     selectedInstrument: null,
     detectedKey: null,
     detectedKeyMode: null,
+    kbIsMelodic: false,
+    gtIsMelodic: false,
   }),
 }));

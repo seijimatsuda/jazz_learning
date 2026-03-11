@@ -111,6 +111,9 @@ export class CanvasRenderer {
   /** Optional callback fired when BPM or pocket score changes (Phase 4) */
   private onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void;
 
+  /** Optional callback fired with keyboard/guitar melodic state (Phase 8) */
+  private onMelodyUpdate?: (kbMelodic: boolean, gtMelodic: boolean) => void;
+
   /** Bound rAF callback — receives DOMHighResTimeStamp for delta-time */
   private readonly boundRender: (ts: DOMHighResTimeStamp) => void;
 
@@ -201,6 +204,11 @@ export class CanvasRenderer {
   /** Set callback for BPM and pocket score updates (Phase 4). */
   setOnBeatUpdate(cb: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void): void {
     this.onBeatUpdate = cb;
+  }
+
+  /** Set callback for keyboard/guitar melodic state updates (Phase 8). */
+  setOnMelodyUpdate(cb: (kbMelodic: boolean, gtMelodic: boolean) => void): void {
+    this.onMelodyUpdate = cb;
   }
 
   /**
@@ -354,7 +362,7 @@ export class CanvasRenderer {
       const now = performance.now();
       if ((now - analysis.lastAnalysisMs) >= 100) {
         analysis.lastAnalysisMs = now;
-        runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate, this.onBeatUpdate);
+        runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate, this.onBeatUpdate, this.onMelodyUpdate);
       }
     }
 
