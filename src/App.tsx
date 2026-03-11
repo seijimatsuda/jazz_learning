@@ -4,7 +4,7 @@ import { FileUpload } from './components/FileUpload';
 import { TransportControls } from './components/TransportControls';
 import { Timeline } from './components/Timeline';
 import { VisualizerCanvas } from './components/VisualizerCanvas';
-import { InstrumentRoleOverlay } from './components/InstrumentRoleOverlay';
+import { BandSetupPanel } from './components/BandSetupPanel';
 import { ChordDisplay } from './components/ChordDisplay';
 import { useAppStore } from './store/useAppStore';
 import { runCalibrationPass } from './audio/CalibrationPass';
@@ -41,8 +41,8 @@ function App() {
 
     runCalibrationPass(state, setCalibrating)
       .then(() => {
-        // Initialize Phase 2 analysis state with default quartet lineup
-        const lineup: InstrumentName[] = ['bass', 'drums', 'keyboard', 'guitar'];
+        // Initialize Phase 2 analysis state with lineup from Zustand BandSetupPanel
+        const lineup: InstrumentName[] = useAppStore.getState().lineup as InstrumentName[];
         audioStateRef.current.analysis = initAnalysisState(lineup, audioStateRef.current.fftSize);
         audioStateRef.current.analysis.isAnalysisActive = true;
         console.log('[App] Analysis state initialized for lineup:', lineup);
@@ -81,6 +81,9 @@ function App() {
         Jazz Communication Visualizer
       </h1>
 
+      {/* Band setup — visible before file load; locked after */}
+      <BandSetupPanel />
+
       {/* File upload — always visible */}
       <FileUpload audioStateRef={audioStateRef} />
 
@@ -88,10 +91,6 @@ function App() {
       {isFileLoaded && (
         <div className="w-full max-w-4xl">
           <VisualizerCanvas audioStateRef={audioStateRef} />
-          {/* Phase 2 gap closure — replaced by Phase 5 Canvas Node Graph */}
-          {!isCalibrating && (
-            <InstrumentRoleOverlay audioStateRef={audioStateRef} />
-          )}
         </div>
       )}
 
