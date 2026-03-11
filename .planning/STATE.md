@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 5 of 8 (Canvas Node Graph) — In progress
-Plan: 4 of 5 complete (03 and 04 both done — wave 3 parallel)
-Status: In progress
-Last activity: 2026-03-11 — Completed 05-03-PLAN.md (bass glow: breathing amber, onset flash+ring, pocket-score color shift)
+Plan: 5 of 5 in progress (05-05 Task 1 complete — awaiting human-verify checkpoint)
+Status: Checkpoint pause — Task 2 is human-verify
+Last activity: 2026-03-11 — Completed 05-05 Task 1 (all-node beat pulse VIZ-10, background breath VIZ-11)
 
-Progress: [████████████████████████░] 60% (24/40 total plans estimated)
+Progress: [█████████████████████████░] 62% (24.5/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -128,6 +128,9 @@ Recent decisions affecting current work:
 - [D-05-03-2]: updateBassBreath returns 0.15 static when bpm=null — bass retains faint presence during rubato sections, no harsh on/off
 - [D-05-03-3]: Pocket-score gate threshold 0.05 — smallest perceptually meaningful color shift before glowCanvas re-creation; tighter gate causes per-frame HTMLCanvasElement churn
 - [D-05-03-4]: finalGlowIntensity = max(breatheIntensity, glowIntensity) — onset always overrides breathing; breath resumes as flash decays via lerpExp
+- [D-05-05-1]: Single onset detection before per-node loop — beatPulse and bgPulseProgress set once at top of frame, not rechecked per instrument
+- [D-05-05-2]: Downbeat check after drum onset check — downbeat sets beatPulse=4 overriding beat's 2px; bgPulseProgress already set by drum onset (downbeat is coincident)
+- [D-05-05-3]: Linear decay for bgPulseProgress (Math.max subtract deltaMs/200) vs lerpExp for beatPulse — linear gives exact 200ms window, lerpExp gives organic snap for radius
 
 ### Pending Todos
 
@@ -143,5 +146,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 05-03-PLAN.md. Bass node now has amber breathing glow synced to BPM (sine [0.2, 0.8] modulated by pocketScore), onset flash (glowIntensity=1.0) with 800ms expanding amber ring, and pocket-score-driven color shift amber (#b45309) to blue (#1e40af) via glowCanvas re-creation gated at 0.05 delta. 05-04 (drums) was parallel wave 3 — both complete. Ready for 05-05 (background beat pulse, orbit lines, phase complete).
+Stopped at: 05-05 Task 1 complete (all-node beat pulse + background breath). Paused at checkpoint:human-verify. User must approve visuals at localhost:5555 before Phase 5 is declared complete.
 Resume file: None
