@@ -19,6 +19,11 @@ interface AppState {
   chordFunction: string;              // plain English, e.g. 'home -- relaxed and stable'
   currentTension: number;             // 0.0-1.0
 
+  // Phase 4: beat detection, BPM, and pocket score for UI
+  currentBpm: number | null;          // null when rubato/low confidence, otherwise rounded integer
+  pocketScore: number;                // 0.0-1.0, rolling 8-beat average
+  timingOffsetMs: number;             // positive = drums ahead, negative = drums behind
+
   // Actions
   setFile: (name: string, duration: number) => void;
   setCalibrating: (val: boolean) => void;
@@ -26,6 +31,7 @@ interface AppState {
   setInstrumentRole: (instrument: string, role: string) => void;
   setChordInfo: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string) => void;
   setTension: (tension: number) => void;
+  setBeatInfo: (bpm: number | null, pocket: number, offset: number) => void;
   reset: () => void;
 }
 
@@ -43,6 +49,11 @@ export const useAppStore = create<AppState>((set) => ({
   chordFunction: '',
   currentTension: 0,
 
+  // Phase 4 initial state
+  currentBpm: null,
+  pocketScore: 0,
+  timingOffsetMs: 0,
+
   setFile: (name, duration) => set({ fileName: name, isFileLoaded: true, duration }),
   setCalibrating: (val) => set({ isCalibrating: val }),
   setCurrentTime: (time) => set({ currentTime: time }),
@@ -51,6 +62,7 @@ export const useAppStore = create<AppState>((set) => ({
   })),
   setChordInfo: (chord, confidence, fn) => set({ currentChord: chord, chordConfidence: confidence, chordFunction: fn }),
   setTension: (tension) => set({ currentTension: tension }),
+  setBeatInfo: (bpm, pocket, offset) => set({ currentBpm: bpm, pocketScore: pocket, timingOffsetMs: offset }),
   reset: () => set({
     fileName: null,
     isFileLoaded: false,
@@ -62,5 +74,8 @@ export const useAppStore = create<AppState>((set) => ({
     chordConfidence: 'low',
     chordFunction: '',
     currentTension: 0,
+    currentBpm: null,
+    pocketScore: 0,
+    timingOffsetMs: 0,
   }),
 }));
