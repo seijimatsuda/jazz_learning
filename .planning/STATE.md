@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 4 of 8 (Beat Detection, BPM & Pocket Score)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-10 — Completed 04-01-PLAN.md (BeatState interface + DrumTransientDetector)
+Last activity: 2026-03-10 — Completed 04-02-PLAN.md (BpmTracker: autocorrelation BPM, bass onset)
 
-Progress: [████████████████░░░░] 40% (16/40 total plans estimated)
+Progress: [█████████████████░░░] 42% (17/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -30,7 +30,7 @@ Progress: [████████████████░░░░] 40% (16
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
 | 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
 | 03 - Chord Detection & Harmonic Analysis | 5/5 COMPLETE | ~8m 13s | ~1m 38s |
-| 04 - Beat Detection, BPM & Pocket Score | 1/4 | ~2m | ~2m |
+| 04 - Beat Detection, BPM & Pocket Score | 2/4 | ~5m | ~2m 30s |
 
 **Recent Trend:**
 - Last 5 plans: 03-02 (1m 14s), 03-03 (~3m), 03-04 (unknown), 03-05 (~1m), 04-01 (~2m)
@@ -103,6 +103,9 @@ Recent decisions affecting current work:
 - [D-04-01-2]: adaptiveThreshold returns Infinity when n<3 — prevents cold-start false onsets during first 300ms of analysis
 - [D-04-01-3]: OSS buffer populated every tick (not just on onset) — downstream autocorrelation needs full signal density
 - [D-04-01-4]: beatCounter increments on onset then wraps mod 4; downbeat fires at counter==0 post-increment
+- [D-04-02-1]: bassAdaptiveThreshold is local to BpmTracker — DrumTransientDetector.adaptiveThreshold takes BeatState and reads drumFluxBuffer; bass needs separate buffer traversal
+- [D-04-02-2]: Kick bleed suppression uses drum mean flux * 0.8 * MULTIPLIER — avoids cross-module coupling, keeps kick gate independently tunable
+- [D-04-02-3]: vals[] (3-element) created every 2 seconds in updateBpm — explicitly accepted per 04-RESEARCH.md; per-frame allocation guidance does not restrict 2s cadence
 
 ### Pending Todos
 
@@ -118,5 +121,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-10
-Stopped at: Completed 04-01-PLAN.md. BeatState + DrumTransientDetector complete. Ready for 04-02 (BPM derivation).
+Stopped at: Completed 04-02-PLAN.md. BpmTracker complete. Ready for 04-03 (rubato suppression / AnalysisTick wiring).
 Resume file: None
