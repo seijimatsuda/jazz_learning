@@ -17,9 +17,11 @@ import { TensionMeter } from './TensionMeter';
 import { getGhostTension } from '../audio/TensionScorer';
 import { computeNodePositions, INSTRUMENT_ORDER } from './nodes/NodeLayout';
 import type { NodePosition } from './nodes/NodeLayout';
-import { createNodeAnimState, lerpExp } from './nodes/NodeAnimState';
+import { createNodeAnimState, lerpExp, updateRipples } from './nodes/NodeAnimState';
 import type { NodeAnimState } from './nodes/NodeAnimState';
 import { drawNode, getRoleRadius, getRoleFillColor } from './nodes/drawNode';
+import { drawGlow, pocketToGlowColor } from './nodes/drawGlow';
+import { createGlowLayer } from './offscreen/glowLayer';
 
 type ChordChangeCallback = (
   chord: string,
@@ -34,6 +36,17 @@ type ChordChangeCallback = (
 
 /** Initial base radius for all nodes in holding state. Role-based sizing active from 05-02. */
 const INITIAL_BASE_RADIUS = 28;
+
+// ---------------------------------------------------------------------------
+// Drums animation constants (VIZ-06, VIZ-07, VIZ-08, VIZ-09)
+// ---------------------------------------------------------------------------
+
+/** Timing offset threshold (ms) to activate the orbit effect (VIZ-09). */
+const ORBIT_THRESHOLD_MS = 30;
+/** Maximum orbit displacement radius in CSS pixels (VIZ-09). */
+const ORBIT_RADIUS_PX = 3;
+/** Orbit angular speed in radians per ms — one full orbit ~1.57s (VIZ-09). */
+const ORBIT_SPEED = 0.004;
 
 // ---------------------------------------------------------------------------
 // CanvasRenderer class
@@ -173,6 +186,44 @@ export class CanvasRenderer {
   }
 
   // -------------------------------------------------------------------------
+  // Bass breathing animation
+  // -------------------------------------------------------------------------
+
+  /**
+   * Advances the bass node's breathe phase and returns the breathing intensity.
+   *
+   * - If BPM is null (rubato), returns a static low glow of 0.15.
+   * - Advances animState.breathePhase by (deltaMs / beatPeriodMs), wrapping at 1.0.
+   * - Maps sine wave to [0.2, 0.8] intensity range.
+   * - Modulates by pocket score: in-pocket bass glows brighter.
+   *
+   * VIZ-03: bass breathing glow synced to BPM.
+   *
+   * @param animState - Bass node's mutable animation state
+   * @param bpm       - Current BPM or null for rubato
+   * @param pocketScore - Current pocket score [0,1]
+   * @param deltaMs   - Elapsed ms since last frame
+   * @returns Breathing glow intensity [0,1]
+   */
+  private updateBassBreath(
+    animState: NodeAnimState,
+    bpm: number | null,
+    pocketScore: number,
+    deltaMs: number,
+  ): number {
+    if (bpm === null) return 0.15;
+
+    const beatPeriodMs = (60 / bpm) * 1000;
+    animState.breathePhase = (animState.breathePhase + deltaMs / beatPeriodMs) % 1.0;
+
+    const sine = Math.sin(animState.breathePhase * Math.PI * 2);
+    const breathe = 0.2 + ((sine + 1) / 2) * 0.6;
+
+    // Modulate brightness by pocket score: pocketScore=1 → full, pocketScore=0 → half
+    return breathe * (0.5 + pocketScore * 0.5);
+  }
+
+  // -------------------------------------------------------------------------
   // HiDPI setup
   // -------------------------------------------------------------------------
 
@@ -275,8 +326,75 @@ export class CanvasRenderer {
       // Capitalize label: 'guitar' → 'Guitar'
       const label = instrument.charAt(0).toUpperCase() + instrument.slice(1);
 
-      // Draw node circle + label (05-03/05-04 will add glow and ripples above this)
-      drawNode(ctx, x, y, animState.currentRadius, fillColor, label);
+      // -----------------------------------------------------------------------
+      // Drums-specific animations (VIZ-06, VIZ-07, VIZ-08, VIZ-09)
+      // -----------------------------------------------------------------------
+      if (instrument === 'drums') {
+        const beat = state.beat;
+        const nowMs = performance.now();
+
+        // -- 1. Beat Nudge decay (VIZ-06) ------------------------------------
+        // Exponential lerp toward 0; snap to 0 when sub-pixel to avoid float drift
+        animState.radiusNudge = lerpExp(animState.radiusNudge, 0, 0.92, deltaMs);
+        if (animState.radiusNudge < 0.5) animState.radiusNudge = 0;
+
+        // -- 2. Onset detection (VIZ-06, VIZ-07) — use timestamp not beatCounter
+        if (beat !== null && beat.bpm !== null) {
+          if (beat.lastDrumOnsetSec !== animState.lastSeenDrumOnsetSec) {
+            animState.lastSeenDrumOnsetSec = beat.lastDrumOnsetSec;
+
+            // Sharp +6px nudge (VIZ-06)
+            animState.radiusNudge = 6;
+
+            // Crisp ripple ring on each drum beat (VIZ-07)
+            if (animState.ripples.length < 4) {
+              animState.ripples.push({
+                startMs: nowMs,
+                durationMs: 300,
+                maxRadius: 60,
+                color: '#e0f2fe',
+                baseX: x,
+                baseY: y,
+              });
+            }
+          }
+
+          // -- 3. Downbeat double ripple (VIZ-08) ----------------------------
+          if (beat.lastDownbeatSec !== animState.lastSeenDownbeatSec) {
+            animState.lastSeenDownbeatSec = beat.lastDownbeatSec;
+
+            // Second wider ripple with longer fade for downbeats
+            if (animState.ripples.length < 4) {
+              animState.ripples.push({
+                startMs: nowMs,
+                durationMs: 500,
+                maxRadius: 90,
+                color: '#e0f2fe',
+                baseX: x,
+                baseY: y,
+              });
+            }
+          }
+        }
+
+        // -- 4. Timing offset orbit (VIZ-09) ---------------------------------
+        let ox = 0;
+        let oy = 0;
+        if (beat !== null && Math.abs(beat.timingOffsetMs) > ORBIT_THRESHOLD_MS) {
+          animState.orbitAngle = (animState.orbitAngle + ORBIT_SPEED * deltaMs) % (Math.PI * 2);
+          ox = Math.cos(animState.orbitAngle) * ORBIT_RADIUS_PX;
+          oy = Math.sin(animState.orbitAngle) * ORBIT_RADIUS_PX;
+        } else {
+          animState.orbitAngle = 0;
+        }
+
+        // -- 5. Draw drums node: circle -> label -> ripples (VIZ-06..09) -----
+        drawNode(ctx, x + ox, y + oy, animState.currentRadius, fillColor, label);
+        updateRipples(ctx, animState.ripples, nowMs);
+      } else {
+        // Draw non-drums nodes normally (05-03 adds bass glow/breathe here)
+        drawNode(ctx, x, y, animState.currentRadius, fillColor, label);
+      }
     }
 
     // -- Tension meter -------------------------------------------------------
