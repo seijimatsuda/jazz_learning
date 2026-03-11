@@ -8,6 +8,7 @@ import { BandSetupPanel } from './components/BandSetupPanel';
 import { ChordDisplay } from './components/ChordDisplay';
 import { NodeDetailPanel } from './components/NodeDetailPanel';
 import { ChordLogPanel } from './components/ChordLogPanel';
+import { ConversationLogPanel } from './components/ConversationLogPanel';
 import { useAppStore } from './store/useAppStore';
 import { runCalibrationPass } from './audio/CalibrationPass';
 import { computeTensionHeatmap } from './audio/TensionHeatmap';
@@ -162,6 +163,11 @@ function App() {
           {/* Chord log drawer — below timeline, expandable */}
           {!isCalibrating && (
             <ChordLogPanel audioStateRef={audioStateRef} />
+          )}
+
+          {/* Conversation log drawer — below chord log, expandable (MEL-05) */}
+          {!isCalibrating && (
+            <ConversationLogPanel audioStateRef={audioStateRef} />
           )}
         </div>
       )}
