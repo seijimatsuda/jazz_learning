@@ -114,7 +114,7 @@ export function FileUpload({ audioStateRef }: FileUploadProps) {
       <input
         ref={fileInputRef}
         type="file"
-        accept="audio/mpeg,audio/wav,audio/x-wav,.mp3,.wav"
+        accept="audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/aac,audio/ogg,audio/flac,.mp3,.wav,.m4a,.aac,.ogg,.flac"
         className="hidden"
         onChange={handleFileChange}
       />
