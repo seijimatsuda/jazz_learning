@@ -108,6 +108,7 @@ export function initBeatState(): BeatState {
     timingOffsetMs:      0,
     lastDownbeatSec:     -1,
     beatCounter:         0,
+    lastSyncEventSec:    -1,
   };
 }
 

@@ -87,6 +87,7 @@ export interface BeatState {
   timingOffsetMs: number;           // positive = drums ahead
   lastDownbeatSec: number;          // audioCtx.currentTime of last detected beat 1
   beatCounter: number;              // 0-3, increments on drum onset
+  lastSyncEventSec: number;         // audioCtx.currentTime of last confirmed sync pair, -1 if none
 }
 
 // InstrumentAnalysis: per-instrument analysis state, updated at 10fps

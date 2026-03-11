@@ -138,4 +138,9 @@ export function updatePocketScore(
   let sum = 0;
   for (let i = 0; i < n; i++) sum += beat.pocketBuffer[i];
   beat.pocketScore = sum / n;
+
+  // Write sync event timestamp so edge rendering can trigger sync flash (EDGE-05)
+  if (score > 0) {
+    beat.lastSyncEventSec = audioTimeSec;
+  }
 }
