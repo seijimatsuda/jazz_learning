@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 7 — React UI Panels & Key Detection — COMPLETE (verified)
+**Current focus:** Phase 8 — Advanced Features — In progress (1/5 plans complete)
 
 ## Current Position
 
-Phase: 7 of 8 (React UI Panels & Key Detection) — COMPLETE
-Plan: 6 of 6 complete
-Status: Phase complete — verified (5/5 must-haves passed), ready for Phase 8
-Last activity: 2026-03-11 — Phase 7 verified (5/5 must-haves passed)
+Phase: 8 of 8 (Advanced Features) — In progress
+Plan: 1 of 5 complete
+Status: In progress — 08-01 complete, ready for 08-02
+Last activity: 2026-03-11 — Completed 08-01-PLAN.md (Pitch Detection Foundation)
 
-Progress: [████████████████████████████████] 90% (36/40 total plans estimated)
+Progress: [█████████████████████████████████] 92% (37/40 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28
-- Average duration: ~2m 10s
-- Total execution time: ~64m
+- Total plans completed: 29
+- Average duration: ~2m 15s
+- Total execution time: ~68m
 
 **By Phase:**
 
@@ -160,6 +160,11 @@ Recent decisions affecting current work:
 - [D-07-06-2]: chordLog snapshot via spread operator before processing — prevents mutation during map/reverse operations
 - [D-07-06-3]: tensionLevelForFunction uses midpoints (0.1/0.35/0.65/0.85) matching TENSION_TARGETS — consistent tension color semantics across the app
 - [D-07-06-4]: getCurrentPosition takes (audioCtx, transport) as separate params (not AudioStateRef) — AudioEngine.ts signature is explicit, not state-object-based
+- [D-08-01-1]: correlationBuffer pre-allocated as Float32Array(fftSize=4096) on InstrumentPitchState — follows zero-allocation policy (D-01-05-2); no per-tick allocation in ACF2+
+- [D-08-01-2]: Full-spectrum rawTimeDataFloat used for pitch detection gated by activityScore > 0.15 — band-filtering not applied; 3-frame stability window handles transient bleed rejection
+- [D-08-01-3]: stablePitchHz field added to InstrumentPitchState (plan had 4 fields; added 5th) — needed by 08-02 call-response detector to track pitch at melodic onset
+- [D-08-01-4]: Pitch state initialized only when keyboard AND guitar both in lineup — state.pitch = null otherwise, Phase 8 AnalysisTick block skipped entirely
+- [D-08-01-5]: onMelodyUpdate fires every tick when state.pitch non-null (not edge-triggered) — call-response detector needs continuous presence signal, not just change events
 
 ### Pending Todos
 
@@ -175,5 +180,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Phase 7 complete and verified — All 15 requirements (UI-01–UI-12, KEY-01–KEY-03) verified. Ready for Phase 8 (Advanced Features).
+Stopped at: Completed 08-01-PLAN.md — PitchDetector module and AnalysisTick integration complete. Ready for 08-02 (Call-and-Response Detection).
 Resume file: None
