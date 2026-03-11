@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 3 of 8 (Chord Detection & Harmonic Analysis)
-Plan: 1 of 5 in current phase
+Plan: 2 of 5 in current phase
 Status: In progress
-Last activity: 2026-03-11 — Completed 03-01-PLAN.md (ChordDetector core: types, templates, extraction, matching)
+Last activity: 2026-03-11 — Completed 03-02-PLAN.md (TensionScorer: lerp, ring buffer, ghost line; Zustand chord/tension state)
 
-Progress: [███████████░░░░░░░░░] 27.5% (11/40 total plans estimated)
+Progress: [████████████░░░░░░░░] 30% (12/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -29,10 +29,10 @@ Progress: [███████████░░░░░░░░░] 27.5% (
 |-------|-------|-------|----------|
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
 | 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
-| 03 - Chord Detection & Harmonic Analysis | 1/5 | ~3m | ~3m |
+| 03 - Chord Detection & Harmonic Analysis | 2/5 | ~4m 14s | ~2m 7s |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (1m 2s), 02-03 (~1m), 02-04 (3m 4s), 02-05 (1m 24s), 03-01 (~3m)
+- Last 5 plans: 02-03 (~1m), 02-04 (3m 4s), 02-05 (1m 24s), 03-01 (~3m), 03-02 (1m 14s)
 - Trend: Consistent sub-3min per plan
 
 *Updated after each plan completion*
@@ -84,6 +84,10 @@ Recent decisions affecting current work:
 - [D-03-01-3]: rawTimeDataFloat populated conditionally in extractAndMatchChord — only converts from rawTimeData if all-zeros (kb/guitar disambiguation didn't run)
 - [D-03-01-4]: Bass weighting skips if maxEnergy < 20 — prevents noise floor from biasing root detection
 - [D-03-01-5]: Chord log push only on displayedChordIdx change — avoids duplicate entries during stable chord holds
+- [D-03-02-1]: Ghost index arithmetic uses +HISTORY_CAP*2 before modulo — ensures positive result regardless of head position near 0
+- [D-03-02-2]: Tension target is midpoint of TENSION_TARGETS range — lerp traverses zone smoothly rather than snapping to range extremes
+- [D-03-02-3]: chordFunction in Zustand is plain string not ChordFunction enum — AnalysisTick (03-03) computes human-readable label before pushing to UI
+- [D-03-02-4]: reset() sets currentChord='--' and chordConfidence='low' (not null) — avoids null checks in chord display components
 
 ### Pending Todos
 
@@ -98,6 +102,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T03:36:30Z
-Stopped at: Completed 03-01-PLAN.md. ChordDetector core ready. Next: 03-02 (wire extractAndMatchChord into AnalysisTick, confidence display, chord function labels).
+Last session: 2026-03-11T03:40:35Z
+Stopped at: Completed 03-02-PLAN.md. TensionScorer and Zustand chord/tension state ready. Next: 03-03 (wire extractAndMatchChord + updateTension into AnalysisTick 10fps loop, push chord/tension to Zustand).
 Resume file: None
