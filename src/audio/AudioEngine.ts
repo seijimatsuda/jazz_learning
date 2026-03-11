@@ -161,6 +161,31 @@ export function connectSourceToGraph(
 }
 
 /**
+ * Returns the current playback position in seconds.
+ *
+ * - If playing: pauseOffset + elapsed time since source.start() was called
+ * - If paused:  pauseOffset (last known position)
+ *
+ * Clamped to [0, duration] to prevent out-of-range values.
+ *
+ * @param audioCtx - Active AudioContext (needed for currentTime)
+ * @param transport - TransportState from AudioStateRef
+ * @returns Current position in seconds
+ */
+export function getCurrentPosition(
+  audioCtx: AudioContext,
+  transport: { startTime: number; pauseOffset: number; isPlaying: boolean; duration: number }
+): number {
+  let position: number;
+  if (transport.isPlaying) {
+    position = transport.pauseOffset + (audioCtx.currentTime - transport.startTime);
+  } else {
+    position = transport.pauseOffset;
+  }
+  return Math.max(0, Math.min(position, transport.duration));
+}
+
+/**
  * Pre-allocates typed arrays for FFT frequency and time domain data.
  *
  * These arrays are reused every animation frame to avoid GC pressure.
