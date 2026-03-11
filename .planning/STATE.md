@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 8 — Advanced Features — In progress (4/5 plans complete)
+**Current focus:** Phase 8 — Advanced Features — COMPLETE (5/5 plans done)
 
 ## Current Position
 
-Phase: 8 of 8 (Advanced Features) — In progress
-Plan: 4 of 5 complete (08-03 now also complete — was parallel to 08-04)
-Status: In progress — 08-03, 08-04 complete, ready for 08-05
-Last activity: 2026-03-11 — Completed 08-03-PLAN.md (Conversation Log Panel — MEL-05)
+Phase: 8 of 8 (Advanced Features) — COMPLETE
+Plan: 5 of 5 complete
+Status: ALL PHASES COMPLETE
+Last activity: 2026-03-11 — Completed 08-05-PLAN.md (Export Controls + Example Track)
 
-Progress: [████████████████████████████████████] 95% (40/42 total plans estimated)
+Progress: [████████████████████████████████████████] 100% (42/42 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 29
+- Total plans completed: 42
 - Average duration: ~2m 15s
-- Total execution time: ~68m
+- Total execution time: ~72m
 
 **By Phase:**
 
@@ -33,6 +33,7 @@ Progress: [███████████████████████
 | 04 - Beat Detection, BPM & Pocket Score | 4/4 COMPLETE | ~11m | ~2m 45s |
 | 05 - Canvas Node Graph | 5/5 COMPLETE | ~15m | ~3m |
 | 06 - Edge Visualization | 3/3 COMPLETE | ~9m | ~3m |
+| 08 - Advanced Features | 5/5 COMPLETE | ~10m | ~2m |
 
 **Recent Trend:**
 - Last 5 plans: 05-05 (~3m), 06-01 (~3m), 06-02 (~2m), 06-03 (~4m)
@@ -174,6 +175,11 @@ Recent decisions affecting current work:
 - [D-08-04-3]: Annotation markers at zIndex:2 inside bar — above progress fill (zIndex:1) and beat grid (zIndex:0)
 - [D-08-03-1]: ConversationLogPanel subscribes to callResponseLog directly via useAppStore selector (no polling) — entries are pushed as discrete events by onMelodyUpdate; no polling cadence needed unlike chord log
 - [D-08-03-2]: onMelodyUpdate Zustand bridge was already wired in VisualizerCanvas.tsx (08-02 Task 2) — Task 2 of 08-03 only required adding ConversationLogPanel to App.tsx JSX
+- [D-08-05-1]: triggerDownload uses window.open on iOS (isIOS constant at module level) — a.download is unsupported on iOS Safari
+- [D-08-05-2]: loadAudioBuffer exported from FileUpload uses audioCtx.decodeAudioData(arrayBuffer) directly — decodeAudioFile() takes File, not ArrayBuffer; programmatic path bypasses file picker
+- [D-08-05-3]: onCanvasReady called inside VisualizerCanvas useEffect without adding it to deps array — fire-once behavior intentional; re-running would destroy/recreate renderer
+- [D-08-05-4]: Load Example button sits outside FileUpload component (in App.tsx wrapper div) — keeps FileUpload as single-responsibility file-picker; example loading is App-level orchestration
+- [D-08-05-5]: ExportControls rendered after calibration completes (!isCalibrating) — canvasRef is populated by then and analysis data is complete
 
 ### Pending Todos
 
@@ -189,5 +195,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 08-03-PLAN.md — ConversationLogPanel (MEL-05) complete.
+Stopped at: Completed 08-05-PLAN.md — Export Controls + Example Track. Phase 8 and all phases COMPLETE.
 Resume file: None
