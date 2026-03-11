@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 6 of 8 (Edge Visualization) — In progress
-Plan: 1 of 4 complete
-Status: In progress — 06-01 complete, pocket line (EDGE-01 through EDGE-06) done
-Last activity: 2026-03-11 — Completed 06-01 (edge foundation, pocket line visualization)
+Plan: 2 of 4 complete
+Status: In progress — 06-02 complete, communication edges (EDGE-07, EDGE-08) done
+Last activity: 2026-03-11 — Completed 06-02 (communication edge rendering for all non-pocket pairs)
 
-Progress: [██████████████████████████░] 65% (26/40 total plans estimated)
+Progress: [███████████████████████████░] 67% (27/40 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 25
-- Average duration: ~2m 15s
-- Total execution time: ~53m
+- Total plans completed: 27
+- Average duration: ~2m 10s
+- Total execution time: ~55m
 
 **By Phase:**
 
@@ -32,11 +32,11 @@ Progress: [███████████████████████
 | 03 - Chord Detection & Harmonic Analysis | 5/5 COMPLETE | ~8m 13s | ~1m 38s |
 | 04 - Beat Detection, BPM & Pocket Score | 4/4 COMPLETE | ~11m | ~2m 45s |
 | 05 - Canvas Node Graph | 5/5 COMPLETE | ~15m | ~3m |
-| 06 - Edge Visualization | 1/4 in progress | ~3m | ~3m |
+| 06 - Edge Visualization | 2/4 in progress | ~5m | ~2m 30s |
 
 **Recent Trend:**
-- Last 5 plans: 05-01 (~3m), 05-02 (~3m), 05-03 (~3m), 05-04 (~3m), 05-05 (~3m)
-- Trend: Consistent sub-3min per plan; Phase 5 complete, ready for Phase 6
+- Last 5 plans: 05-05 (~3m), 06-01 (~3m), 06-02 (~2m)
+- Trend: Consistent sub-3min per plan
 
 *Updated after each plan completion*
 
@@ -137,6 +137,10 @@ Recent decisions affecting current work:
 - [D-06-01-3]: ctx.save()/ctx.restore() wraps ALL lineDash operations in drawPocketLine — iOS Safari lineDash leaks across draw calls without explicit reset
 - [D-06-01-4]: Line terminates at node circumference via normalized direction vector offset — prevents pocket line overlapping node fill circle
 - [D-06-01-5]: All 6 edgeAnimStates initialized at CanvasRenderer construction — Plan 02 adds drawCommunicationEdges at same insertion point without architectural change
+- [D-06-02-1]: PAIRS pre-computed at module load using nested INSTRUMENT_ORDER loop — zero per-frame allocation; bass_drums excluded as pocket line pair
+- [D-06-02-2]: visualState string dispatch ('hidden'/'static_thin'/'subtle'/'animated') — clear intent at each weight threshold without numeric comparisons in draw block
+- [D-06-02-3]: nodeRadii 4-element array created in render() per frame — acceptable as small non-typed array from existing values; avoids exposing NodeAnimState internals into edge draw function
+- [D-06-02-4]: dashOffset speed 0.04 vs pocket line 0.06 — communication edges animate slightly slower to visually distinguish from the primary pocket line
 
 ### Pending Todos
 
@@ -152,5 +156,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: 06-01 complete — Edge foundation and pocket line (EDGE-01 through EDGE-06) done.
+Stopped at: 06-02 complete — Communication edges (EDGE-07, EDGE-08) rendering for all non-pocket pairs.
 Resume file: None
