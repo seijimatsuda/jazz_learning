@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 5 of 8 (Canvas Node Graph) — In progress
-Plan: 4 of 5 complete
+Plan: 4 of 5 complete (03 and 04 both done — wave 3 parallel)
 Status: In progress
-Last activity: 2026-03-11 — Completed 05-04-PLAN.md (drums beat nudge, ripple, downbeat double-ripple, orbit)
+Last activity: 2026-03-11 — Completed 05-03-PLAN.md (bass glow: breathing amber, onset flash+ring, pocket-score color shift)
 
 Progress: [████████████████████████░] 60% (24/40 total plans estimated)
 
@@ -124,6 +124,10 @@ Recent decisions affecting current work:
 - [D-05-04-1]: Downbeat double-ripple check inside bpm !== null guard — downbeat fires alongside regular onset on beat 1, both ripples spawn simultaneously
 - [D-05-04-2]: Ripple baseX/baseY at unorbited (x, y) coordinates — ripples emanate from node's logical center, not the orbited offset position
 - [D-05-04-3]: Beat nudge assigned after decay — ensures fresh onset always restores full +6px regardless of mid-decay state
+- [D-05-03-1]: drawGlow reads glowCanvas.width as compositing size — matches createGlowLayer(radius*2) convention; caller owns the radius contract
+- [D-05-03-2]: updateBassBreath returns 0.15 static when bpm=null — bass retains faint presence during rubato sections, no harsh on/off
+- [D-05-03-3]: Pocket-score gate threshold 0.05 — smallest perceptually meaningful color shift before glowCanvas re-creation; tighter gate causes per-frame HTMLCanvasElement churn
+- [D-05-03-4]: finalGlowIntensity = max(breatheIntensity, glowIntensity) — onset always overrides breathing; breath resumes as flash decays via lerpExp
 
 ### Pending Todos
 
@@ -139,5 +143,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 05-04-PLAN.md. Drums node now has beat nudge (+6px, lerpExp decay), crisp #e0f2fe ripple rings (300ms), downbeat double-ripple (500ms), and timing-offset orbit (+/-3px). All gated on bpm !== null for rubato safety. 05-03 (bass animations) was parallel work — bass breathe method added to CanvasRenderer but bass render-loop wiring still pending. Ready for 05-05 (background beat pulse).
+Stopped at: Completed 05-03-PLAN.md. Bass node now has amber breathing glow synced to BPM (sine [0.2, 0.8] modulated by pocketScore), onset flash (glowIntensity=1.0) with 800ms expanding amber ring, and pocket-score-driven color shift amber (#b45309) to blue (#1e40af) via glowCanvas re-creation gated at 0.05 delta. 05-04 (drums) was parallel wave 3 — both complete. Ready for 05-05 (background beat pulse, orbit lines, phase complete).
 Resume file: None
