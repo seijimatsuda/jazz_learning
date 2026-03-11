@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 
 ## Current Position
 
-Phase: 2 of 8 (Instrument Activity Analysis)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-03-11 — Completed 02-03-PLAN.md — KbGuitarDisambiguator with hand-rolled spectral flux, Meyda ZCR, and [0.15, 0.85]-clamped keyboard/guitar weight pair.
+Phase: 2 of 8 (Instrument Activity Analysis) — PHASE COMPLETE
+Plan: 4 of 4 in current phase
+Status: Phase complete — ready for Phase 3
+Last activity: 2026-03-11 — Completed 02-04-PLAN.md — CrossCorrelationTracker, AnalysisTick orchestrator, full Phase 2 pipeline wired end-to-end.
 
-Progress: [████████░░] 20% (8/40 total plans estimated)
+Progress: [█████████░] 22.5% (9/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -28,11 +28,11 @@ Progress: [████████░░] 20% (8/40 total plans estimated)
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
-| 02 - Instrument Activity Analysis | 2/4 | ~3m 9s | ~1m 35s |
+| 02 - Instrument Activity Analysis | 4/4 COMPLETE | ~6m 13s | ~1m 33s |
 
 **Recent Trend:**
-- Last 5 plans: 01-03 (~3m), 01-04 (2m 12s), 01-05 (~3m), 02-01 (2m 7s), 02-02 (1m 2s)
-- Trend: Consistent sub-3min per plan; 02-02 notably fast at ~1min (single pure-function module)
+- Last 5 plans: 01-05 (~3m), 02-01 (2m 7s), 02-02 (1m 2s), 02-03 (~1m), 02-04 (3m 4s)
+- Trend: Consistent sub-3min per plan; Phase 2 avg 1m 33s — notably faster than Phase 1
 
 *Updated after each plan completion*
 
@@ -72,6 +72,10 @@ Recent decisions affecting current work:
 - [D-02-03-1]: computeSpectralFlux is hand-rolled — Meyda 5.6.3 spectralFlux extractor has negative index bug returning 0/NaN; do not replace with Meyda.extract
 - [D-02-03-2]: Flux normalization constant 5000 is empirical starting value — flagged for tuning in later phase against real jazz recordings
 - [D-02-03-3]: Weight clamping to [0.15, 0.85] applied per-weight independently; sum may exceed 1.0 at extremes — safety margin takes priority over exact sum
+- [D-02-04-1]: CORR_WINDOW=20 (2 seconds at 10fps) — long enough for groove lock-in detection, short enough for dynamic role tracking
+- [D-02-04-2]: rawTimeData allocation fixed to fftSize (4096 bytes) not fftSize/2 — getByteTimeDomainData fills full fftSize, not half
+- [D-02-04-3]: Lineup hardcoded as jazz quartet for Phase 2 — Phase 7 BandSetupPanel will expose this as configurable UI
+- [D-02-04-4]: Role changes push to Zustand only on actual change — prevents continuous mutations during steady-state playback
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T01:28:21Z
-Stopped at: Completed 02-03-PLAN.md — KbGuitarDisambiguator. Ready for 02-04 (AnalysisCoordinator)
+Last session: 2026-03-11T01:33:57Z
+Stopped at: Completed 02-04-PLAN.md — Full Phase 2 pipeline wired. Phase 2 COMPLETE.
 Resume file: None
