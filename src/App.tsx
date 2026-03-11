@@ -6,6 +6,7 @@ import { Timeline } from './components/Timeline';
 import { VisualizerCanvas } from './components/VisualizerCanvas';
 import { BandSetupPanel } from './components/BandSetupPanel';
 import { ChordDisplay } from './components/ChordDisplay';
+import { NodeDetailPanel } from './components/NodeDetailPanel';
 import { useAppStore } from './store/useAppStore';
 import { runCalibrationPass } from './audio/CalibrationPass';
 import { computeTensionHeatmap } from './audio/TensionHeatmap';
@@ -91,6 +92,13 @@ function App() {
       {isFileLoaded && (
         <div className="w-full max-w-4xl">
           <VisualizerCanvas audioStateRef={audioStateRef} />
+        </div>
+      )}
+
+      {/* Node detail panel — shown after calibration completes, when a node is selected */}
+      {isFileLoaded && !isCalibrating && (
+        <div className="w-full max-w-2xl flex justify-center">
+          <NodeDetailPanel audioStateRef={audioStateRef} />
         </div>
       )}
 
