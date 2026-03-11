@@ -14,6 +14,8 @@ import type { AudioStateRef, RoleLabel } from '../audio/types';
 import { getBandEnergy } from '../audio/FrequencyBandSplitter';
 import { createGlowLayer } from './offscreen/glowLayer';
 import { runAnalysisTick } from '../audio/AnalysisTick';
+import { TensionMeter } from './TensionMeter';
+import { getGhostTension } from '../audio/TensionScorer';
 
 type ChordChangeCallback = (
   chord: string,
@@ -63,6 +65,9 @@ export class CanvasRenderer {
   /** Cached glow layer — created once, reused every frame */
   private glowCanvas: HTMLCanvasElement;
 
+  /** Tension meter — gradient created once, reused every frame */
+  private readonly tensionMeter: TensionMeter;
+
   /** rAF handle — stored so we can cancel on destroy */
   private rafHandle = 0;
 
@@ -89,6 +94,10 @@ export class CanvasRenderer {
     // matter much for the placeholder — Phase 2 will bind it to energy levels.
     this.glowCanvas = createGlowLayer(40, GLOW_COLOR_DEFAULT);
 
+    // Pre-create tension meter — gradient built once, reused every frame (TENS-04)
+    // Use 360 as default height; resize() corrects this after layout settles.
+    this.tensionMeter = new TensionMeter(360);
+
     this.boundRender = this.render.bind(this);
 
     // HiDPI + start loop
@@ -106,6 +115,8 @@ export class CanvasRenderer {
    */
   resize(): void {
     this.setupHiDPI();
+    // Rebuild tension meter gradient at the new canvas height
+    this.tensionMeter.resize(this.logicalHeight - 40);
   }
 
   /**
@@ -254,6 +265,19 @@ export class CanvasRenderer {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillText(cfg.label, x, y + radius + 4);
+    }
+
+    // -- Tension meter -------------------------------------------------------
+    // Positioned at the right edge: x = w - 40, y = 20, height = h - 40, width = 24.
+    // Only rendered when tension state exists (analysis active after calibration).
+    const tension = state.tension;
+    if (tension) {
+      const meterX = w - 40;
+      const meterY = 20;
+      const meterH = h - 40;
+      const meterW = 24;
+      const ghostTension = getGhostTension(tension);
+      this.tensionMeter.render(ctx, meterX, meterY, meterH, meterW, tension.currentTension, ghostTension);
     }
 
     // -- Schedule next frame -------------------------------------------------
