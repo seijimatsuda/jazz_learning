@@ -39,8 +39,8 @@ export function VisualizerCanvas({ audioStateRef }: VisualizerCanvasProps) {
 
     // Wire chord change callback — pushes chord/tension updates to Zustand for UI consumption.
     // Only fires when displayedChordIdx changes (not every tick), so Zustand re-renders are minimal.
-    renderer.setOnChordChange((chord, confidence, fn) => {
-      useAppStore.getState().setChordInfo(chord, confidence, fn);
+    renderer.setOnChordChange((chord, confidence, fn, _tension, chordIdx) => {
+      useAppStore.getState().setChordInfo(chord, confidence, fn, chordIdx);
     });
 
     // Wire per-tick tension update — keeps ChordDisplay tension readout smooth

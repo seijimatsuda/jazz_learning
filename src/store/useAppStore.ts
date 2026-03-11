@@ -17,6 +17,7 @@ interface AppState {
   currentChord: string;               // display chord name, e.g. 'Cmaj7', 'dominant chord', or '--'
   chordConfidence: 'low' | 'medium' | 'high';
   chordFunction: string;              // plain English, e.g. 'home -- relaxed and stable'
+  currentChordIdx: number;            // index into CHORD_TEMPLATES (-1 when no chord)
   currentTension: number;             // 0.0-1.0
 
   // Phase 4: beat detection, BPM, and pocket score for UI
@@ -35,7 +36,7 @@ interface AppState {
   setCalibrating: (val: boolean) => void;
   setCurrentTime: (time: number) => void;
   setInstrumentRole: (instrument: string, role: string) => void;
-  setChordInfo: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string) => void;
+  setChordInfo: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, chordIdx: number) => void;
   setTension: (tension: number) => void;
   setBeatInfo: (bpm: number | null, pocket: number, offset: number) => void;
   setLineup: (lineup: string[]) => void;
@@ -56,6 +57,7 @@ export const useAppStore = create<AppState>((set) => ({
   currentChord: '--',
   chordConfidence: 'low',
   chordFunction: '',
+  currentChordIdx: -1,
   currentTension: 0,
 
   // Phase 4 initial state
@@ -75,7 +77,7 @@ export const useAppStore = create<AppState>((set) => ({
   setInstrumentRole: (instrument, role) => set((state) => ({
     instrumentRoles: { ...state.instrumentRoles, [instrument]: role }
   })),
-  setChordInfo: (chord, confidence, fn) => set({ currentChord: chord, chordConfidence: confidence, chordFunction: fn }),
+  setChordInfo: (chord, confidence, fn, chordIdx) => set({ currentChord: chord, chordConfidence: confidence, chordFunction: fn, currentChordIdx: chordIdx }),
   setTension: (tension) => set({ currentTension: tension }),
   setBeatInfo: (bpm, pocket, offset) => set({ currentBpm: bpm, pocketScore: pocket, timingOffsetMs: offset }),
   setLineup: (lineup) => set({ lineup }),
@@ -91,6 +93,7 @@ export const useAppStore = create<AppState>((set) => ({
     currentChord: '--',
     chordConfidence: 'low',
     chordFunction: '',
+    currentChordIdx: -1,
     currentTension: 0,
     currentBpm: null,
     pocketScore: 0,

@@ -87,7 +87,7 @@ const FAMILY_LABELS: Record<ChordFunction, string> = {
 export function runAnalysisTick(
   state: AudioStateRef,
   onRoleChange?: (instrument: string, role: RoleLabel) => void,
-  onChordChange?: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, tension: number) => void,
+  onChordChange?: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, tension: number, chordIdx: number) => void,
   onTensionUpdate?: (tension: number) => void,
   onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void
 ): void {
@@ -244,7 +244,7 @@ export function runAnalysisTick(
     // Push chord info to Zustand only when displayedChordIdx changes (avoids continuous mutations)
     if (displayIdx !== prevDisplayedChordIdx && onChordChange) {
       const fnLabel = displayIdx >= 0 ? FUNCTION_LABELS[displayedFunction] : '';
-      onChordChange(displayName, confidence, fnLabel, state.tension.currentTension);
+      onChordChange(displayName, confidence, fnLabel, state.tension.currentTension, displayIdx);
     }
   }
 

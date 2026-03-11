@@ -31,7 +31,8 @@ type ChordChangeCallback = (
   chord: string,
   confidence: 'low' | 'medium' | 'high',
   fn: string,
-  tension: number
+  tension: number,
+  chordIdx: number
 ) => void;
 
 // ---------------------------------------------------------------------------
