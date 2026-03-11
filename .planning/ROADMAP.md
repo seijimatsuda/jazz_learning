@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Chord Detection & Harmonic Analysis** - Chroma extraction, 8-chord template matching, tension scoring, smoothing and confidence display
 - [x] **Phase 4: Beat Detection, BPM & Pocket Score** - Dual-stream beat detection, swing ratio handling, BPM derivation, pocket score with rubato suppression
 - [x] **Phase 5: Canvas Node Graph** - Animated node graph with role-based visuals, beat-synchronized pulse, offscreen glow compositing, layout engine
-- [ ] **Phase 6: Edge Visualization** - Pocket line rendering, communication edges, tension tinting, resolution flash
+- [x] **Phase 6: Edge Visualization** - Pocket line rendering, communication edges, tension tinting, resolution flash
 - [ ] **Phase 7: React UI Panels & Key Detection** - All React panels (band setup, node detail, chord log, tension meter, timeline), key detection, chord function labels
 - [ ] **Phase 8: Advanced Features** - Melody and call-and-response analysis, user annotations, export, pre-loaded example tracks
 
@@ -129,9 +129,9 @@ Plans:
 **Plans**: 3 plans in 3 waves (sequential dependency chain)
 
 Plans:
-- [ ] 06-01-PLAN.md — Edge foundation (EdgeAnimState, edgeTypes, lastSyncEventSec data gap) + pocket line rendering with 3 visual states, sync flash, floating label (Wave 1)
-- [ ] 06-02-PLAN.md — Communication edge rendering: weight thresholds, thickness/opacity mapping, edge type coloring, animated vs static states (Wave 2)
-- [ ] 06-03-PLAN.md — Tension tinting (amber/orange/red shift on all edges) + resolution flash (blue-white on tension drop) (Wave 3)
+- [x] 06-01-PLAN.md — Edge foundation (EdgeAnimState, edgeTypes, lastSyncEventSec data gap) + pocket line rendering with 3 visual states, sync flash, floating label (Wave 1)
+- [x] 06-02-PLAN.md — Communication edge rendering: weight thresholds, thickness/opacity mapping, edge type coloring, animated vs static states (Wave 2)
+- [x] 06-03-PLAN.md — Tension tinting (amber/orange/red shift on all edges) + resolution flash (blue-white on tension drop) (Wave 3)
 
 ### Phase 7: React UI Panels & Key Detection
 **Goal**: Users can configure the band lineup, read chord names and tension values in real-time React panels, inspect any instrument's history by clicking its node, and navigate the chord log
@@ -184,6 +184,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Chord Detection & Harmonic Analysis | 5/5 | Complete | 2026-03-11 |
 | 4. Beat Detection, BPM & Pocket Score | 4/4 | Complete | 2026-03-10 |
 | 5. Canvas Node Graph | 5/5 | Complete | 2026-03-10 |
-| 6. Edge Visualization | 0/3 | Not started | - |
+| 6. Edge Visualization | 3/3 | Complete | 2026-03-11 |
 | 7. React UI Panels & Key Detection | 0/6 | Not started | - |
 | 8. Advanced Features | 0/5 | Not started | - |
