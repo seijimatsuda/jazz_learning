@@ -13,11 +13,19 @@ interface AppState {
   // Phase 2: instrument role labels for UI display
   instrumentRoles: Record<string, string>;  // instrument name → current role label
 
+  // Phase 3: chord detection and tension state for UI display
+  currentChord: string;               // display chord name, e.g. 'Cmaj7', 'dominant chord', or '--'
+  chordConfidence: 'low' | 'medium' | 'high';
+  chordFunction: string;              // plain English, e.g. 'home -- relaxed and stable'
+  currentTension: number;             // 0.0-1.0
+
   // Actions
   setFile: (name: string, duration: number) => void;
   setCalibrating: (val: boolean) => void;
   setCurrentTime: (time: number) => void;
   setInstrumentRole: (instrument: string, role: string) => void;
+  setChordInfo: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string) => void;
+  setTension: (tension: number) => void;
   reset: () => void;
 }
 
@@ -29,12 +37,20 @@ export const useAppStore = create<AppState>((set) => ({
   duration: 0,
   instrumentRoles: {},
 
+  // Phase 3 initial state
+  currentChord: '--',
+  chordConfidence: 'low',
+  chordFunction: '',
+  currentTension: 0,
+
   setFile: (name, duration) => set({ fileName: name, isFileLoaded: true, duration }),
   setCalibrating: (val) => set({ isCalibrating: val }),
   setCurrentTime: (time) => set({ currentTime: time }),
   setInstrumentRole: (instrument, role) => set((state) => ({
     instrumentRoles: { ...state.instrumentRoles, [instrument]: role }
   })),
+  setChordInfo: (chord, confidence, fn) => set({ currentChord: chord, chordConfidence: confidence, chordFunction: fn }),
+  setTension: (tension) => set({ currentTension: tension }),
   reset: () => set({
     fileName: null,
     isFileLoaded: false,
@@ -42,5 +58,9 @@ export const useAppStore = create<AppState>((set) => ({
     currentTime: 0,
     duration: 0,
     instrumentRoles: {},
+    currentChord: '--',
+    chordConfidence: 'low',
+    chordFunction: '',
+    currentTension: 0,
   }),
 }));
