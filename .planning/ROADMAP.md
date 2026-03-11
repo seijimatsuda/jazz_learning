@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Canvas Node Graph** - Animated node graph with role-based visuals, beat-synchronized pulse, offscreen glow compositing, layout engine
 - [x] **Phase 6: Edge Visualization** - Pocket line rendering, communication edges, tension tinting, resolution flash
 - [x] **Phase 7: React UI Panels & Key Detection** - All React panels (band setup, node detail, chord log, tension meter, timeline), key detection, chord function labels
-- [ ] **Phase 8: Advanced Features** - Melody and call-and-response analysis, user annotations, export, pre-loaded example tracks
+- [x] **Phase 8: Advanced Features** - Melody and call-and-response analysis, user annotations, export, pre-loaded example tracks
 
 ## Phase Details
 
@@ -166,11 +166,11 @@ Plans:
 **Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 08-01-PLAN.md — PitchDetector (ACF2+ autocorrelation), melodic vs energetic distinction, AnalysisTick integration (Wave 1)
-- [ ] 08-02-PLAN.md — CallResponseDetector (2-4s window, keyboard→guitar), animated purple edge flash (Wave 2)
-- [ ] 08-03-PLAN.md — ConversationLogPanel: timestamped call/response entries, expandable drawer, clickable seek (Wave 3)
-- [ ] 08-04-PLAN.md — User annotations on timeline: Shift+click to annotate, text input overlay, amber markers (Wave 2)
-- [ ] 08-05-PLAN.md — Export (JSON + PNG with iOS fallback), pre-loaded example track infrastructure (Wave 3)
+- [x] 08-01-PLAN.md — PitchDetector (ACF2+ autocorrelation), melodic vs energetic distinction, AnalysisTick integration (Wave 1)
+- [x] 08-02-PLAN.md — CallResponseDetector (2-4s window, keyboard→guitar), animated purple edge flash (Wave 2)
+- [x] 08-03-PLAN.md — ConversationLogPanel: timestamped call/response entries, expandable drawer, clickable seek (Wave 3)
+- [x] 08-04-PLAN.md — User annotations on timeline: Shift+click to annotate, text input overlay, amber markers (Wave 2)
+- [x] 08-05-PLAN.md — Export (JSON + PNG with iOS fallback), pre-loaded example track infrastructure (Wave 3)
 
 ## Progress
 
@@ -186,4 +186,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Canvas Node Graph | 5/5 | Complete | 2026-03-10 |
 | 6. Edge Visualization | 3/3 | Complete | 2026-03-11 |
 | 7. React UI Panels & Key Detection | 6/6 | Complete | 2026-03-11 |
-| 8. Advanced Features | 0/5 | Planned | - |
+| 8. Advanced Features | 5/5 | Complete | 2026-03-11 |

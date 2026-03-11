@@ -117,18 +117,18 @@
 
 ### Melody Analysis
 
-- [ ] **MEL-01**: Pitch detection (YIN/autocorrelation) on keyboard/guitar frequency band
-- [ ] **MEL-02**: Distinguish melodic activity (pitch movement) from energetic activity (just loud)
-- [ ] **MEL-03**: Call-and-response detection: keyboard melodic activity → guitar within 2–4s window
-- [ ] **MEL-04**: Animated purple "conversation" edge between instruments during call/response
-- [ ] **MEL-05**: Conversation log panel: timestamped call/response moments, clickable to jump
+- [x] **MEL-01**: Pitch detection (YIN/autocorrelation) on keyboard/guitar frequency band
+- [x] **MEL-02**: Distinguish melodic activity (pitch movement) from energetic activity (just loud)
+- [x] **MEL-03**: Call-and-response detection: keyboard melodic activity → guitar within 2–4s window
+- [x] **MEL-04**: Animated purple "conversation" edge between instruments during call/response
+- [x] **MEL-05**: Conversation log panel: timestamped call/response moments, clickable to jump
 
 ### User Features
 
-- [ ] **USER-01**: User can annotate moments on the timeline with text notes
-- [ ] **USER-02**: Export session as JSON (all analysis data + annotations)
-- [ ] **USER-03**: Export session as image (canvas screenshot)
-- [ ] **USER-04**: Pre-loaded example tracks with expert annotations
+- [x] **USER-01**: User can annotate moments on the timeline with text notes
+- [x] **USER-02**: Export session as JSON (all analysis data + annotations)
+- [x] **USER-03**: Export session as image (canvas screenshot)
+- [x] **USER-04**: Pre-loaded example tracks with expert annotations
 
 ### Cross-Cutting
 
@@ -252,15 +252,15 @@
 | KEY-01 | Phase 7 | Complete |
 | KEY-02 | Phase 7 | Complete |
 | KEY-03 | Phase 7 | Complete |
-| MEL-01 | Phase 8 | Pending |
-| MEL-02 | Phase 8 | Pending |
-| MEL-03 | Phase 8 | Pending |
-| MEL-04 | Phase 8 | Pending |
-| MEL-05 | Phase 8 | Pending |
-| USER-01 | Phase 8 | Pending |
-| USER-02 | Phase 8 | Pending |
-| USER-03 | Phase 8 | Pending |
-| USER-04 | Phase 8 | Pending |
+| MEL-01 | Phase 8 | Complete |
+| MEL-02 | Phase 8 | Complete |
+| MEL-03 | Phase 8 | Complete |
+| MEL-04 | Phase 8 | Complete |
+| MEL-05 | Phase 8 | Complete |
+| USER-01 | Phase 8 | Complete |
+| USER-02 | Phase 8 | Complete |
+| USER-03 | Phase 8 | Complete |
+| USER-04 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 96 total (note: header previously said 83 — recount confirmed 96 entries across all categories)
