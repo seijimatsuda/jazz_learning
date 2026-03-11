@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 7 — React UI Panels & Key Detection — In progress
+**Current focus:** Phase 8 — Final Polish / Remaining Features
 
 ## Current Position
 
-Phase: 7 of 8 (React UI Panels & Key Detection) — In progress
-Plan: 6 of 6 complete (wave 2: 07-02, 07-03, 07-04 done)
-Status: In progress
-Last activity: 2026-03-11 — Completed 07-03-PLAN.md (NodeDetailPanel, canvas click-to-select, getNodeLayout)
+Phase: 7 of 8 (React UI Panels & Key Detection) — COMPLETE
+Plan: 6 of 6 complete
+Status: Phase 7 complete — ready for Phase 8
+Last activity: 2026-03-11 — Completed 07-06-PLAN.md (ChordLogPanel, key detection display, chordIdx pipeline)
 
-Progress: [██████████████████████████████░] 85% (34/40 total plans estimated)
+Progress: [████████████████████████████████] 90% (36/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -156,6 +156,10 @@ Recent decisions affecting current work:
 - [D-07-03-2]: initMiniCanvas called on selectedInstrument change (not just mount) — canvas element re-mounts when panel appears; ensures correct dpr scaling each time
 - [D-07-03-3]: bestWeight threshold 0.3 (same as EDGE-07 communication edge visibility minimum) — consistent partner display threshold
 - [D-07-03-4]: timeInRole text percentages read audioStateRef directly in render path — stays current without extra state slice; sparkline/pie drawn on canvas via interval
+- [D-07-06-1]: ChordLogPanel uses 500ms setInterval (2fps) separate from 10fps AnalysisTick — key detection is UI-rate, not audio-rate
+- [D-07-06-2]: chordLog snapshot via spread operator before processing — prevents mutation during map/reverse operations
+- [D-07-06-3]: tensionLevelForFunction uses midpoints (0.1/0.35/0.65/0.85) matching TENSION_TARGETS — consistent tension color semantics across the app
+- [D-07-06-4]: getCurrentPosition takes (audioCtx, transport) as separate params (not AudioStateRef) — AudioEngine.ts signature is explicit, not state-object-based
 
 ### Pending Todos
 
@@ -171,5 +175,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 07-03-PLAN.md — NodeDetailPanel.tsx created with sparkline, pie chart, most-active partner. Canvas click-to-select wired in VisualizerCanvas. Wave 2 plans: 07-02, 07-03, 07-04 done; 07-06 remaining.
+Stopped at: Completed 07-06-PLAN.md — ChordLogPanel created, chordIdx wired through callback pipeline, ChordDisplay updated with key context. Phase 7 COMPLETE.
 Resume file: None
