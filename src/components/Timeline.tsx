@@ -15,6 +15,7 @@ import { getCurrentPosition } from '../audio/AudioEngine';
 import { useAppStore } from '../store/useAppStore';
 import { tensionToColor } from '../audio/TensionHeatmap';
 import { useSeek } from '../hooks/useSeek';
+import type { Annotation } from '../store/useAppStore';
 
 interface TimelineProps {
   audioStateRef: MutableRefObject<AudioStateRef>;
@@ -29,8 +30,13 @@ function formatTime(seconds: number): string {
 export function Timeline({ audioStateRef }: TimelineProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const [beatGrid, setBeatGrid] = useState<{ bpm: number; lastDownbeatSec: number } | null>(null);
+  const [annotationInput, setAnnotationInput] = useState<{ timeSec: number; leftPct: number } | null>(null);
+  const [annotationText, setAnnotationText] = useState('');
   const barRef = useRef<HTMLDivElement>(null);
   const { setCurrentTime: storeSetCurrentTime } = useAppStore();
+  const isFileLoaded = useAppStore(s => s.isFileLoaded);
+  const annotations = useAppStore(s => s.annotations);
+  const addAnnotation = useAppStore(s => s.addAnnotation);
   const duration = audioStateRef.current.transport.duration;
   const tensionHeatmap = audioStateRef.current.tensionHeatmap;
 
@@ -73,10 +79,18 @@ export function Timeline({ audioStateRef }: TimelineProps) {
       const clickX = e.clientX - rect.left;
       const ratio = Math.max(0, Math.min(clickX / rect.width, 1));
       const targetTime = ratio * duration;
+
+      if (e.shiftKey && isFileLoaded) {
+        // Annotation mode — open text input overlay, do not seek
+        setAnnotationInput({ timeSec: targetTime, leftPct: ratio * 100 });
+        setAnnotationText('');
+        return;
+      }
+
       seekTo(targetTime);
       setCurrentTime(targetTime);
     },
-    [seekTo, duration]
+    [seekTo, duration, isFileLoaded]
   );
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -88,6 +102,56 @@ export function Timeline({ audioStateRef }: TimelineProps) {
         <span>{formatTime(currentTime)}</span>
         <span>{formatTime(duration)}</span>
       </div>
+
+      {/* Scrubber bar wrapper — relative for annotation overlay positioning */}
+      <div className="relative w-full">
+
+      {/* Annotation input overlay — outside overflow-hidden bar */}
+      {annotationInput && (
+        <div
+          style={{
+            position: 'absolute',
+            left: `${annotationInput.leftPct}%`,
+            bottom: '100%',
+            marginBottom: '6px',
+            transform: 'translateX(-50%)',
+            zIndex: 10,
+          }}
+          className="bg-[#1a1a2e] border border-amber-500/50 rounded px-2 py-1 flex gap-1"
+        >
+          <input
+            type="text"
+            value={annotationText}
+            onChange={(e) => setAnnotationText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && annotationText.trim()) {
+                addAnnotation(annotationInput.timeSec, annotationText.trim());
+                setAnnotationInput(null);
+                setAnnotationText('');
+              }
+              if (e.key === 'Escape') {
+                setAnnotationInput(null);
+                setAnnotationText('');
+              }
+            }}
+            autoFocus
+            placeholder="Add note..."
+            className="bg-transparent text-white text-xs outline-none w-32"
+          />
+          <button
+            onClick={() => {
+              if (annotationText.trim()) {
+                addAnnotation(annotationInput.timeSec, annotationText.trim());
+                setAnnotationInput(null);
+                setAnnotationText('');
+              }
+            }}
+            className="text-amber-400 text-xs hover:text-amber-300"
+          >
+            +
+          </button>
+        </div>
+      )}
 
       {/* Scrubber bar — clickable */}
       <div
@@ -190,7 +254,41 @@ export function Timeline({ audioStateRef }: TimelineProps) {
             }}
           />
         )}
+
+        {/* Annotation markers */}
+        {annotations.map((ann: Annotation) => {
+          const pct = duration > 0 ? (ann.timeSec / duration) * 100 : 0;
+          return (
+            <div
+              key={ann.id}
+              title={ann.text}
+              style={{
+                position: 'absolute',
+                left: `${pct}%`,
+                top: 0,
+                bottom: 0,
+                width: '3px',
+                backgroundColor: '#f59e0b',
+                opacity: 0.8,
+                cursor: 'pointer',
+                zIndex: 2,
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            />
+          );
+        })}
+
       </div>
+      </div>
+
+      {/* Shift+click hint */}
+      {isFileLoaded && !annotationInput && (
+        <div className="text-xs text-center" style={{ color: 'rgba(167,139,250,0.4)' }}>
+          Shift+click to annotate
+        </div>
+      )}
     </div>
   );
 }
