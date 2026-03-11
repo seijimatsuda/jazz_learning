@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 3 of 8 (Chord Detection & Harmonic Analysis)
-Plan: 3 of 5 in current phase
-Status: In progress
-Last activity: 2026-03-11 — Completed 03-03-PLAN.md (Phase 3 pipeline integration: chord+tension wired into 10fps loop, offline heatmap replaced)
+Plan: 5 of 5 in current phase — PHASE COMPLETE
+Status: Phase complete
+Last activity: 2026-03-11 — Completed 03-05-PLAN.md (ChordDisplay component + App.tsx integration — Phase 3 done)
 
-Progress: [████████████░░░░░░░░] 32% (13/40 total plans estimated)
+Progress: [███████████████░░░░░] 38% (15/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -29,11 +29,11 @@ Progress: [████████████░░░░░░░░] 32% (13
 |-------|-------|-------|----------|
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
 | 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
-| 03 - Chord Detection & Harmonic Analysis | 3/5 | ~7m 14s | ~2m 25s |
+| 03 - Chord Detection & Harmonic Analysis | 5/5 COMPLETE | ~8m 13s | ~1m 38s |
 
 **Recent Trend:**
-- Last 5 plans: 02-04 (3m 4s), 02-05 (1m 24s), 03-01 (~3m), 03-02 (1m 14s), 03-03 (~3m)
-- Trend: Consistent sub-3min per plan
+- Last 5 plans: 03-01 (~3m), 03-02 (1m 14s), 03-03 (~3m), 03-04 (unknown), 03-05 (~1m)
+- Trend: Consistent sub-3min per plan; Phase 3 complete
 
 *Updated after each plan completion*
 
@@ -92,6 +92,9 @@ Recent decisions affecting current work:
 - [D-03-03-2]: Offline heatmap uses center-of-second windowing — centers FFT_SIZE frame at midpoint of each second to avoid boundary artifacts
 - [D-03-03-3]: TENSION_MIDPOINTS match TensionScorer TENSION_TARGETS midpoints — tonic=0.1, sub=0.325, dom=0.65, alt=0.875 for consistent offline/live scale
 - [D-03-03-4]: ChordChangeCallback type defined in CanvasRenderer.ts not types.ts — UI callback signature is not an audio domain type
+- [D-03-05-1]: No badge rendered when currentChord is '--' — prevents badge showing against placeholder dash on initial/reset state
+- [D-03-05-2]: tensionColor thresholds (0.3, 0.6, 0.85) align with TENSION_TARGETS midpoints — tonic=0.1, sub=0.325, dom=0.65, alt=0.875; color bands semantically consistent with tension zone boundaries
+- [D-03-05-3]: ChordDisplay in max-w-2xl container (narrower than canvas max-w-4xl) — mirrors file info and transport controls layout
 
 ### Pending Todos
 
@@ -99,13 +102,13 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 3 ongoing]: Verify Meyda chroma output quality on iOS (48kHz) vs desktop Chrome (44.1kHz) — chromaFilterBank rebuild applied in 03-01, but empirical test with real jazz still needed
+- [Phase 4+]: Verify Meyda chroma output quality on iOS (48kHz) vs desktop Chrome (44.1kHz) — chromaFilterBank rebuild applied in 03-01, but empirical test with real jazz still needed
 - [All phases]: iOS Safari AudioContext `{ sampleRate: 44100 }` constructor option behavior unconfirmed — always read back `audioCtx.sampleRate` after creation
 - [All visual phases]: iOS Low Power Mode caps rAF at 30fps — documented known limitation; test with Low Power Mode OFF
 - [Note]: Requirements count discrepancy — REQUIREMENTS.md header says 83 but traceability table contains 96 entries across all categories. All 96 entries are mapped in the roadmap. Reconcile count before Phase 2 planning.
 
 ## Session Continuity
 
-Last session: 2026-03-11T03:46:01Z
-Stopped at: Completed 03-03-PLAN.md. Chord+tension pipeline fully wired: AnalysisTick calls extractAndMatchChord+updateTension, onChordChange pushes to Zustand, TensionHeatmap uses chord-function offline analysis. Next: 03-04 (chord display UI components reading Zustand currentChord/chordConfidence/chordFunction).
+Last session: 2026-03-11T03:49:47Z
+Stopped at: Completed 03-05-PLAN.md. Phase 3 fully complete. ChordDisplay component wired to Zustand, integrated in App.tsx between canvas and transport. Next: Phase 4 (tension arc visualization).
 Resume file: None
