@@ -560,7 +560,87 @@ export class CanvasRenderer {
       this.tensionMeter.render(ctx, meterX, meterY, meterH, meterW, tension.currentTension, ghostTension);
     }
 
+    // -- BPM display (UI-09) -------------------------------------------------
+    this.drawBpmDisplay(ctx, 20, h - 20, beatState?.bpm ?? null);
+
+    // -- Role legend (UI-08) -------------------------------------------------
+    this.drawRoleLegend(ctx, 16, 20);
+
     // -- Schedule next frame -------------------------------------------------
     this.rafHandle = requestAnimationFrame(this.boundRender);
+  }
+
+  // -------------------------------------------------------------------------
+  // BPM display (UI-09)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Draws the BPM overlay in the bottom-left corner of the canvas.
+   *
+   * Renders a quarter note symbol followed by the current BPM value.
+   * Shows an em-dash when BPM is null (rubato section).
+   *
+   * @param ctx - Canvas 2D context
+   * @param x   - Left edge x position (logical pixels)
+   * @param y   - Baseline y position (logical pixels)
+   * @param bpm - Current BPM value or null for rubato
+   */
+  private drawBpmDisplay(ctx: CanvasRenderingContext2D, x: number, y: number, bpm: number | null): void {
+    ctx.save();
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillStyle = bpm !== null ? 'rgba(243,244,246,0.8)' : 'rgba(107,114,128,0.5)';
+    ctx.fillText(`\u2669 = ${bpm !== null ? bpm : '\u2014'}`, x, y);
+    ctx.restore();
+  }
+
+  // -------------------------------------------------------------------------
+  // Role legend (UI-08)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Draws the role color legend in the top-left corner of the canvas.
+   *
+   * Renders four rows (soloing, comping, holding, silent) each showing
+   * a filled colored circle and a text label. Helps users decode the
+   * node color language of the graph.
+   *
+   * @param ctx - Canvas 2D context
+   * @param x   - Left edge x position for circle center (logical pixels)
+   * @param y   - Top y position for first row (logical pixels)
+   */
+  private drawRoleLegend(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    const roles: Array<{ label: string; color: string }> = [
+      { label: 'Soloing', color: '#f59e0b' },
+      { label: 'Comping', color: '#3b82f6' },
+      { label: 'Holding',  color: '#6b7280' },
+      { label: 'Silent',   color: '#374151' },
+    ];
+    const rowSpacing = 18;
+    const circleRadius = 5;
+    const textOffsetX = 14;
+
+    ctx.save();
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    for (let i = 0; i < roles.length; i++) {
+      const { label, color } = roles[i];
+      const cy = y + i * rowSpacing;
+
+      // Filled circle
+      ctx.beginPath();
+      ctx.arc(x, cy, circleRadius, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      // Text label
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.fillText(label, x + textOffsetX, cy);
+    }
+
+    ctx.restore();
   }
 }
