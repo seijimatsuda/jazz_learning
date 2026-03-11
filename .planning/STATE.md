@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 
 ## Current Position
 
-Phase: 4 of 8 (Beat Detection, BPM & Pocket Score) — COMPLETE
-Plan: 4 of 4 complete
-Status: Phase 4 complete — ready to begin Phase 5
-Last activity: 2026-03-10 — Completed 04-04-PLAN.md (Phase 4 wiring: AnalysisTick beat tick, Zustand bridge, ChordDisplay BPM/pocket readout)
+Phase: 5 of 8 (Canvas Node Graph) — In progress
+Plan: 1 of 5 complete
+Status: In progress
+Last activity: 2026-03-11 — Completed 05-01-PLAN.md (NodeLayout.ts, NodeAnimState.ts, CanvasRenderer delta-time rAF refactor)
 
-Progress: [████████████████████░░░░] 50% (20/40 total plans estimated)
+Progress: [█████████████████████░░░] 52% (21/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -31,10 +31,11 @@ Progress: [████████████████████░░░
 | 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
 | 03 - Chord Detection & Harmonic Analysis | 5/5 COMPLETE | ~8m 13s | ~1m 38s |
 | 04 - Beat Detection, BPM & Pocket Score | 4/4 COMPLETE | ~11m | ~2m 45s |
+| 05 - Canvas Node Graph | 1/5 | ~3m | ~3m |
 
 **Recent Trend:**
-- Last 5 plans: 03-05 (~1m), 04-01 (~2m), 04-02 (~3m), 04-03 (~3m), 04-04 (~3m)
-- Trend: Consistent sub-3min per plan; Phase 4 complete
+- Last 5 plans: 04-01 (~2m), 04-02 (~3m), 04-03 (~3m), 04-04 (~3m), 05-01 (~3m)
+- Trend: Consistent sub-3min per plan; Phase 5 in progress
 
 *Updated after each plan completion*
 
@@ -113,6 +114,10 @@ Recent decisions affecting current work:
 - [D-04-04-1]: onBeatUpdate callback chain goes through CanvasRenderer (setOnBeatUpdate method) and VisualizerCanvas — matches existing pattern for onRoleChange/onChordChange/onTensionUpdate; App.tsx does not call runAnalysisTick directly
 - [D-04-04-2]: lastDownbeatSec and beatCounter stay on audioStateRef.current.beat (not Zustand) — Phase 5 canvas reads them at 60fps; Zustand would cause excessive re-renders for frame-rate data
 - [D-04-04-3]: onBeatUpdate fires only when BPM or pocket score changes (not every tick) — matches onChordChange pattern; prevents continuous Zustand mutations during steady-state
+- [D-05-01-1]: INSTRUMENT_ORDER is [guitar, drums, keyboard, bass] — bass(bottom) and drums(left) adjacent for Phase 6 pocket line
+- [D-05-01-2]: Initial baseRadius=28 for all nodes in holding state — role-based sizing deferred to 05-02
+- [D-05-01-3]: Ripple utilities in NodeAnimState.ts (not drawGlow.ts) — enables 05-03 and 05-04 to run in parallel as Wave 1 imports
+- [D-05-01-4]: bgPulseProgress added to CanvasRenderer now (unused placeholder) — for VIZ-11 wired in 05-05 to avoid later architectural change
 
 ### Pending Todos
 
@@ -128,5 +133,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 04-04-PLAN.md. Phase 4 complete. All beat detection, BPM, pocket score modules wired and bridged to Zustand. ChordDisplay shows BPM and pocket score.
+Stopped at: Completed 05-01-PLAN.md. NodeLayout.ts and NodeAnimState.ts created. CanvasRenderer refactored to delta-time rAF with 100ms cap and 4 instrument nodes in diamond layout. Ready for 05-02 (role-based sizing).
 Resume file: None
