@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 4 — Beat Detection, BPM & Pocket Score
+**Current focus:** Phase 5 — Canvas Node Graph
 
 ## Current Position
 
-Phase: 4 of 8 (Beat Detection, BPM & Pocket Score)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-03-10 — Completed 04-03-PLAN.md (SwingAnalyzer: IOI CV rubato gate; PocketScorer: bass-drums sync)
+Phase: 4 of 8 (Beat Detection, BPM & Pocket Score) — COMPLETE
+Plan: 4 of 4 complete
+Status: Phase 4 complete — ready to begin Phase 5
+Last activity: 2026-03-10 — Completed 04-04-PLAN.md (Phase 4 wiring: AnalysisTick beat tick, Zustand bridge, ChordDisplay BPM/pocket readout)
 
-Progress: [██████████████████░░] 45% (18/40 total plans estimated)
+Progress: [████████████████████░░░░] 50% (20/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -30,11 +30,11 @@ Progress: [██████████████████░░] 45% (18
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
 | 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
 | 03 - Chord Detection & Harmonic Analysis | 5/5 COMPLETE | ~8m 13s | ~1m 38s |
-| 04 - Beat Detection, BPM & Pocket Score | 3/4 | ~8m | ~2m 40s |
+| 04 - Beat Detection, BPM & Pocket Score | 4/4 COMPLETE | ~11m | ~2m 45s |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (1m 14s), 03-03 (~3m), 03-04 (unknown), 03-05 (~1m), 04-01 (~2m)
-- Trend: Consistent sub-3min per plan; Phase 4 in progress
+- Last 5 plans: 03-05 (~1m), 04-01 (~2m), 04-02 (~3m), 04-03 (~3m), 04-04 (~3m)
+- Trend: Consistent sub-3min per plan; Phase 4 complete
 
 *Updated after each plan completion*
 
@@ -110,6 +110,9 @@ Recent decisions affecting current work:
 - [D-04-03-2]: computeIoiCV returns 1.0 conservatively on count<4 and ioiCount<3 — defaults to rubato until sufficient onset data accumulates
 - [D-04-03-3]: pairGap guard at 200ms in updatePocketScore prevents non-paired onsets from generating sync scores
 - [D-04-03-4]: applyRubatoGate sets bpm=null as single suppression signal — downstream pocket scorer and UI both check bpm===null
+- [D-04-04-1]: onBeatUpdate callback chain goes through CanvasRenderer (setOnBeatUpdate method) and VisualizerCanvas — matches existing pattern for onRoleChange/onChordChange/onTensionUpdate; App.tsx does not call runAnalysisTick directly
+- [D-04-04-2]: lastDownbeatSec and beatCounter stay on audioStateRef.current.beat (not Zustand) — Phase 5 canvas reads them at 60fps; Zustand would cause excessive re-renders for frame-rate data
+- [D-04-04-3]: onBeatUpdate fires only when BPM or pocket score changes (not every tick) — matches onChordChange pattern; prevents continuous Zustand mutations during steady-state
 
 ### Pending Todos
 
@@ -124,6 +127,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10
-Stopped at: Completed 04-03-PLAN.md. SwingAnalyzer and PocketScorer complete. Ready for 04-04 (AnalysisTick wiring: updateBpm → applyRubatoGate → updatePocketScore → Zustand bridge).
+Last session: 2026-03-11
+Stopped at: Completed 04-04-PLAN.md. Phase 4 complete. All beat detection, BPM, pocket score modules wired and bridged to Zustand. ChordDisplay shows BPM and pocket score.
 Resume file: None
