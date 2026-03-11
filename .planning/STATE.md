@@ -10,27 +10,28 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 2 of 8 (Instrument Activity Analysis)
-Plan: 0 of 4 in current phase
-Status: Ready to plan
-Last activity: 2026-03-11 — Phase 1 complete and verified. Gaps fixed (iOS AudioContext, FFT read hoisting).
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-03-11 — Completed 02-01-PLAN.md — types.ts Phase 2 types, InstrumentActivityScorer with INST-05 fallback, EMA scoring, ring buffer history, pre-allocated init factory.
 
-Progress: [█████░░░░░] 13% (5/40 total plans estimated)
+Progress: [██████░░░░] 15% (6/40 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~2m 24s
-- Total execution time: ~12 minutes
+- Total plans completed: 6
+- Average duration: ~2m 22s
+- Total execution time: ~14m 7s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
+| 02 - Instrument Activity Analysis | 1/4 | 2m 7s | 2m 7s |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2m 22s), 01-02 (2m 12s), 01-03 (~3m), 01-04 (2m 12s), 01-05 (~3m)
+- Last 5 plans: 01-02 (2m 12s), 01-03 (~3m), 01-04 (2m 12s), 01-05 (~3m), 02-01 (2m 7s)
 - Trend: Consistent sub-3min per plan
 
 *Updated after each plan completion*
@@ -63,6 +64,9 @@ Recent decisions affecting current work:
 - [D-01-05-2]: Zero per-frame typed array allocations — getByteFrequencyData writes into pre-allocated audioStateRef.current.smoothedFreqData each rAF frame
 - [D-01-05-3]: Tension heatmap uses spectral centroid variance as proxy — placeholder for Phase 3 chord-function tension (fast, offline-safe)
 - [D-01-05-4]: File upload extended to accept m4a/aac/ogg/flac — Web Audio API decodeAudioData handles these natively; restriction was unnecessarily narrow for jazz recordings
+- [D-02-01-1]: RoleLabel as union type (not enum) — matches existing type convention in types.ts
+- [D-02-01-2]: prevRawFreqData and rawTimeDataFloat placed on AnalysisState (not top-level AudioStateRef) — keeps analysis-related state cohesive under one nullable object
+- [D-02-01-3]: smoothingAlpha=0.7 as default in computeActivityScore — snappy 10fps response; callers can override
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11
-Stopped at: Completed 01-05-PLAN.md — CanvasRenderer, offscreen glow, TensionHeatmap, full app layout. Phase 1 complete, human verification passed. Ready for Phase 2 (role classification).
+Last session: 2026-03-11T01:25:00Z
+Stopped at: Completed 02-01-PLAN.md — types.ts Phase 2 types (RoleLabel, InstrumentAnalysis, AnalysisState) + InstrumentActivityScorer. Ready for 02-02 (RoleClassifier).
 Resume file: None
