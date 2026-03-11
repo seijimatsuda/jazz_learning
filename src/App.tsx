@@ -1,16 +1,20 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAudioRef } from './hooks/useAudioRef';
 import { FileUpload } from './components/FileUpload';
 import { TransportControls } from './components/TransportControls';
 import { Timeline } from './components/Timeline';
+import { VisualizerCanvas } from './components/VisualizerCanvas';
 import { useAppStore } from './store/useAppStore';
 import { runCalibrationPass } from './audio/CalibrationPass';
+import { computeTensionHeatmap } from './audio/TensionHeatmap';
 
 function App() {
   const audioStateRef = useAudioRef();
   const { isFileLoaded, fileName, isCalibrating, setCalibrating } = useAppStore();
+  // Increment to force Timeline re-render after heatmap is ready
+  const [heatmapVersion, setHeatmapVersion] = useState(0);
 
-  // Auto-run calibration after file upload
+  // Auto-run calibration then heatmap computation after file upload
   useEffect(() => {
     if (!isFileLoaded) return;
 
@@ -25,10 +29,21 @@ function App() {
       return;
     }
 
-    runCalibrationPass(state, setCalibrating).catch((err) => {
-      console.error('[App] Calibration failed:', err);
-      setCalibrating(false);
-    });
+    const buffer = state.transport.buffer;
+    const sampleRate = state.sampleRate;
+
+    runCalibrationPass(state, setCalibrating)
+      .then(() => computeTensionHeatmap(buffer, sampleRate))
+      .then((heatmap) => {
+        audioStateRef.current.tensionHeatmap = heatmap;
+        // Bump version to trigger Timeline re-render so it reads the new heatmap
+        setHeatmapVersion((v) => v + 1);
+        console.log('[App] Tension heatmap stored on audioStateRef.');
+      })
+      .catch((err) => {
+        console.error('[App] Calibration or heatmap failed:', err);
+        setCalibrating(false);
+      });
   }, [isFileLoaded, audioStateRef, setCalibrating]);
 
   return (
@@ -42,6 +57,13 @@ function App() {
 
       {/* File upload — always visible */}
       <FileUpload audioStateRef={audioStateRef} />
+
+      {/* Visualizer canvas — shown after file load (animates even during calibration) */}
+      {isFileLoaded && (
+        <div className="w-full max-w-4xl">
+          <VisualizerCanvas audioStateRef={audioStateRef} />
+        </div>
+      )}
 
       {/* File info + transport — shown after load */}
       {isFileLoaded && (
@@ -68,9 +90,9 @@ function App() {
             <TransportControls audioStateRef={audioStateRef} />
           )}
 
-          {/* Timeline scrubber — full width */}
+          {/* Timeline scrubber — full width, keyed by heatmapVersion to re-read ref after heatmap ready */}
           {!isCalibrating && (
-            <Timeline audioStateRef={audioStateRef} />
+            <Timeline key={heatmapVersion} audioStateRef={audioStateRef} />
           )}
         </div>
       )}

@@ -13,6 +13,7 @@ import type { MutableRefObject } from 'react';
 import type { AudioStateRef } from '../audio/types';
 import { getCurrentPosition, connectSourceToGraph } from '../audio/AudioEngine';
 import { useAppStore } from '../store/useAppStore';
+import { tensionToColor } from '../audio/TensionHeatmap';
 
 interface TimelineProps {
   audioStateRef: MutableRefObject<AudioStateRef>;
@@ -29,6 +30,7 @@ export function Timeline({ audioStateRef }: TimelineProps) {
   const barRef = useRef<HTMLDivElement>(null);
   const { setCurrentTime: storeSetCurrentTime } = useAppStore();
   const duration = audioStateRef.current.transport.duration;
+  const tensionHeatmap = audioStateRef.current.tensionHeatmap;
 
   // Poll position at ~10fps for smooth-enough display
   useEffect(() => {
@@ -117,7 +119,7 @@ export function Timeline({ audioStateRef }: TimelineProps) {
       <div
         ref={barRef}
         onClick={handleSeek}
-        className="w-full rounded-full cursor-pointer relative"
+        className="w-full rounded-full cursor-pointer relative overflow-hidden"
         style={{
           height: '48px',
           backgroundColor: '#13131f',
@@ -129,13 +131,35 @@ export function Timeline({ audioStateRef }: TimelineProps) {
         aria-valuemin={0}
         aria-valuemax={Math.round(duration)}
       >
+        {/* Tension heatmap — rendered as colored segments behind the scrubber */}
+        {tensionHeatmap && tensionHeatmap.length > 0 && (
+          <div
+            className="absolute inset-0 flex"
+            style={{ pointerEvents: 'none', borderRadius: 'inherit' }}
+            aria-hidden="true"
+          >
+            {Array.from(tensionHeatmap).map((t, i) => (
+              <div
+                key={i}
+                style={{
+                  flex: 1,
+                  backgroundColor: tensionToColor(t),
+                  opacity: 0.55,
+                }}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Progress fill */}
         <div
-          className="h-full rounded-full transition-none"
+          className="h-full transition-none"
           style={{
             width: `${progress}%`,
-            backgroundColor: 'rgba(99,102,241,0.5)',
+            backgroundColor: 'rgba(99,102,241,0.45)',
             pointerEvents: 'none',
+            position: 'relative',
+            zIndex: 1,
           }}
         />
 
