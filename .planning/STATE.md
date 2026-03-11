@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 8 — Advanced Features — In progress (1/5 plans complete)
+**Current focus:** Phase 8 — Advanced Features — In progress (4/5 plans complete)
 
 ## Current Position
 
 Phase: 8 of 8 (Advanced Features) — In progress
-Plan: 1 of 5 complete
-Status: In progress — 08-01 complete, ready for 08-02
-Last activity: 2026-03-11 — Completed 08-01-PLAN.md (Pitch Detection Foundation)
+Plan: 4 of 5 complete
+Status: In progress — 08-04 complete, ready for 08-05
+Last activity: 2026-03-11 — Completed 08-04-PLAN.md (Timeline Annotation System)
 
-Progress: [█████████████████████████████████] 92% (37/40 total plans estimated)
+Progress: [████████████████████████████████████] 95% (40/42 total plans estimated)
 
 ## Performance Metrics
 
@@ -165,6 +165,9 @@ Recent decisions affecting current work:
 - [D-08-01-3]: stablePitchHz field added to InstrumentPitchState (plan had 4 fields; added 5th) — needed by 08-02 call-response detector to track pitch at melodic onset
 - [D-08-01-4]: Pitch state initialized only when keyboard AND guitar both in lineup — state.pitch = null otherwise, Phase 8 AnalysisTick block skipped entirely
 - [D-08-01-5]: onMelodyUpdate fires every tick when state.pitch non-null (not edge-triggered) — call-response detector needs continuous presence signal, not just change events
+- [D-08-04-1]: Annotation interface defined in useAppStore.ts (not types.ts) — annotations are UI-only, not audio hot-path
+- [D-08-04-2]: Annotation input overlay placed outside overflow-hidden scrubber bar in wrapper div — negative-top overlay inside overflow:hidden is clipped entirely
+- [D-08-04-3]: Annotation markers at zIndex:2 inside bar — above progress fill (zIndex:1) and beat grid (zIndex:0)
 
 ### Pending Todos
 
@@ -180,5 +183,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 08-01-PLAN.md — PitchDetector module and AnalysisTick integration complete. Ready for 08-02 (Call-and-Response Detection).
+Stopped at: Completed 08-04-PLAN.md — Timeline annotation system complete (USER-01). Ready for 08-05.
 Resume file: None
