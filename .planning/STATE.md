@@ -10,16 +10,16 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 2 of 8 (Instrument Activity Analysis)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-11 — Completed 02-02-PLAN.md — RoleClassifier state machine with hysteresis (INST-03, INST-09). classifyRole + updateTimeInRole, pure functions, zero allocations.
+Last activity: 2026-03-11 — Completed 02-03-PLAN.md — KbGuitarDisambiguator with hand-rolled spectral flux, Meyda ZCR, and [0.15, 0.85]-clamped keyboard/guitar weight pair.
 
-Progress: [███████░░░] 17% (7/40 total plans estimated)
+Progress: [████████░░] 20% (8/40 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
+- Total plans completed: 8
 - Average duration: ~2m 8s
 - Total execution time: ~15m 9s
 
@@ -69,6 +69,9 @@ Recent decisions affecting current work:
 - [D-02-01-3]: smoothingAlpha=0.7 as default in computeActivityScore — snappy 10fps response; callers can override
 - [D-02-02-1]: Upward role transitions have no hysteresis barrier — instruments enter higher roles immediately at threshold; only downward transitions gated to prevent flicker
 - [D-02-02-2]: Hysteresis boundary check uses strict less-than — score exactly equal to (threshold - hysteresis) stays in current role (e.g. 0.05 stays 'holding' when T_HOLD-hysteresis=0.05)
+- [D-02-03-1]: computeSpectralFlux is hand-rolled — Meyda 5.6.3 spectralFlux extractor has negative index bug returning 0/NaN; do not replace with Meyda.extract
+- [D-02-03-2]: Flux normalization constant 5000 is empirical starting value — flagged for tuning in later phase against real jazz recordings
+- [D-02-03-3]: Weight clamping to [0.15, 0.85] applied per-weight independently; sum may exceed 1.0 at extremes — safety margin takes priority over exact sum
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T01:28:09Z
-Stopped at: Completed 02-02-PLAN.md — RoleClassifier with hysteresis state machine (classifyRole + updateTimeInRole). Ready for 02-03 (InstrumentActivityCoordinator).
+Last session: 2026-03-11T01:28:21Z
+Stopped at: Completed 02-03-PLAN.md — KbGuitarDisambiguator. Ready for 02-04 (AnalysisCoordinator)
 Resume file: None
