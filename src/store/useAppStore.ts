@@ -24,6 +24,12 @@ interface AppState {
   pocketScore: number;                // 0.0-1.0, rolling 8-beat average
   timingOffsetMs: number;             // positive = drums ahead, negative = drums behind
 
+  // Phase 7: band lineup and UI state
+  lineup: string[];                              // default: ['bass', 'drums', 'keyboard', 'guitar']
+  selectedInstrument: string | null;             // null = no detail panel open
+  detectedKey: string | null;                    // null = no key detected yet
+  detectedKeyMode: 'major' | 'minor' | null;    // null = no key detected yet
+
   // Actions
   setFile: (name: string, duration: number) => void;
   setCalibrating: (val: boolean) => void;
@@ -32,6 +38,9 @@ interface AppState {
   setChordInfo: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string) => void;
   setTension: (tension: number) => void;
   setBeatInfo: (bpm: number | null, pocket: number, offset: number) => void;
+  setLineup: (lineup: string[]) => void;
+  setSelectedInstrument: (name: string | null) => void;
+  setDetectedKey: (key: string | null, mode: 'major' | 'minor' | null) => void;
   reset: () => void;
 }
 
@@ -54,6 +63,12 @@ export const useAppStore = create<AppState>((set) => ({
   pocketScore: 0,
   timingOffsetMs: 0,
 
+  // Phase 7 initial state
+  lineup: ['bass', 'drums', 'keyboard', 'guitar'],
+  selectedInstrument: null,
+  detectedKey: null,
+  detectedKeyMode: null,
+
   setFile: (name, duration) => set({ fileName: name, isFileLoaded: true, duration }),
   setCalibrating: (val) => set({ isCalibrating: val }),
   setCurrentTime: (time) => set({ currentTime: time }),
@@ -63,6 +78,9 @@ export const useAppStore = create<AppState>((set) => ({
   setChordInfo: (chord, confidence, fn) => set({ currentChord: chord, chordConfidence: confidence, chordFunction: fn }),
   setTension: (tension) => set({ currentTension: tension }),
   setBeatInfo: (bpm, pocket, offset) => set({ currentBpm: bpm, pocketScore: pocket, timingOffsetMs: offset }),
+  setLineup: (lineup) => set({ lineup }),
+  setSelectedInstrument: (name) => set({ selectedInstrument: name }),
+  setDetectedKey: (key, mode) => set({ detectedKey: key, detectedKeyMode: mode }),
   reset: () => set({
     fileName: null,
     isFileLoaded: false,
@@ -77,5 +95,9 @@ export const useAppStore = create<AppState>((set) => ({
     currentBpm: null,
     pocketScore: 0,
     timingOffsetMs: 0,
+    lineup: ['bass', 'drums', 'keyboard', 'guitar'],
+    selectedInstrument: null,
+    detectedKey: null,
+    detectedKeyMode: null,
   }),
 }));
