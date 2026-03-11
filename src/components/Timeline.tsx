@@ -4,16 +4,17 @@
  * - Updates at ~10fps via setInterval to show current position
  * - Displays "MM:SS / MM:SS" time readout
  * - Progress bar fills proportionally
- * - Click-to-seek: on click, calculates targetTime from click position,
- *   stops current source if playing and recreates from target offset
+ * - Click-to-seek: delegates to useSeek hook
+ * - Bar/beat grid overlay: renders vertical tick marks when BPM is detected
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import type { MutableRefObject } from 'react';
 import type { AudioStateRef } from '../audio/types';
-import { getCurrentPosition, connectSourceToGraph } from '../audio/AudioEngine';
+import { getCurrentPosition } from '../audio/AudioEngine';
 import { useAppStore } from '../store/useAppStore';
 import { tensionToColor } from '../audio/TensionHeatmap';
+import { useSeek } from '../hooks/useSeek';
 
 interface TimelineProps {
   audioStateRef: MutableRefObject<AudioStateRef>;
@@ -27,10 +28,13 @@ function formatTime(seconds: number): string {
 
 export function Timeline({ audioStateRef }: TimelineProps) {
   const [currentTime, setCurrentTime] = useState(0);
+  const [beatGrid, setBeatGrid] = useState<{ bpm: number; lastDownbeatSec: number } | null>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const { setCurrentTime: storeSetCurrentTime } = useAppStore();
   const duration = audioStateRef.current.transport.duration;
   const tensionHeatmap = audioStateRef.current.tensionHeatmap;
+
+  const { seekTo } = useSeek(audioStateRef);
 
   // Poll position at ~10fps for smooth-enough display
   useEffect(() => {
@@ -41,6 +45,21 @@ export function Timeline({ audioStateRef }: TimelineProps) {
       const position = getCurrentPosition(state.audioCtx, state.transport);
       setCurrentTime(position);
       storeSetCurrentTime(position);
+
+      const beat = state.beat;
+      if (beat && beat.bpm !== null && beat.lastDownbeatSec > 0) {
+        setBeatGrid((prev) => {
+          if (
+            prev &&
+            prev.bpm === beat.bpm &&
+            Math.abs(prev.lastDownbeatSec - beat.lastDownbeatSec) < 0.01
+          )
+            return prev;
+          return { bpm: beat.bpm as number, lastDownbeatSec: beat.lastDownbeatSec };
+        });
+      } else {
+        setBeatGrid(null);
+      }
     }, 100);
 
     return () => clearInterval(id);
@@ -48,61 +67,16 @@ export function Timeline({ audioStateRef }: TimelineProps) {
 
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      const state = audioStateRef.current;
-      const { audioCtx, transport, smoothedAnalyser, rawAnalyser } = state;
-
-      if (!audioCtx || !transport.buffer || !smoothedAnalyser || !rawAnalyser) return;
-
       const bar = barRef.current;
       if (!bar) return;
-
       const rect = bar.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const ratio = Math.max(0, Math.min(clickX / rect.width, 1));
-      const targetTime = ratio * transport.duration;
-
-      // Stop current playback if active
-      const wasPlaying = transport.isPlaying;
-      if (wasPlaying && transport.sourceNode) {
-        try {
-          transport.sourceNode.stop();
-        } catch {
-          // ignore if already stopped
-        }
-        transport.sourceNode.disconnect();
-        state.transport.sourceNode = null;
-        state.transport.isPlaying = false;
-      }
-
-      // Update pause offset to target
-      state.transport.pauseOffset = targetTime;
-
-      // If we were playing, restart from new position
-      if (wasPlaying) {
-        const source = audioCtx.createBufferSource();
-        source.buffer = transport.buffer;
-        connectSourceToGraph(audioCtx, source, smoothedAnalyser, rawAnalyser);
-
-        const startTime = audioCtx.currentTime;
-        source.start(0, targetTime);
-
-        source.addEventListener('ended', () => {
-          if (audioStateRef.current.transport.sourceNode === source) {
-            audioStateRef.current.transport.isPlaying = false;
-            audioStateRef.current.transport.pauseOffset = 0;
-            audioStateRef.current.transport.sourceNode = null;
-          }
-        });
-
-        state.transport.sourceNode = source;
-        state.transport.startTime = startTime;
-        state.transport.isPlaying = true;
-      }
-
+      const targetTime = ratio * duration;
+      seekTo(targetTime);
       setCurrentTime(targetTime);
-      console.log(`[Timeline] Seeked to ${targetTime.toFixed(3)}s (was playing: ${wasPlaying})`);
     },
-    [audioStateRef]
+    [seekTo, duration]
   );
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -148,6 +122,45 @@ export function Timeline({ audioStateRef }: TimelineProps) {
                 }}
               />
             ))}
+          </div>
+        )}
+
+        {/* Bar/beat grid overlay — only renders when BPM is detected */}
+        {beatGrid && duration > 0 && (
+          <div
+            className="absolute inset-0"
+            style={{ pointerEvents: 'none', zIndex: 0 }}
+            aria-hidden="true"
+          >
+            {(() => {
+              const { bpm, lastDownbeatSec } = beatGrid;
+              const beatInterval = 60 / bpm;
+              const ticks: JSX.Element[] = [];
+              let firstBeat = lastDownbeatSec;
+              while (firstBeat > beatInterval) firstBeat -= beatInterval;
+              while (firstBeat < 0) firstBeat += beatInterval;
+              for (let t = firstBeat; t <= duration; t += beatInterval) {
+                const pct = (t / duration) * 100;
+                const beatsFromDownbeat = Math.round((t - lastDownbeatSec) / beatInterval);
+                const isBarLine = beatsFromDownbeat % 4 === 0;
+                ticks.push(
+                  <div
+                    key={t.toFixed(4)}
+                    style={{
+                      position: 'absolute',
+                      left: `${pct}%`,
+                      top: isBarLine ? '0' : '30%',
+                      bottom: '0',
+                      width: isBarLine ? '2px' : '1px',
+                      backgroundColor: isBarLine
+                        ? 'rgba(255,255,255,0.25)'
+                        : 'rgba(255,255,255,0.1)',
+                    }}
+                  />
+                );
+              }
+              return ticks;
+            })()}
           </div>
         )}
 
