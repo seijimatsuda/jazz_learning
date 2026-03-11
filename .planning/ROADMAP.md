@@ -108,14 +108,14 @@ Plans:
   3. Bass node glows with amber (#b45309) on bass onsets, glow intensity visibly shifts with pocket score (amber = tight, blue = loose)
   4. Role-based node states are visually distinct — a soloing instrument looks clearly different from a comping or silent one
   5. Canvas animation stays smooth at 60fps with no visible jank during simultaneous FFT analysis — confirmed on iPhone hardware
-**Plans**: TBD
+**Plans**: 5 plans in 4 waves
 
 Plans:
-- [ ] 05-01: CanvasRenderer scaffold — rAF loop, devicePixelRatio scaling, node layout engine (2/3/4 instrument configs)
-- [ ] 05-02: Static node drawing — circles, labels, role-based color/size states (VIZ-02, VIZ-12)
-- [ ] 05-03: Bass node animations — breathing glow (offscreen compositing), onset flash, pocket-score-driven color shift (VIZ-03, VIZ-04, VIZ-05)
-- [ ] 05-04: Drums node animations — beat nudge, crisp ripple, downbeat double-ripple, timing offset orbit (VIZ-06, VIZ-07, VIZ-08, VIZ-09)
-- [ ] 05-05: Beat-responsive canvas — all-node pulse on beats/downbeats, background breath (VIZ-10, VIZ-11), iOS perf verification
+- [ ] 05-01-PLAN.md — CanvasRenderer refactor: delta-time rAF loop, NodeLayout engine, NodeAnimState types, instrument diamond layout (Wave 1)
+- [ ] 05-02-PLAN.md — Role-based node drawing: circles sized/colored by role, labels, smooth transitions via lerpExp (Wave 2)
+- [ ] 05-03-PLAN.md — Bass node animations: breathing glow, onset flash, 800ms ring, pocket-score color shift (Wave 3)
+- [ ] 05-04-PLAN.md — Drums node animations: +6px beat nudge, crisp ripple, downbeat double-ripple, timing offset orbit (Wave 3)
+- [ ] 05-05-PLAN.md — Beat-responsive canvas: all-node pulse, background breath, iOS perf verification checkpoint (Wave 4)
 
 ### Phase 6: Edge Visualization
 **Goal**: Users see the relationships between instruments rendered as animated lines — the pocket line always visible between bass and drums, other edges appearing and fading as instruments communicate
