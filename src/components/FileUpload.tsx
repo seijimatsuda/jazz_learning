@@ -46,6 +46,15 @@ export function FileUpload({ audioStateRef }: FileUploadProps) {
       return;
     }
 
+    // Create AudioContext NOW — inside the click handler (iOS-safe).
+    // Store on ref so handleFileChange can reuse it for decoding.
+    if (!audioStateRef.current.audioCtx) {
+      const ctx = new AudioContextClass({ sampleRate: 44100 });
+      audioStateRef.current.audioCtx = ctx;
+      audioStateRef.current.sampleRate = ctx.sampleRate;
+      console.log(`[FileUpload] AudioContext created in click handler — sampleRate: ${ctx.sampleRate}`);
+    }
+
     // Open file picker immediately — same synchronous call stack as click.
     fileInputRef.current?.click();
   };
@@ -61,16 +70,18 @@ export function FileUpload({ audioStateRef }: FileUploadProps) {
     setError(null);
 
     try {
-      // createAudioContext is async (calls resume()) but we are now past the
-      // file selection gesture — this is fine because the AudioContext was
-      // pre-authorized by the click handler above.
-      // If a previous context exists, close it first.
-      if (audioStateRef.current.audioCtx) {
-        await audioStateRef.current.audioCtx.close();
-        audioStateRef.current.audioCtx = null;
+      // Reuse the AudioContext pre-created in handleButtonClick (iOS-safe).
+      // If none exists (shouldn't happen), create one as fallback.
+      let audioCtx = audioStateRef.current.audioCtx;
+      if (!audioCtx) {
+        audioCtx = await createAudioContext();
+        audioStateRef.current.audioCtx = audioCtx;
+        audioStateRef.current.sampleRate = audioCtx.sampleRate;
       }
-
-      const audioCtx = await createAudioContext();
+      // Resume if suspended (iOS may suspend between click and file selection)
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
       const audioBuffer = await decodeAudioFile(audioCtx, file);
 
       // Create dual analysers (smoothed for viz, raw for transients)

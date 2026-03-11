@@ -153,6 +153,11 @@ export class CanvasRenderer {
     const freqData   = state.smoothedFreqData;
     const bands      = state.bands;
 
+    // -- Pull FFT data once per frame (not per node) -------------------------
+    if (freqData && state.smoothedAnalyser) {
+      state.smoothedAnalyser.getByteFrequencyData(freqData);
+    }
+
     // -- Draw nodes ----------------------------------------------------------
     for (const cfg of NODE_CONFIGS) {
       const x = cfg.x * w;
@@ -163,8 +168,6 @@ export class CanvasRenderer {
       if (freqData && bands.length > 0) {
         const band = bands.find((b) => b.name === cfg.bandName);
         if (band) {
-          // Pull live data into the pre-allocated array — no allocation
-          state.smoothedAnalyser?.getByteFrequencyData(freqData);
           energy = getBandEnergy(freqData, band);
         }
       }
