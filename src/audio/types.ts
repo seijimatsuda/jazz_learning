@@ -1,3 +1,29 @@
+// RoleLabel: per-instrument role classification output
+export type RoleLabel = 'soloing' | 'comping' | 'holding' | 'silent';
+
+// InstrumentAnalysis: per-instrument analysis state, updated at 10fps
+export interface InstrumentAnalysis {
+  instrument: string;           // 'bass' | 'drums' | 'keyboard' | 'guitar'
+  bandNames: string[];          // which FrequencyBand names this instrument owns
+  activityScore: number;        // 0.0–1.0, updated at 10fps
+  role: RoleLabel;              // current role label
+  roleSinceSec: number;         // audioCtx.currentTime when this role started
+  historyBuffer: Float32Array;  // length 100, circular ring buffer (10s * 10fps)
+  historyHead: number;          // write index into historyBuffer
+  historySamples: number;       // how many valid samples written (capped at 100)
+  timeInRole: Record<RoleLabel, number>; // cumulative seconds in each role
+}
+
+// AnalysisState: top-level analysis state container on AudioStateRef
+export interface AnalysisState {
+  instruments: InstrumentAnalysis[];
+  edgeWeights: Record<string, number>;  // key: 'instrA_instrB' (alphabetical), value: Pearson r
+  isAnalysisActive: boolean;
+  lastAnalysisMs: number;               // performance.now() of last 10fps tick
+  prevRawFreqData: Uint8Array;          // pre-allocated for spectral flux (fftSize/2)
+  rawTimeDataFloat: Float32Array;       // pre-allocated for Meyda ZCR (fftSize)
+}
+
 // FrequencyBand defines a named frequency range with bin indices (computed at runtime from sampleRate)
 export interface FrequencyBand {
   name: string;           // e.g. 'bass', 'midLow', 'mid', 'midHigh', 'high'
@@ -42,6 +68,7 @@ export interface AudioStateRef {
   calibration: CalibrationThresholds[];
   isCalibrated: boolean;
   tensionHeatmap: Float32Array | null;   // pre-computed on load
+  analysis: AnalysisState | null;        // Phase 2: per-instrument activity and role state
 }
 
 // Factory function for initial AudioStateRef
@@ -67,5 +94,6 @@ export function createInitialAudioState(): AudioStateRef {
     calibration: [],
     isCalibrated: false,
     tensionHeatmap: null,
+    analysis: null,
   };
 }
