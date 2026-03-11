@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 7 of 8 (React UI Panels & Key Detection) — In progress
-Plan: 6 of 6 complete (wave 2: 07-02 done)
+Plan: 6 of 6 complete (wave 2: 07-02, 07-04 done)
 Status: In progress
-Last activity: 2026-03-11 — Completed 07-02-PLAN.md (BPM display UI-09, role legend UI-08)
+Last activity: 2026-03-11 — Completed 07-04-PLAN.md (useSeek hook + bar/beat grid overlay)
 
 Progress: [██████████████████████████████░] 85% (34/40 total plans estimated)
 
@@ -149,6 +149,9 @@ Recent decisions affecting current work:
 - [D-07-05-2]: Mode detection splits major-leaning (major, maj7, dom7) vs minor-leaning (all others) — mirrors assignChordFunction logic in ChordDetector
 - [D-07-05-3]: confidenceGap as vote weight in detectKey — high-confidence chords drive key inference more than ambiguous ones
 - [D-07-05-4]: chordFunctionInKey returns plain string (not enum) — consistent with D-03-02-3 (chordFunction in Zustand is plain string)
+- [D-07-04-1]: useSeek takes MutableRefObject<AudioStateRef> as param — hook reads full state (wasPlaying, smoothedAnalyser, rawAnalyser); can't be split to primitive props
+- [D-07-04-2]: beatGrid polled inside existing 100ms setInterval — avoids second timer; identity check (bpm + lastDownbeatSec delta < 0.01) prevents spurious re-renders
+- [D-07-04-3]: Beat grid at zIndex:0 behind progress fill (zIndex:1) — grid visible through semi-transparent indigo overlay
 
 ### Pending Todos
 
@@ -164,5 +167,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 07-02-PLAN.md — BPM display (UI-09) and role legend (UI-08) drawn on canvas. Plan 6 of 6 in Phase 7 wave 2 done.
+Stopped at: Completed 07-04-PLAN.md — useSeek hook extracted, bar/beat grid overlay added to Timeline. Wave 2 plans: 07-02 and 07-04 done; 07-06 remaining.
 Resume file: None
