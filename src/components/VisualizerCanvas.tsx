@@ -47,6 +47,12 @@ export function VisualizerCanvas({ audioStateRef }: VisualizerCanvasProps) {
       useAppStore.getState().setTension(tension);
     });
 
+    // Wire beat update callback — pushes BPM, pocket score, and timing offset to Zustand
+    // Only fires when BPM or pocket score actually changes (not every tick)
+    renderer.setOnBeatUpdate((bpm, pocket, offset) => {
+      useAppStore.getState().setBeatInfo(bpm, pocket, offset);
+    });
+
     // Resize observer keeps HiDPI scaling correct when element resizes
     const observer = new ResizeObserver(() => {
       renderer.resize();

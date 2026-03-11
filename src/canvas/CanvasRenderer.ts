@@ -80,6 +80,9 @@ export class CanvasRenderer {
   /** Optional callback fired every tick with current tension value (Phase 3) */
   private onTensionUpdate?: (tension: number) => void;
 
+  /** Optional callback fired when BPM or pocket score changes (Phase 4) */
+  private onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void;
+
   /** Bind render to this for rAF callback */
   private readonly boundRender: () => void;
 
@@ -152,6 +155,11 @@ export class CanvasRenderer {
   /** Set callback for per-tick tension updates (Phase 3). */
   setOnTensionUpdate(cb: (tension: number) => void): void {
     this.onTensionUpdate = cb;
+  }
+
+  /** Set callback for BPM and pocket score updates (Phase 4). */
+  setOnBeatUpdate(cb: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void): void {
+    this.onBeatUpdate = cb;
   }
 
   /** Stop the animation loop and release resources. */
@@ -227,7 +235,7 @@ export class CanvasRenderer {
       const now = performance.now();
       if ((now - analysis.lastAnalysisMs) >= 100) {
         analysis.lastAnalysisMs = now;
-        runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate);
+        runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate, this.onBeatUpdate);
       }
     }
 

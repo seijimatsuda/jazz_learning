@@ -13,6 +13,7 @@ import { initAnalysisState } from './audio/InstrumentActivityScorer';
 import type { InstrumentName } from './audio/InstrumentActivityScorer';
 import { initChordDetector, initChordState } from './audio/ChordDetector';
 import { initTensionState } from './audio/TensionScorer';
+import { initBeatState } from './audio/DrumTransientDetector';
 
 function App() {
   const audioStateRef = useAudioRef();
@@ -52,6 +53,10 @@ function App() {
         audioStateRef.current.chord   = initChordState();
         audioStateRef.current.tension = initTensionState();
         console.log('[App] Phase 3 chord/tension state initialized.');
+
+        // Initialize Phase 4: beat detection and pocket scoring state
+        audioStateRef.current.beat = initBeatState();
+        console.log('[App] Phase 4 beat state initialized.');
 
         return computeTensionHeatmap(buffer, sampleRate);
       })

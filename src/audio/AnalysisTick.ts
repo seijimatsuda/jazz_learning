@@ -1,9 +1,9 @@
 /**
- * AnalysisTick.ts — 10fps orchestrator for all Phase 2 + Phase 3 analysis modules.
+ * AnalysisTick.ts — 10fps orchestrator for all Phase 2 + Phase 3 + Phase 4 analysis modules.
  *
  * runAnalysisTick is called by CanvasRenderer's rAF loop when the 100ms time gate
- * fires. It pulls fresh FFT data from both analysers, then runs all Phase 2 and
- * Phase 3 modules in order:
+ * fires. It pulls fresh FFT data from both analysers, then runs all Phase 2,
+ * Phase 3, and Phase 4 modules in order:
  *
  *   1. Activity scoring  — computeActivityScore + pushHistory per instrument
  *   2. Role classification — classifyRole + updateTimeInRole per instrument
@@ -11,6 +11,11 @@
  *   4. Cross-correlation — Pearson r edge weights for all instrument pairs
  *   5. Chord detection — extractAndMatchChord (Phase 3)
  *   6. Tension scoring — updateTension with displayed chord function (Phase 3)
+ *   7. Drum onset detection — detectDrumOnset (Phase 4)
+ *   8. Bass onset detection — detectBassOnset (Phase 4)
+ *   9. BPM derivation — updateBpm via autocorrelation (Phase 4)
+ *  10. Rubato gate — applyRubatoGate via IOI CV (Phase 4)
+ *  11. Pocket score — updatePocketScore via bass↔drums sync (Phase 4)
  *
  * CRITICAL: This function must NOT allocate any new typed arrays. All buffers
  * (historyBuffer, prevRawFreqData, rawTimeDataFloat) are pre-allocated in
@@ -28,6 +33,10 @@ import { disambiguate } from './KbGuitarDisambiguator';
 import { pearsonR, computeEdgeWeight } from './CrossCorrelationTracker';
 import { extractAndMatchChord, CHORD_TEMPLATES } from './ChordDetector';
 import { updateTension } from './TensionScorer';
+import { detectDrumOnset, computeDrumFlux } from './DrumTransientDetector';
+import { updateBpm, detectBassOnset } from './BpmTracker';
+import { applyRubatoGate } from './SwingAnalyzer';
+import { updatePocketScore } from './PocketScorer';
 
 // ---------------------------------------------------------------------------
 // Chord display label maps (module-level constants — zero allocations in tick)
@@ -73,12 +82,14 @@ const FAMILY_LABELS: Record<ChordFunction, string> = {
  * @param onRoleChange    - Optional callback fired when an instrument's role changes
  * @param onChordChange   - Optional callback fired when displayed chord changes
  * @param onTensionUpdate - Optional callback fired every tick with current tension
+ * @param onBeatUpdate    - Optional callback fired when BPM or pocket score changes (Phase 4)
  */
 export function runAnalysisTick(
   state: AudioStateRef,
   onRoleChange?: (instrument: string, role: RoleLabel) => void,
   onChordChange?: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, tension: number) => void,
-  onTensionUpdate?: (tension: number) => void
+  onTensionUpdate?: (tension: number) => void,
+  onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void
 ): void {
   // Guard: must be calibrated and have all required state before analysis can run
   if (
@@ -234,6 +245,50 @@ export function runAnalysisTick(
     if (displayIdx !== prevDisplayedChordIdx && onChordChange) {
       const fnLabel = displayIdx >= 0 ? FUNCTION_LABELS[displayedFunction] : '';
       onChordChange(displayName, confidence, fnLabel, state.tension.currentTension);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Phase 4: Beat detection, BPM, and pocket score
+  // ---------------------------------------------------------------------------
+
+  if (state.beat) {
+    const beat = state.beat;
+    const audioTimeSec = state.audioCtx?.currentTime ?? 0;
+
+    // Look up frequency bands by name (not hardcoded bin indices)
+    const drumsHighBand = state.bands.find(b => b.name === 'drums_high');
+    const rideBand = state.bands.find(b => b.name === 'ride');
+    const bassBand = state.bands.find(b => b.name === 'bass');
+
+    if (drumsHighBand && rideBand && bassBand && state.rawFreqData && analysis.prevRawFreqData) {
+      // 1. Drum onset detection (populates OSS buffer, onset timestamps, beat counter)
+      const drumFlux = computeDrumFlux(
+        state.rawFreqData,
+        analysis.prevRawFreqData,
+        drumsHighBand,
+        rideBand,
+      );
+      detectDrumOnset(beat, state.rawFreqData, analysis.prevRawFreqData, drumsHighBand, rideBand, audioTimeSec);
+
+      // 2. Bass onset detection (RMS delta with debounce and kick bleed suppression)
+      detectBassOnset(beat, state.rawFreqData, bassBand, audioTimeSec, drumFlux);
+
+      // 3. BPM update (autocorrelation every 2 seconds)
+      const prevBpm = beat.bpm;
+      const prevPocket = beat.pocketScore;
+      updateBpm(beat);
+
+      // 4. Rubato gate (IOI CV check — may null out BPM)
+      applyRubatoGate(beat);
+
+      // 5. Pocket score (bass-drums sync scoring)
+      updatePocketScore(beat, audioTimeSec);
+
+      // 6. Push to Zustand when values change
+      if (onBeatUpdate && (beat.bpm !== prevBpm || beat.pocketScore !== prevPocket)) {
+        onBeatUpdate(beat.bpm, beat.pocketScore, beat.timingOffsetMs);
+      }
     }
   }
 
