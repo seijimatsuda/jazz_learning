@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Audio Pipeline Foundation** - iOS-safe AudioContext, dual AnalyserNode, FrequencyBandSplitter, audioStateRef shape, all performance constraints locked in
 - [x] **Phase 2: Instrument Activity Analysis** - Per-instrument frequency band analysis, activity scoring, role classification, cross-correlation edge detection
-- [ ] **Phase 3: Chord Detection & Harmonic Analysis** - Chroma extraction, 8-chord template matching, tension scoring, smoothing and confidence display
+- [x] **Phase 3: Chord Detection & Harmonic Analysis** - Chroma extraction, 8-chord template matching, tension scoring, smoothing and confidence display
 - [ ] **Phase 4: Beat Detection, BPM & Pocket Score** - Dual-stream beat detection, swing ratio handling, BPM derivation, pocket score with rubato suppression
 - [ ] **Phase 5: Canvas Node Graph** - Animated node graph with role-based visuals, beat-synchronized pulse, offscreen glow compositing, layout engine
 - [ ] **Phase 6: Edge Visualization** - Pocket line rendering, communication edges, tension tinting, resolution flash
@@ -181,7 +181,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Audio Pipeline Foundation | 5/5 | Complete | 2026-03-10 |
 | 2. Instrument Activity Analysis | 5/5 | Complete | 2026-03-11 |
-| 3. Chord Detection & Harmonic Analysis | 0/5 | Not started | - |
+| 3. Chord Detection & Harmonic Analysis | 5/5 | Complete | 2026-03-11 |
 | 4. Beat Detection, BPM & Pocket Score | 0/4 | Not started | - |
 | 5. Canvas Node Graph | 0/5 | Not started | - |
 | 6. Edge Visualization | 0/3 | Not started | - |

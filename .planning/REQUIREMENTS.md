@@ -31,26 +31,26 @@
 
 ### Chord Detection
 
-- [ ] **CHORD-01**: Chroma vector extraction (12 pitch classes) every ~100ms via Meyda.js
-- [ ] **CHORD-02**: Bass frequency band weighted more heavily for root detection
-- [ ] **CHORD-03**: Template matching against 8 chord types: major, minor, maj7, m7, dom7, dim7, m7b5, alt
-- [ ] **CHORD-04**: Cosine similarity scoring with confidence = gap between best and second-best match
-- [ ] **CHORD-05**: 300ms rolling window smoothing before display
-- [ ] **CHORD-06**: Chord display only updates when new detection holds for >200ms (flicker prevention)
-- [ ] **CHORD-07**: Low confidence → display chord family only (e.g. "dominant chord" not "G7")
-- [ ] **CHORD-08**: Medium/high confidence → display full chord name + plain English function
-- [ ] **CHORD-09**: Chord function assignment: tonic / subdominant / dominant / altered
-- [ ] **CHORD-10**: Plain English labels per function ("home — relaxed and stable", "tension — wants to resolve", etc.)
-- [ ] **CHORD-11**: Timestamped chord history log maintained during playback
+- [x] **CHORD-01**: Chroma vector extraction (12 pitch classes) every ~100ms via Meyda.js
+- [x] **CHORD-02**: Bass frequency band weighted more heavily for root detection
+- [x] **CHORD-03**: Template matching against 8 chord types: major, minor, maj7, m7, dom7, dim7, m7b5, alt
+- [x] **CHORD-04**: Cosine similarity scoring with confidence = gap between best and second-best match
+- [x] **CHORD-05**: 300ms rolling window smoothing before display
+- [x] **CHORD-06**: Chord display only updates when new detection holds for >200ms (flicker prevention)
+- [x] **CHORD-07**: Low confidence → display chord family only (e.g. "dominant chord" not "G7")
+- [x] **CHORD-08**: Medium/high confidence → display full chord name + plain English function
+- [x] **CHORD-09**: Chord function assignment: tonic / subdominant / dominant / altered
+- [x] **CHORD-10**: Plain English labels per function ("home — relaxed and stable", "tension — wants to resolve", etc.)
+- [x] **CHORD-11**: Timestamped chord history log maintained during playback
 
 ### Tension System
 
-- [ ] **TENS-01**: Tension score (0.0–1.0) derived from chord function (tonic=0.0–0.2, subdominant=0.2–0.45, dominant=0.55–0.75, altered=0.75–1.0)
-- [ ] **TENS-02**: Tension score lerps toward target at 0.05 per frame (smooth movement)
-- [ ] **TENS-03**: Rolling tension history maintained for meter smoothing
-- [ ] **TENS-04**: Vertical tension meter: full-height gradient bar (blue→amber→orange→red)
-- [ ] **TENS-05**: Ghost line on tension meter shows level from 3 seconds ago
-- [ ] **TENS-06**: Tension heatmap on timeline (blue=low, red=high) pre-computed on file load
+- [x] **TENS-01**: Tension score (0.0–1.0) derived from chord function (tonic=0.0–0.2, subdominant=0.2–0.45, dominant=0.55–0.75, altered=0.75–1.0)
+- [x] **TENS-02**: Tension score lerps toward target at 0.05 per frame (smooth movement)
+- [x] **TENS-03**: Rolling tension history maintained for meter smoothing
+- [x] **TENS-04**: Vertical tension meter: full-height gradient bar (blue→amber→orange→red)
+- [x] **TENS-05**: Ghost line on tension meter shows level from 3 seconds ago
+- [x] **TENS-06**: Tension heatmap on timeline (blue=low, red=high) pre-computed on file load
 
 ### Beat Detection & Pocket
 
@@ -187,23 +187,23 @@
 | INST-07 | Phase 2 | Complete |
 | INST-08 | Phase 2 | Complete |
 | INST-09 | Phase 2 | Complete |
-| CHORD-01 | Phase 3 | Pending |
-| CHORD-02 | Phase 3 | Pending |
-| CHORD-03 | Phase 3 | Pending |
-| CHORD-04 | Phase 3 | Pending |
-| CHORD-05 | Phase 3 | Pending |
-| CHORD-06 | Phase 3 | Pending |
-| CHORD-07 | Phase 3 | Pending |
-| CHORD-08 | Phase 3 | Pending |
-| CHORD-09 | Phase 3 | Pending |
-| CHORD-10 | Phase 3 | Pending |
-| CHORD-11 | Phase 3 | Pending |
-| TENS-01 | Phase 3 | Pending |
-| TENS-02 | Phase 3 | Pending |
-| TENS-03 | Phase 3 | Pending |
-| TENS-04 | Phase 3 | Pending |
-| TENS-05 | Phase 3 | Pending |
-| TENS-06 | Phase 3 | Pending |
+| CHORD-01 | Phase 3 | Complete |
+| CHORD-02 | Phase 3 | Complete |
+| CHORD-03 | Phase 3 | Complete |
+| CHORD-04 | Phase 3 | Complete |
+| CHORD-05 | Phase 3 | Complete |
+| CHORD-06 | Phase 3 | Complete |
+| CHORD-07 | Phase 3 | Complete |
+| CHORD-08 | Phase 3 | Complete |
+| CHORD-09 | Phase 3 | Complete |
+| CHORD-10 | Phase 3 | Complete |
+| CHORD-11 | Phase 3 | Complete |
+| TENS-01 | Phase 3 | Complete |
+| TENS-02 | Phase 3 | Complete |
+| TENS-03 | Phase 3 | Complete |
+| TENS-04 | Phase 3 | Complete |
+| TENS-05 | Phase 3 | Complete |
+| TENS-06 | Phase 3 | Complete |
 | BEAT-01 | Phase 4 | Pending |
 | BEAT-02 | Phase 4 | Pending |
 | BEAT-03 | Phase 4 | Pending |
