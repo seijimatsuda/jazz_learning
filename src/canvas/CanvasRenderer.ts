@@ -19,6 +19,9 @@ import { computeNodePositions, INSTRUMENT_ORDER } from './nodes/NodeLayout';
 import type { NodePosition } from './nodes/NodeLayout';
 import { createNodeAnimState, lerpExp, updateRipples } from './nodes/NodeAnimState';
 import type { NodeAnimState } from './nodes/NodeAnimState';
+import { createEdgeAnimState } from './edges/EdgeAnimState';
+import type { EdgeAnimState } from './edges/EdgeAnimState';
+import { drawPocketLine } from './edges/drawPocketLine';
 import { drawNode, getRoleRadius, getRoleFillColor } from './nodes/drawNode';
 import { drawGlow, pocketToGlowColor } from './nodes/drawGlow';
 import { createGlowLayer } from './offscreen/glowLayer';
@@ -76,6 +79,9 @@ export class CanvasRenderer {
   /** Per-instrument animation state objects — one per INSTRUMENT_ORDER entry */
   private nodeAnimStates: NodeAnimState[] = [];
 
+  /** Per-edge animation state objects — one per instrument pair (6 for a quartet) */
+  private edgeAnimStates: Record<string, EdgeAnimState> = {};
+
   /** Background beat pulse progress [0,1] — for VIZ-11 (background breath on beat) */
   private bgPulseProgress = 0;
 
@@ -120,6 +126,12 @@ export class CanvasRenderer {
     this.nodeAnimStates = INSTRUMENT_ORDER.map((_instrument) =>
       createNodeAnimState(getRoleFillColor('holding'), INITIAL_BASE_RADIUS)
     );
+
+    // Create per-edge animation state objects for all 6 pairs in a quartet
+    const pairs = ['bass_drums', 'bass_guitar', 'bass_keyboard', 'drums_guitar', 'drums_keyboard', 'guitar_keyboard'];
+    for (const key of pairs) {
+      this.edgeAnimStates[key] = createEdgeAnimState();
+    }
 
     // Pre-create tension meter — gradient built once, reused every frame (TENS-04)
     // Use 360 as default height; resize() corrects this after layout settles.
@@ -329,6 +341,25 @@ export class CanvasRenderer {
         analysis.lastAnalysisMs = now;
         runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate, this.onBeatUpdate);
       }
+    }
+
+    // -- Draw edges (behind nodes) -------------------------------------------
+    // Note: drawCommunicationEdges for all pairs will be added in Plan 02.
+    const beat = state.beat;
+    if (beat !== null) {
+      const bassIdx  = INSTRUMENT_ORDER.indexOf('bass');   // index 3
+      const drumsIdx = INSTRUMENT_ORDER.indexOf('drums');  // index 1
+      const bassPos  = this.nodePositions[bassIdx];
+      const drumsPos = this.nodePositions[drumsIdx];
+      drawPocketLine(
+        ctx,
+        bassPos.x * w,  bassPos.y * h,  this.nodeAnimStates[bassIdx].currentRadius,
+        drumsPos.x * w, drumsPos.y * h, this.nodeAnimStates[drumsIdx].currentRadius,
+        this.edgeAnimStates['bass_drums'],
+        beat.pocketScore,
+        beat.lastSyncEventSec,
+        deltaMs,
+      );
     }
 
     // -- Draw instrument nodes -----------------------------------------------
