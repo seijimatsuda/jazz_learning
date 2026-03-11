@@ -391,8 +391,57 @@ export class CanvasRenderer {
         // -- 5. Draw drums node: circle -> label -> ripples (VIZ-06..09) -----
         drawNode(ctx, x + ox, y + oy, animState.currentRadius, fillColor, label);
         updateRipples(ctx, animState.ripples, nowMs);
+      } else if (instrument === 'bass') {
+        // -- Bass-specific animation (VIZ-03, VIZ-04, VIZ-05) ----------------
+        const nowMs = performance.now();
+        const beat = state.beat ?? null;
+        const pocketScore = beat?.pocketScore ?? 0;
+        const bpm = beat?.bpm ?? null;
+
+        // Onset detection — compare current lastBassOnsetSec to last seen value
+        if (beat !== null && beat.lastBassOnsetSec !== animState.lastSeenBassOnsetSec) {
+          animState.lastSeenBassOnsetSec = beat.lastBassOnsetSec;
+          // Flash: boost glow intensity to full on onset (VIZ-04)
+          animState.glowIntensity = 1.0;
+          // Spawn an expanding deep ring if we have headroom (max 4 ripples)
+          if (animState.ripples.length < 4) {
+            animState.ripples.push({
+              startMs: nowMs,
+              durationMs: 800,
+              maxRadius: 80,
+              color: 'rgba(180,83,9,0.6)',
+              baseX: x,
+              baseY: y,
+            });
+          }
+        }
+
+        // Breathing intensity synced to BPM (VIZ-03)
+        const breatheIntensity = this.updateBassBreath(animState, bpm, pocketScore, deltaMs);
+
+        // Onset flash overrides breathing — take the max so breath resumes after decay
+        const finalGlowIntensity = Math.max(breatheIntensity, animState.glowIntensity);
+
+        // Decay onset flash back toward 0 (slow exponential so flash is visible ~300ms+)
+        animState.glowIntensity = lerpExp(animState.glowIntensity, 0, 0.05, deltaMs);
+
+        // Pocket-score color shift gate (VIZ-05) — re-create glowCanvas only when score
+        // changes enough (0.05 threshold) to avoid per-frame HTMLCanvasElement allocation
+        if (Math.abs(pocketScore - animState.lastPocketScore) > 0.05) {
+          animState.glowCanvas = createGlowLayer(animState.baseRadius * 2, pocketToGlowColor(pocketScore));
+          animState.lastPocketScore = pocketScore;
+        }
+
+        // Draw glow BEFORE node circle so glow renders behind (additive blend on dark bg)
+        drawGlow(ctx, animState.glowCanvas, x, y, finalGlowIntensity);
+
+        // Draw node circle + label
+        drawNode(ctx, x, y, animState.currentRadius, fillColor, label);
+
+        // Draw ripples AFTER node circle so rings appear on top
+        updateRipples(ctx, animState.ripples, nowMs);
       } else {
-        // Draw non-drums nodes normally (05-03 adds bass glow/breathe here)
+        // Guitar and keyboard — draw node circle + label only (glow added in later plans)
         drawNode(ctx, x, y, animState.currentRadius, fillColor, label);
       }
     }
