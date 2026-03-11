@@ -22,6 +22,7 @@ import type { NodeAnimState } from './nodes/NodeAnimState';
 import { createEdgeAnimState } from './edges/EdgeAnimState';
 import type { EdgeAnimState } from './edges/EdgeAnimState';
 import { drawPocketLine } from './edges/drawPocketLine';
+import { drawCommunicationEdges } from './edges/drawCommunicationEdges';
 import { drawNode, getRoleRadius, getRoleFillColor } from './nodes/drawNode';
 import { drawGlow, pocketToGlowColor } from './nodes/drawGlow';
 import { createGlowLayer } from './offscreen/glowLayer';
@@ -344,7 +345,7 @@ export class CanvasRenderer {
     }
 
     // -- Draw edges (behind nodes) -------------------------------------------
-    // Note: drawCommunicationEdges for all pairs will be added in Plan 02.
+    // Draw order: pocket line → communication edges → nodes
     const beat = state.beat;
     if (beat !== null) {
       const bassIdx  = INSTRUMENT_ORDER.indexOf('bass');   // index 3
@@ -358,6 +359,21 @@ export class CanvasRenderer {
         this.edgeAnimStates['bass_drums'],
         beat.pocketScore,
         beat.lastSyncEventSec,
+        deltaMs,
+      );
+    }
+
+    // -- Communication edges (EDGE-07, EDGE-08) — behind nodes ---------------
+    const commAnalysis = state.analysis;
+    if (commAnalysis) {
+      const nodeRadii = this.nodeAnimStates.map(ns => ns.currentRadius);
+      drawCommunicationEdges(
+        ctx,
+        this.nodePositions,
+        nodeRadii,
+        this.edgeAnimStates,
+        commAnalysis.edgeWeights,
+        w, h,
         deltaMs,
       );
     }
