@@ -43,7 +43,7 @@ import { hzToBin } from './FrequencyBandSplitter';
 // Note names for building template roots
 // -------------------------------------------------------------------
 
-const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+export const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
 // -------------------------------------------------------------------
 // Base templates in root-C form (index 0 = C)
