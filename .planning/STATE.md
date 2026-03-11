@@ -5,34 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 2 — Instrument Activity Analysis
+**Current focus:** Phase 2 — Instrument Activity Analysis COMPLETE (gap closure done) — ready for Phase 3
 
 ## Current Position
 
-Phase: 2 of 8 (Instrument Activity Analysis) — PHASE COMPLETE
-Plan: 4 of 4 in current phase
-Status: Phase complete — ready for Phase 3
-Last activity: 2026-03-11 — Completed 02-04-PLAN.md — CrossCorrelationTracker, AnalysisTick orchestrator, full Phase 2 pipeline wired end-to-end.
+Phase: 2 of 8 (Instrument Activity Analysis) — PHASE COMPLETE (including gap closure 02-05)
+Plan: 5 of 5 in current phase (02-05 gap closure)
+Status: Phase 2 fully complete — ready for Phase 3 (Chord Detection)
+Last activity: 2026-03-11 — Completed 02-05-PLAN.md — InstrumentRoleOverlay gap closure; Phase 2 verification fully satisfied.
 
-Progress: [█████████░] 22.5% (9/40 total plans estimated)
+Progress: [█████████░] 25% (10/40 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: ~2m 8s
-- Total execution time: ~15m 9s
+- Total plans completed: 10
+- Average duration: ~2m 0s
+- Total execution time: ~16m 33s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
-| 02 - Instrument Activity Analysis | 4/4 COMPLETE | ~6m 13s | ~1m 33s |
+| 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
 
 **Recent Trend:**
-- Last 5 plans: 01-05 (~3m), 02-01 (2m 7s), 02-02 (1m 2s), 02-03 (~1m), 02-04 (3m 4s)
-- Trend: Consistent sub-3min per plan; Phase 2 avg 1m 33s — notably faster than Phase 1
+- Last 5 plans: 02-01 (2m 7s), 02-02 (1m 2s), 02-03 (~1m), 02-04 (3m 4s), 02-05 (1m 24s)
+- Trend: Consistent sub-3min per plan; Phase 2 avg 1m 31s — notably faster than Phase 1
 
 *Updated after each plan completion*
 
@@ -76,6 +76,8 @@ Recent decisions affecting current work:
 - [D-02-04-2]: rawTimeData allocation fixed to fftSize (4096 bytes) not fftSize/2 — getByteTimeDomainData fills full fftSize, not half
 - [D-02-04-3]: Lineup hardcoded as jazz quartet for Phase 2 — Phase 7 BandSetupPanel will expose this as configurable UI
 - [D-02-04-4]: Role changes push to Zustand only on actual change — prevents continuous mutations during steady-state playback
+- [D-02-05-1]: Activity scores polled from audioStateRef via 100ms setInterval, not Zustand — high-frequency numeric data; Zustand used only for role labels (occasional changes driving re-renders)
+- [D-02-05-2]: !isCalibrating guard on InstrumentRoleOverlay — analysis state null until calibration resolves; guard prevents interval reading undefined
 
 ### Pending Todos
 
@@ -90,6 +92,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T01:33:57Z
-Stopped at: Completed 02-04-PLAN.md — Full Phase 2 pipeline wired. Phase 2 COMPLETE.
+Last session: 2026-03-11T03:01:26Z
+Stopped at: Completed 02-05-PLAN.md — InstrumentRoleOverlay gap closure. Phase 2 fully complete including UI surface.
 Resume file: None
