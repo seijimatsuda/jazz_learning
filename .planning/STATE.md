@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 4 of 8 (Beat Detection, BPM & Pocket Score)
-Plan: 2 of 4 in current phase
+Plan: 3 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-10 — Completed 04-02-PLAN.md (BpmTracker: autocorrelation BPM, bass onset)
+Last activity: 2026-03-10 — Completed 04-03-PLAN.md (SwingAnalyzer: IOI CV rubato gate; PocketScorer: bass-drums sync)
 
-Progress: [█████████████████░░░] 42% (17/40 total plans estimated)
+Progress: [██████████████████░░] 45% (18/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -30,7 +30,7 @@ Progress: [█████████████████░░░] 42% (17
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
 | 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
 | 03 - Chord Detection & Harmonic Analysis | 5/5 COMPLETE | ~8m 13s | ~1m 38s |
-| 04 - Beat Detection, BPM & Pocket Score | 2/4 | ~5m | ~2m 30s |
+| 04 - Beat Detection, BPM & Pocket Score | 3/4 | ~8m | ~2m 40s |
 
 **Recent Trend:**
 - Last 5 plans: 03-02 (1m 14s), 03-03 (~3m), 03-04 (unknown), 03-05 (~1m), 04-01 (~2m)
@@ -106,6 +106,10 @@ Recent decisions affecting current work:
 - [D-04-02-1]: bassAdaptiveThreshold is local to BpmTracker — DrumTransientDetector.adaptiveThreshold takes BeatState and reads drumFluxBuffer; bass needs separate buffer traversal
 - [D-04-02-2]: Kick bleed suppression uses drum mean flux * 0.8 * MULTIPLIER — avoids cross-module coupling, keeps kick gate independently tunable
 - [D-04-02-3]: vals[] (3-element) created every 2 seconds in updateBpm — explicitly accepted per 04-RESEARCH.md; per-frame allocation guidance does not restrict 2s cadence
+- [D-04-03-1]: RUBATO_CV_THRESHOLD=0.3 is empirical — not from MIR literature; flagged as tunable in code comments
+- [D-04-03-2]: computeIoiCV returns 1.0 conservatively on count<4 and ioiCount<3 — defaults to rubato until sufficient onset data accumulates
+- [D-04-03-3]: pairGap guard at 200ms in updatePocketScore prevents non-paired onsets from generating sync scores
+- [D-04-03-4]: applyRubatoGate sets bpm=null as single suppression signal — downstream pocket scorer and UI both check bpm===null
 
 ### Pending Todos
 
@@ -121,5 +125,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-10
-Stopped at: Completed 04-02-PLAN.md. BpmTracker complete. Ready for 04-03 (rubato suppression / AnalysisTick wiring).
+Stopped at: Completed 04-03-PLAN.md. SwingAnalyzer and PocketScorer complete. Ready for 04-04 (AnalysisTick wiring: updateBpm → applyRubatoGate → updatePocketScore → Zustand bridge).
 Resume file: None
