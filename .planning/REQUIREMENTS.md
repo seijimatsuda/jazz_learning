@@ -67,19 +67,19 @@
 
 ### Node Graph Visualization
 
-- [ ] **VIZ-01**: Canvas-based node graph with dynamic layout (2=horizontal, 3=triangle, 4=diamond)
-- [ ] **VIZ-02**: Dark background (#0a0a0f) with nodes labeled below by instrument name
-- [ ] **VIZ-03**: Bass node: larger radius, deep amber (#b45309) breathing glow on 1-beat cycle
-- [ ] **VIZ-04**: Bass node: glow brightens on bass onset, deep slow ring expands over 800ms
-- [ ] **VIZ-05**: Bass node: pocket score drives glow intensity (high=warm amber, low=cool blue shift)
-- [ ] **VIZ-06**: Drums node: sharp +6px radius nudge on beat, lerps back over 180ms
-- [ ] **VIZ-07**: Drums node: crisp ripple on beat (fast circle, white-blue #e0f2fe, 300ms fade)
-- [ ] **VIZ-08**: Drums node: 2× ripple on downbeat with 500ms fade
-- [ ] **VIZ-09**: Drums node: ±3px orbit effect when timing offset > 30ms
-- [ ] **VIZ-10**: All nodes: pulse on drum beat (+2px), stronger pulse on downbeat (+4px)
-- [ ] **VIZ-11**: Canvas background subtle pulse on each beat (#0a0a0f → #0d0d18, 200ms)
-- [ ] **VIZ-12**: Role-based node states: soloing=large/amber/glow, comping=medium/blue-teal/slow, holding=small-med/gray-blue, silent=small/dark
-- [ ] **VIZ-13**: Glow rendering via offscreen canvas compositing (NOT shadowBlur — iOS performance)
+- [x] **VIZ-01**: Canvas-based node graph with dynamic layout (2=horizontal, 3=triangle, 4=diamond)
+- [x] **VIZ-02**: Dark background (#0a0a0f) with nodes labeled below by instrument name
+- [x] **VIZ-03**: Bass node: larger radius, deep amber (#b45309) breathing glow on 1-beat cycle
+- [x] **VIZ-04**: Bass node: glow brightens on bass onset, deep slow ring expands over 800ms
+- [x] **VIZ-05**: Bass node: pocket score drives glow intensity (high=warm amber, low=cool blue shift)
+- [x] **VIZ-06**: Drums node: sharp +6px radius nudge on beat, lerps back over 180ms
+- [x] **VIZ-07**: Drums node: crisp ripple on beat (fast circle, white-blue #e0f2fe, 300ms fade)
+- [x] **VIZ-08**: Drums node: 2× ripple on downbeat with 500ms fade
+- [x] **VIZ-09**: Drums node: ±3px orbit effect when timing offset > 30ms
+- [x] **VIZ-10**: All nodes: pulse on drum beat (+2px), stronger pulse on downbeat (+4px)
+- [x] **VIZ-11**: Canvas background subtle pulse on each beat (#0a0a0f → #0d0d18, 200ms)
+- [x] **VIZ-12**: Role-based node states: soloing=large/amber/glow, comping=medium/blue-teal/slow, holding=small-med/gray-blue, silent=small/dark
+- [x] **VIZ-13**: Glow rendering via offscreen canvas compositing (NOT shadowBlur — iOS performance)
 
 ### Edge Visualization
 
@@ -214,19 +214,19 @@
 | BEAT-08 | Phase 4 | Complete |
 | BEAT-09 | Phase 4 | Complete |
 | BEAT-10 | Phase 4 | Complete |
-| VIZ-01 | Phase 5 | Pending |
-| VIZ-02 | Phase 5 | Pending |
-| VIZ-03 | Phase 5 | Pending |
-| VIZ-04 | Phase 5 | Pending |
-| VIZ-05 | Phase 5 | Pending |
-| VIZ-06 | Phase 5 | Pending |
-| VIZ-07 | Phase 5 | Pending |
-| VIZ-08 | Phase 5 | Pending |
-| VIZ-09 | Phase 5 | Pending |
-| VIZ-10 | Phase 5 | Pending |
-| VIZ-11 | Phase 5 | Pending |
-| VIZ-12 | Phase 5 | Pending |
-| VIZ-13 | Phase 5 | Pending |
+| VIZ-01 | Phase 5 | Complete |
+| VIZ-02 | Phase 5 | Complete |
+| VIZ-03 | Phase 5 | Complete |
+| VIZ-04 | Phase 5 | Complete |
+| VIZ-05 | Phase 5 | Complete |
+| VIZ-06 | Phase 5 | Complete |
+| VIZ-07 | Phase 5 | Complete |
+| VIZ-08 | Phase 5 | Complete |
+| VIZ-09 | Phase 5 | Complete |
+| VIZ-10 | Phase 5 | Complete |
+| VIZ-11 | Phase 5 | Complete |
+| VIZ-12 | Phase 5 | Complete |
+| VIZ-13 | Phase 5 | Complete |
 | EDGE-01 | Phase 6 | Pending |
 | EDGE-02 | Phase 6 | Pending |
 | EDGE-03 | Phase 6 | Pending |

@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Instrument Activity Analysis** - Per-instrument frequency band analysis, activity scoring, role classification, cross-correlation edge detection
 - [x] **Phase 3: Chord Detection & Harmonic Analysis** - Chroma extraction, 8-chord template matching, tension scoring, smoothing and confidence display
 - [x] **Phase 4: Beat Detection, BPM & Pocket Score** - Dual-stream beat detection, swing ratio handling, BPM derivation, pocket score with rubato suppression
-- [ ] **Phase 5: Canvas Node Graph** - Animated node graph with role-based visuals, beat-synchronized pulse, offscreen glow compositing, layout engine
+- [x] **Phase 5: Canvas Node Graph** - Animated node graph with role-based visuals, beat-synchronized pulse, offscreen glow compositing, layout engine
 - [ ] **Phase 6: Edge Visualization** - Pocket line rendering, communication edges, tension tinting, resolution flash
 - [ ] **Phase 7: React UI Panels & Key Detection** - All React panels (band setup, node detail, chord log, tension meter, timeline), key detection, chord function labels
 - [ ] **Phase 8: Advanced Features** - Melody and call-and-response analysis, user annotations, export, pre-loaded example tracks
@@ -111,11 +111,11 @@ Plans:
 **Plans**: 5 plans in 4 waves
 
 Plans:
-- [ ] 05-01-PLAN.md — CanvasRenderer refactor: delta-time rAF loop, NodeLayout engine, NodeAnimState types, instrument diamond layout (Wave 1)
-- [ ] 05-02-PLAN.md — Role-based node drawing: circles sized/colored by role, labels, smooth transitions via lerpExp (Wave 2)
-- [ ] 05-03-PLAN.md — Bass node animations: breathing glow, onset flash, 800ms ring, pocket-score color shift (Wave 3)
-- [ ] 05-04-PLAN.md — Drums node animations: +6px beat nudge, crisp ripple, downbeat double-ripple, timing offset orbit (Wave 3)
-- [ ] 05-05-PLAN.md — Beat-responsive canvas: all-node pulse, background breath, iOS perf verification checkpoint (Wave 4)
+- [x] 05-01-PLAN.md — CanvasRenderer refactor: delta-time rAF loop, NodeLayout engine, NodeAnimState types, instrument diamond layout (Wave 1)
+- [x] 05-02-PLAN.md — Role-based node drawing: circles sized/colored by role, labels, smooth transitions via lerpExp (Wave 2)
+- [x] 05-03-PLAN.md — Bass node animations: breathing glow, onset flash, 800ms ring, pocket-score color shift (Wave 3)
+- [x] 05-04-PLAN.md — Drums node animations: +6px beat nudge, crisp ripple, downbeat double-ripple, timing offset orbit (Wave 3)
+- [x] 05-05-PLAN.md — Beat-responsive canvas: all-node pulse, background breath, iOS perf verification checkpoint (Wave 4)
 
 ### Phase 6: Edge Visualization
 **Goal**: Users see the relationships between instruments rendered as animated lines — the pocket line always visible between bass and drums, other edges appearing and fading as instruments communicate
@@ -183,7 +183,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. Instrument Activity Analysis | 5/5 | Complete | 2026-03-11 |
 | 3. Chord Detection & Harmonic Analysis | 5/5 | Complete | 2026-03-11 |
 | 4. Beat Detection, BPM & Pocket Score | 4/4 | Complete | 2026-03-10 |
-| 5. Canvas Node Graph | 0/5 | Not started | - |
+| 5. Canvas Node Graph | 5/5 | Complete | 2026-03-10 |
 | 6. Edge Visualization | 0/3 | Not started | - |
 | 7. React UI Panels & Key Detection | 0/6 | Not started | - |
 | 8. Advanced Features | 0/5 | Not started | - |
