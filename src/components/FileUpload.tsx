@@ -10,6 +10,50 @@ interface FileUploadProps {
 }
 
 /**
+ * loadAudioBuffer — programmatic audio loading for use outside the file picker.
+ *
+ * Accepts a pre-fetched ArrayBuffer and a display name.
+ * Sets up audioStateRef identically to handleFileChange in FileUpload.
+ *
+ * NOTE: For iOS, the AudioContext must already exist on audioStateRef before calling this
+ * (created inside a user gesture handler). This function does NOT create an AudioContext.
+ */
+export async function loadAudioBuffer(
+  audioStateRef: MutableRefObject<AudioStateRef>,
+  arrayBuffer: ArrayBuffer,
+  fileName: string
+): Promise<void> {
+  let audioCtx = audioStateRef.current.audioCtx;
+  if (!audioCtx) {
+    audioCtx = await createAudioContext();
+    audioStateRef.current.audioCtx = audioCtx;
+    audioStateRef.current.sampleRate = audioCtx.sampleRate;
+  }
+  if (audioCtx.state === 'suspended') {
+    await audioCtx.resume();
+  }
+
+  const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+
+  const { smoothed, raw } = createDualAnalysers(audioCtx, audioStateRef.current.fftSize);
+  const { smoothedFreqData, rawFreqData, rawTimeData } = allocateTypedArrays(audioStateRef.current.fftSize);
+  const bands = buildDefaultBands(audioCtx.sampleRate, audioStateRef.current.fftSize);
+
+  audioStateRef.current.audioCtx = audioCtx;
+  audioStateRef.current.sampleRate = audioCtx.sampleRate;
+  audioStateRef.current.transport.buffer = audioBuffer;
+  audioStateRef.current.transport.duration = audioBuffer.duration;
+  audioStateRef.current.smoothedAnalyser = smoothed;
+  audioStateRef.current.rawAnalyser = raw;
+  audioStateRef.current.smoothedFreqData = smoothedFreqData;
+  audioStateRef.current.rawFreqData = rawFreqData;
+  audioStateRef.current.rawTimeData = rawTimeData;
+  audioStateRef.current.bands = bands;
+
+  useAppStore.getState().setFile(fileName, audioBuffer.duration);
+}
+
+/**
  * FileUpload — triggers AudioContext creation and file decode on click.
  *
  * iOS requirement: AudioContext creation and file input click MUST happen in the

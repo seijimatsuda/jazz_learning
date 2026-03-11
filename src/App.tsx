@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAudioRef } from './hooks/useAudioRef';
-import { FileUpload } from './components/FileUpload';
+import { FileUpload, loadAudioBuffer } from './components/FileUpload';
 import { TransportControls } from './components/TransportControls';
 import { Timeline } from './components/Timeline';
 import { VisualizerCanvas } from './components/VisualizerCanvas';
@@ -9,6 +9,7 @@ import { ChordDisplay } from './components/ChordDisplay';
 import { NodeDetailPanel } from './components/NodeDetailPanel';
 import { ChordLogPanel } from './components/ChordLogPanel';
 import { ConversationLogPanel } from './components/ConversationLogPanel';
+import { ExportControls } from './components/ExportControls';
 import { useAppStore } from './store/useAppStore';
 import { runCalibrationPass } from './audio/CalibrationPass';
 import { computeTensionHeatmap } from './audio/TensionHeatmap';
@@ -25,6 +26,9 @@ function App() {
   const { isFileLoaded, fileName, isCalibrating, setCalibrating } = useAppStore();
   // Increment to force Timeline re-render after heatmap is ready
   const [heatmapVersion, setHeatmapVersion] = useState(0);
+
+  // Canvas ref for PNG export — populated via onCanvasReady from VisualizerCanvas
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Auto-run calibration then heatmap computation after file upload
   useEffect(() => {
@@ -94,6 +98,54 @@ function App() {
       });
   }, [isFileLoaded, audioStateRef, setCalibrating]);
 
+  /**
+   * loadExample — fetches the example track metadata and audio, then feeds them
+   * through the same audio loading pipeline as a user-uploaded file.
+   *
+   * If the example audio file is not present, shows a helpful message rather
+   * than a cryptic error. The AudioContext must already exist (created by the
+   * iOS user-gesture click); this function runs in an async handler.
+   */
+  async function loadExample() {
+    try {
+      const infoRes = await fetch('/examples/example-info.json');
+      if (!infoRes.ok) throw new Error('Failed to fetch example-info.json');
+      const info = await infoRes.json() as {
+        title: string;
+        audioFile: string;
+        lineup: string[];
+        annotations: Array<{ timeSec: number; text: string }>;
+      };
+
+      // Try to fetch the audio file
+      const audioRes = await fetch(`/examples/${info.audioFile}`);
+      if (!audioRes.ok) {
+        console.warn('[App] Example audio file not found. Place an MP3 at public/examples/example-quartet.mp3');
+        alert('Example audio file not available yet. Upload your own file to get started.');
+        return;
+      }
+
+      const arrayBuffer = await audioRes.arrayBuffer();
+
+      // Set lineup from example metadata
+      useAppStore.getState().setLineup(info.lineup);
+
+      // Feed through same pipeline as FileUpload (uses shared loadAudioBuffer)
+      await loadAudioBuffer(audioStateRef, arrayBuffer, info.title);
+
+      // Load expert annotations into store
+      if (info.annotations) {
+        for (const ann of info.annotations) {
+          useAppStore.getState().addAnnotation(ann.timeSec, ann.text);
+        }
+      }
+
+      console.log('[App] Example track loaded:', info.title);
+    } catch (err) {
+      console.error('[App] Failed to load example:', err);
+    }
+  }
+
   return (
     <div
       className="min-h-screen flex flex-col items-center gap-8 py-10 px-4"
@@ -107,12 +159,30 @@ function App() {
       <BandSetupPanel />
 
       {/* File upload — always visible */}
-      <FileUpload audioStateRef={audioStateRef} />
+      <div className="flex flex-col items-center gap-2">
+        <FileUpload audioStateRef={audioStateRef} />
+
+        {/* Load Example button — visible only before a file is loaded */}
+        {!isFileLoaded && (
+          <button
+            onClick={loadExample}
+            className="text-sm underline mt-2"
+            style={{ color: '#818cf8' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#a5b4fc'; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = '#818cf8'; }}
+          >
+            Or try with an example track
+          </button>
+        )}
+      </div>
 
       {/* Visualizer canvas — shown after file load (animates even during calibration) */}
       {isFileLoaded && (
         <div className="w-full max-w-4xl">
-          <VisualizerCanvas audioStateRef={audioStateRef} />
+          <VisualizerCanvas
+            audioStateRef={audioStateRef}
+            onCanvasReady={(canvas) => { canvasRef.current = canvas; }}
+          />
         </div>
       )}
 
@@ -142,6 +212,11 @@ function App() {
               {fileName}
             </p>
           </div>
+
+          {/* Export controls — JSON session export and PNG canvas screenshot */}
+          {!isCalibrating && (
+            <ExportControls audioStateRef={audioStateRef} canvasRef={canvasRef} />
+          )}
 
           {/* Calibration status */}
           {isCalibrating && (

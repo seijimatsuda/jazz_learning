@@ -1,0 +1,14 @@
+{
+  "title": "Jazz Quartet Example",
+  "description": "A short jazz quartet clip demonstrating keyboard-guitar call and response",
+  "audioFile": "example-quartet.mp3",
+  "duration": 90,
+  "annotations": [
+    { "timeSec": 5.0, "text": "Piano intro - comping pattern" },
+    { "timeSec": 15.2, "text": "Guitar enters - melodic line" },
+    { "timeSec": 28.5, "text": "Call and response exchange begins" },
+    { "timeSec": 45.0, "text": "Drums solo break" },
+    { "timeSec": 60.0, "text": "Bass walking pattern" }
+  ],
+  "lineup": ["keyboard", "bass", "drums", "guitar"]
+}

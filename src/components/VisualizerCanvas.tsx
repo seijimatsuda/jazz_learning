@@ -17,15 +17,20 @@ import { useAppStore } from '../store/useAppStore';
 
 interface VisualizerCanvasProps {
   audioStateRef: MutableRefObject<AudioStateRef>;
+  /** Called once when the canvas element mounts. Used by App.tsx for PNG export. */
+  onCanvasReady?: (canvas: HTMLCanvasElement) => void;
 }
 
-export function VisualizerCanvas({ audioStateRef }: VisualizerCanvasProps) {
+export function VisualizerCanvas({ audioStateRef, onCanvasReady }: VisualizerCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<CanvasRenderer | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+
+    // Notify parent that the canvas element is available (e.g. for PNG export)
+    onCanvasReady?.(canvas);
 
     // Create renderer — starts rAF loop immediately
     const renderer = new CanvasRenderer(canvas, audioStateRef);
