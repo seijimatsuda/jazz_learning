@@ -90,6 +90,22 @@ export interface BeatState {
   lastSyncEventSec: number;         // audioCtx.currentTime of last confirmed sync pair, -1 if none
 }
 
+// PitchState: per-instrument pitch detection state (Phase 8)
+// All Float32Array buffers are pre-allocated in initInstrumentPitchState — zero allocations after init.
+export interface InstrumentPitchState {
+  pitchHz: number;              // current detected pitch, -1 if none
+  prevPitchHz: number;          // previous tick's pitch
+  stablePitchHz: number;        // stable pitch when isMelodic, -1 otherwise
+  pitchFrameCount: number;      // consecutive frames with matching pitch
+  isMelodic: boolean;           // true when pitchFrameCount >= 3
+  correlationBuffer: Float32Array; // pre-allocated, length = fftSize
+}
+
+export interface PitchAnalysisState {
+  keyboard: InstrumentPitchState;
+  guitar: InstrumentPitchState;
+}
+
 // InstrumentAnalysis: per-instrument analysis state, updated at 10fps
 export interface InstrumentAnalysis {
   instrument: string;           // 'bass' | 'drums' | 'keyboard' | 'guitar'
@@ -161,6 +177,7 @@ export interface AudioStateRef {
   chord: ChordState | null;             // Phase 3: chord detection state
   tension: TensionState | null;         // Phase 3: harmonic tension state
   beat: BeatState | null;              // Phase 4: beat detection and pocket scoring state
+  pitch: PitchAnalysisState | null;    // Phase 8: pitch detection for keyboard and guitar
 }
 
 // Factory function for initial AudioStateRef
@@ -190,5 +207,6 @@ export function createInitialAudioState(): AudioStateRef {
     chord: null,
     tension: null,
     beat: null,
+    pitch: null,
   };
 }
