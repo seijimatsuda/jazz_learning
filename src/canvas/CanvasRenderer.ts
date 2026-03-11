@@ -15,6 +15,13 @@ import { getBandEnergy } from '../audio/FrequencyBandSplitter';
 import { createGlowLayer } from './offscreen/glowLayer';
 import { runAnalysisTick } from '../audio/AnalysisTick';
 
+type ChordChangeCallback = (
+  chord: string,
+  confidence: 'low' | 'medium' | 'high',
+  fn: string,
+  tension: number
+) => void;
+
 // ---------------------------------------------------------------------------
 // Node layout — six circles, one per frequency band, arranged in an arc
 // ---------------------------------------------------------------------------
@@ -61,6 +68,9 @@ export class CanvasRenderer {
 
   /** Optional callback fired when an instrument's role label changes */
   private onRoleChange?: (instrument: string, role: RoleLabel) => void;
+
+  /** Optional callback fired when the displayed chord changes (Phase 3) */
+  private onChordChange?: ChordChangeCallback;
 
   /** Bind render to this for rAF callback */
   private readonly boundRender: () => void;
@@ -109,6 +119,20 @@ export class CanvasRenderer {
    */
   setOnRoleChange(cb: (instrument: string, role: RoleLabel) => void): void {
     this.onRoleChange = cb;
+  }
+
+  /**
+   * Wires a callback that fires when the displayed chord changes.
+   *
+   * Called by VisualizerCanvas after CanvasRenderer construction to bridge
+   * chord/tension change events to the Zustand store for UI consumption.
+   * The callback is passed through to runAnalysisTick on every 10fps tick
+   * and fires only when displayedChordIdx changes (not every tick).
+   *
+   * @param cb - Callback receiving (chord, confidence, fn, tension)
+   */
+  setOnChordChange(cb: ChordChangeCallback): void {
+    this.onChordChange = cb;
   }
 
   /** Stop the animation loop and release resources. */
@@ -184,7 +208,7 @@ export class CanvasRenderer {
       const now = performance.now();
       if ((now - analysis.lastAnalysisMs) >= 100) {
         analysis.lastAnalysisMs = now;
-        runAnalysisTick(state, this.onRoleChange);
+        runAnalysisTick(state, this.onRoleChange, this.onChordChange);
       }
     }
 

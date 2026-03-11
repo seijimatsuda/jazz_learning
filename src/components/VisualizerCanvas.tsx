@@ -36,6 +36,13 @@ export function VisualizerCanvas({ audioStateRef }: VisualizerCanvasProps) {
       useAppStore.getState().setInstrumentRole(instrument, role);
     });
 
+    // Wire chord change callback — pushes chord/tension updates to Zustand for UI consumption.
+    // Only fires when displayedChordIdx changes (not every tick), so Zustand re-renders are minimal.
+    renderer.setOnChordChange((chord, confidence, fn, tension) => {
+      useAppStore.getState().setChordInfo(chord, confidence, fn);
+      useAppStore.getState().setTension(tension);
+    });
+
     // Resize observer keeps HiDPI scaling correct when element resizes
     const observer = new ResizeObserver(() => {
       renderer.resize();

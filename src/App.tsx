@@ -10,6 +10,8 @@ import { runCalibrationPass } from './audio/CalibrationPass';
 import { computeTensionHeatmap } from './audio/TensionHeatmap';
 import { initAnalysisState } from './audio/InstrumentActivityScorer';
 import type { InstrumentName } from './audio/InstrumentActivityScorer';
+import { initChordDetector, initChordState } from './audio/ChordDetector';
+import { initTensionState } from './audio/TensionScorer';
 
 function App() {
   const audioStateRef = useAudioRef();
@@ -42,6 +44,14 @@ function App() {
         audioStateRef.current.analysis = initAnalysisState(lineup, audioStateRef.current.fftSize);
         audioStateRef.current.analysis.isAnalysisActive = true;
         console.log('[App] Analysis state initialized for lineup:', lineup);
+
+        // Initialize Phase 3: chord detector, chord state, tension state
+        const fftSize = audioStateRef.current.fftSize;
+        initChordDetector(sampleRate, fftSize);
+        audioStateRef.current.chord   = initChordState();
+        audioStateRef.current.tension = initTensionState();
+        console.log('[App] Phase 3 chord/tension state initialized.');
+
         return computeTensionHeatmap(buffer, sampleRate);
       })
       .then((heatmap) => {

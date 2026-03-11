@@ -1,27 +1,84 @@
 /**
- * TensionHeatmap.ts — Pre-computed tension heatmap from offline audio analysis.
+ * TensionHeatmap.ts — Pre-computed tension heatmap from offline chord-function analysis.
  *
  * Computes a per-second tension value for the entire track immediately after
  * file load, before any playback.  The result is a Float32Array where each
  * element represents the tension for that one-second window (values in [0,1]).
  *
- * Tension proxy (Phase 1 placeholder):
- *   We use spectral centroid spread (variance of the spectral centroid across
- *   sub-windows within each second) as a tension proxy.  High variance = rhythmic
- *   complexity/tension; low variance = stable/relaxed passages.
+ * Tension implementation (Phase 3):
+ *   For each second, extracts a 12-element chroma vector using Meyda.extract('chroma').
+ *   Matches against CHORD_TEMPLATES via cosine similarity to determine chord function.
+ *   Maps chord function to a tension midpoint:
+ *     tonic       → 0.100  (home, relaxed and stable)
+ *     subdominant → 0.325  (color, gentle pull)
+ *     dominant    → 0.650  (tension, wants to resolve)
+ *     altered     → 0.875  (altered, maximum tension)
  *
- *   Phase 3 will replace this with a chroma-based harmonic tension measure.
+ * iOS fix:
+ *   Forces Meyda.chromaFilterBank to undefined before setting sampleRate to ensure
+ *   the filter bank is rebuilt with the correct sampleRate (iOS may be 48kHz).
  *
  * Implementation notes:
- * - Uses OfflineAudioContext for all processing — no audible output
- * - Splits the buffer into 1-second windows
- * - Within each window, computes spectral centroid for 8 sub-windows
- * - Returns normalised variance across sub-window centroids
- * - Safe on iOS (OfflineAudioContext is well-supported)
+ * - Mixes down to mono before processing
+ * - Forces Meyda filter bank rebuild before the first extraction
+ * - Safe on iOS (pure JS, no OfflineAudioContext required)
  */
 
+import Meyda from 'meyda';
+import { CHORD_TEMPLATES } from './ChordDetector';
+import type { ChordFunction } from './types';
+
+// ---------------------------------------------------------------------------
+// Tension midpoint per chord function
+// ---------------------------------------------------------------------------
+
+const TENSION_MIDPOINTS: Record<ChordFunction, number> = {
+  tonic:       0.100,
+  subdominant: 0.325,
+  dominant:    0.650,
+  altered:     0.875,
+};
+
+// ---------------------------------------------------------------------------
+// Private: cosineSim between a Float32 chroma and a number[] template
+// ---------------------------------------------------------------------------
+
+function cosineSim(chroma: number[], template: number[]): number {
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+
+  for (let i = 0; i < 12; i++) {
+    dot   += chroma[i] * template[i];
+    normA += chroma[i] * chroma[i];
+    normB += template[i] * template[i];
+  }
+
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  return denom === 0 ? 0 : dot / denom;
+}
+
+// ---------------------------------------------------------------------------
+// Private: matchChordFunction — returns the best-matching chord function
+// ---------------------------------------------------------------------------
+
+function matchChordFunction(chroma: number[]): ChordFunction {
+  let bestIdx   = 0;
+  let bestScore = -Infinity;
+
+  for (let i = 0; i < CHORD_TEMPLATES.length; i++) {
+    const score = cosineSim(chroma, CHORD_TEMPLATES[i].template);
+    if (score > bestScore) {
+      bestScore = score;
+      bestIdx   = i;
+    }
+  }
+
+  return CHORD_TEMPLATES[bestIdx].function;
+}
+
 /**
- * Computes a per-second tension heatmap for the given AudioBuffer.
+ * Computes a per-second chord-function-based tension heatmap for the given AudioBuffer.
  *
  * @param buffer     - Decoded AudioBuffer (from decodeAudioFile)
  * @param sampleRate - Actual sample rate in Hz (from audioCtx.sampleRate)
@@ -31,19 +88,28 @@ export async function computeTensionHeatmap(
   buffer: AudioBuffer,
   sampleRate: number
 ): Promise<Float32Array> {
-  const duration = buffer.duration;
-  const numSeconds = Math.max(1, Math.ceil(duration));
-  const tension = new Float32Array(numSeconds);
+  const duration    = buffer.duration;
+  const numSeconds  = Math.max(1, Math.ceil(duration));
+  const tension     = new Float32Array(numSeconds);
 
-  // Sub-windows per second — coarse enough to be fast, fine enough to show rhythm
-  const SUB_WINDOWS = 8;
+  // FFT buffer size for Meyda chroma extraction.
+  // Must be a power of 2. 4096 matches our live fftSize for consistency.
+  const FFT_SIZE = 4096;
 
-  // We work with mono: if stereo, mix down by summing channels * 0.5
-  const numChannels = buffer.numberOfChannels;
+  // -------------------------------------------------------------------------
+  // Force Meyda filter bank rebuild with correct sampleRate (iOS fix)
+  // Without this, a stale 44.1kHz bank on a 48kHz device produces wrong chroma.
+  // -------------------------------------------------------------------------
+  (Meyda as any).chromaFilterBank = undefined;
+  Meyda.bufferSize = FFT_SIZE;
+  Meyda.sampleRate = sampleRate;
+
+  // -------------------------------------------------------------------------
+  // Mix down to mono — average all channels into a single Float32Array
+  // -------------------------------------------------------------------------
+  const numChannels  = buffer.numberOfChannels;
   const totalSamples = buffer.length;
-  const samplesPerSecond = sampleRate;
 
-  // Copy channel data into a mono Float32Array (avoid per-frame allocation)
   const mono = new Float32Array(totalSamples);
   for (let ch = 0; ch < numChannels; ch++) {
     const channelData = buffer.getChannelData(ch);
@@ -54,82 +120,48 @@ export async function computeTensionHeatmap(
   }
 
   // -------------------------------------------------------------------------
-  // Per-second processing
+  // Per-second processing: extract chroma, match chord function, assign tension
   // -------------------------------------------------------------------------
+  const frame = new Float32Array(FFT_SIZE);
 
   for (let sec = 0; sec < numSeconds; sec++) {
-    const startSample = sec * samplesPerSecond;
-    const endSample   = Math.min(startSample + samplesPerSecond, totalSamples);
+    const startSample = Math.floor(sec * sampleRate);
+    const endSample   = Math.min(startSample + sampleRate, totalSamples);
     const windowLen   = endSample - startSample;
 
     if (windowLen <= 0) {
-      tension[sec] = 0;
+      tension[sec] = TENSION_MIDPOINTS.tonic;
       continue;
     }
 
-    const subWindowLen = Math.floor(windowLen / SUB_WINDOWS);
-    if (subWindowLen < 2) {
-      tension[sec] = 0;
+    // Center a FFT_SIZE window around the middle of this second.
+    // If window is shorter than FFT_SIZE, pad with zeros.
+    const midSample  = startSample + Math.floor(windowLen / 2);
+    const frameStart = midSample - Math.floor(FFT_SIZE / 2);
+
+    for (let i = 0; i < FFT_SIZE; i++) {
+      const sampleIdx = frameStart + i;
+      frame[i] = (sampleIdx >= 0 && sampleIdx < totalSamples)
+        ? mono[sampleIdx]
+        : 0;
+    }
+
+    // Extract 12-element chroma vector
+    const chromaRaw = Meyda.extract('chroma', frame) as number[] | null;
+
+    if (!chromaRaw || chromaRaw.length !== 12) {
+      tension[sec] = TENSION_MIDPOINTS.tonic;
       continue;
     }
 
-    // Compute spectral centroid for each sub-window
-    const centroids = new Float32Array(SUB_WINDOWS);
-
-    for (let sw = 0; sw < SUB_WINDOWS; sw++) {
-      const swStart = startSample + sw * subWindowLen;
-      const swEnd   = swStart + subWindowLen;
-
-      // Simple DFT-free centroid approximation:
-      // centroid ≈ weighted mean of |sample| * index / sum(|sample|)
-      // This is a proxy for spectral centroid without a full FFT.
-      let weightedSum = 0;
-      let totalMag    = 0;
-
-      for (let i = swStart; i < swEnd; i++) {
-        const mag = Math.abs(mono[i]);
-        weightedSum += mag * (i - swStart);
-        totalMag    += mag;
-      }
-
-      centroids[sw] = totalMag > 0 ? weightedSum / (totalMag * subWindowLen) : 0;
-    }
-
-    // Variance of centroids across sub-windows → tension
-    let mean = 0;
-    for (let sw = 0; sw < SUB_WINDOWS; sw++) {
-      mean += centroids[sw];
-    }
-    mean /= SUB_WINDOWS;
-
-    let variance = 0;
-    for (let sw = 0; sw < SUB_WINDOWS; sw++) {
-      const diff = centroids[sw] - mean;
-      variance += diff * diff;
-    }
-    variance /= SUB_WINDOWS;
-
-    // Raw variance is in [0, 0.25] — normalise to [0, 1]
-    tension[sec] = Math.min(1, variance * 4);
-  }
-
-  // -------------------------------------------------------------------------
-  // Normalise to [0, 1] relative to track max
-  // -------------------------------------------------------------------------
-  let maxTension = 0;
-  for (let i = 0; i < tension.length; i++) {
-    if (tension[i] > maxTension) maxTension = tension[i];
-  }
-
-  if (maxTension > 0) {
-    for (let i = 0; i < tension.length; i++) {
-      tension[i] /= maxTension;
-    }
+    // Match chord function via cosine similarity and map to tension midpoint
+    const fn = matchChordFunction(chromaRaw);
+    tension[sec] = TENSION_MIDPOINTS[fn];
   }
 
   console.log(
-    `[TensionHeatmap] Computed ${tension.length}s heatmap. ` +
-    `Max raw tension: ${maxTension.toFixed(4)}`
+    `[TensionHeatmap] Computed ${tension.length}s chord-function heatmap ` +
+    `(sampleRate=${sampleRate})`
   );
 
   return tension;
