@@ -95,6 +95,9 @@ export class CanvasRenderer {
   /** Last downbeat timestamp seen globally — used for stronger all-node pulse on downbeat (VIZ-10) */
   private lastSeenGlobalDownbeat = -1;
 
+  /** Previous frame tension value — used to detect tension resolution crossing (EDGE-10) */
+  private prevTension = 0;
+
   /** Optional callback fired when an instrument's role label changes */
   private onRoleChange?: (instrument: string, role: RoleLabel) => void;
 
@@ -346,6 +349,20 @@ export class CanvasRenderer {
 
     // -- Draw edges (behind nodes) -------------------------------------------
     // Draw order: pocket line → communication edges → nodes
+    const currentTension = state.tension?.currentTension ?? 0;
+
+    // -- Resolution flash detection (EDGE-10) — trigger on tension drop below 0.3 --
+    if (this.prevTension > 0.3 && currentTension <= 0.3) {
+      const flashAnalysis = state.analysis;
+      for (const key of Object.keys(this.edgeAnimStates)) {
+        const edgeW = flashAnalysis?.edgeWeights[key] ?? 0;
+        if (key === 'bass_drums' || edgeW >= 0.3) {
+          this.edgeAnimStates[key].resolutionFlashIntensity = 1.0;
+        }
+      }
+    }
+    this.prevTension = currentTension;
+
     const beat = state.beat;
     if (beat !== null) {
       const bassIdx  = INSTRUMENT_ORDER.indexOf('bass');   // index 3
@@ -359,11 +376,12 @@ export class CanvasRenderer {
         this.edgeAnimStates['bass_drums'],
         beat.pocketScore,
         beat.lastSyncEventSec,
+        currentTension,
         deltaMs,
       );
     }
 
-    // -- Communication edges (EDGE-07, EDGE-08) — behind nodes ---------------
+    // -- Communication edges (EDGE-07, EDGE-08, EDGE-09, EDGE-10) — behind nodes
     const commAnalysis = state.analysis;
     if (commAnalysis) {
       const nodeRadii = this.nodeAnimStates.map(ns => ns.currentRadius);
@@ -374,6 +392,7 @@ export class CanvasRenderer {
         this.edgeAnimStates,
         commAnalysis.edgeWeights,
         w, h,
+        currentTension,
         deltaMs,
       );
     }

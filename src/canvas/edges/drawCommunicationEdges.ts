@@ -1,9 +1,11 @@
 /**
  * drawCommunicationEdges.ts — Communication edge rendering for all non-pocket pairs.
  *
- * Implements EDGE-07 and EDGE-08:
+ * Implements EDGE-07, EDGE-08, EDGE-09, EDGE-10:
  *   EDGE-07: Communication edges appear/fade based on cross-correlation weight
  *   EDGE-08: Edge color encodes relationship type (rhythmic/melodic/support)
+ *   EDGE-09: Tension tinting — base color shifts amber/red at high tension
+ *   EDGE-10: Resolution flash — cool blue-white glow when tension drops below 0.3
  *
  * Covers all 5 non-pocket instrument pairs:
  *   bass_guitar, bass_keyboard, drums_guitar, drums_keyboard, guitar_keyboard
@@ -23,8 +25,9 @@
  */
 
 import { lerpExp } from '../nodes/NodeAnimState';
+import { drawGlow } from '../nodes/drawGlow';
 import type { EdgeAnimState } from './EdgeAnimState';
-import { EDGE_TYPE, EDGE_COLOR } from './edgeTypes';
+import { EDGE_TYPE, EDGE_COLOR, getTintedColor } from './edgeTypes';
 import { INSTRUMENT_ORDER } from '../nodes/NodeLayout';
 
 // ---------------------------------------------------------------------------
@@ -80,14 +83,15 @@ type VisualState = 'hidden' | 'static_thin' | 'subtle' | 'animated';
  * All edges render behind instrument nodes — caller must invoke this before
  * the node drawing loop.
  *
- * @param ctx            - Main canvas 2D rendering context
- * @param nodePositions  - Fractional [0,1] positions per instrument (indexed by INSTRUMENT_ORDER)
- * @param nodeRadii      - Current rendered radii per instrument (CSS pixels)
- * @param edgeAnimStates - Mutable per-edge animation state keyed by pair string
- * @param edgeWeights    - Cross-correlation weights keyed by 'instrA_instrB' (alphabetical)
- * @param canvasW        - Logical canvas width in CSS pixels
- * @param canvasH        - Logical canvas height in CSS pixels
- * @param deltaMs        - Elapsed ms since last frame (capped at 100ms by caller)
+ * @param ctx             - Main canvas 2D rendering context
+ * @param nodePositions   - Fractional [0,1] positions per instrument (indexed by INSTRUMENT_ORDER)
+ * @param nodeRadii       - Current rendered radii per instrument (CSS pixels)
+ * @param edgeAnimStates  - Mutable per-edge animation state keyed by pair string
+ * @param edgeWeights     - Cross-correlation weights keyed by 'instrA_instrB' (alphabetical)
+ * @param canvasW         - Logical canvas width in CSS pixels
+ * @param canvasH         - Logical canvas height in CSS pixels
+ * @param currentTension  - Current harmonic tension [0,1] for EDGE-09/10
+ * @param deltaMs         - Elapsed ms since last frame (capped at 100ms by caller)
  */
 export function drawCommunicationEdges(
   ctx: CanvasRenderingContext2D,
@@ -97,6 +101,7 @@ export function drawCommunicationEdges(
   edgeWeights: Record<string, number>,
   canvasW: number,
   canvasH: number,
+  currentTension: number,
   deltaMs: number,
 ): void {
   for (const [idxA, idxB, key] of PAIRS) {
@@ -175,8 +180,17 @@ export function drawCommunicationEdges(
     // Step 6: Determine base color from edge type
     // -----------------------------------------------------------------------
     const edgeType = EDGE_TYPE[key] ?? 'support';
-    const rgb = EDGE_COLOR[edgeType];
-    const colorString = `rgb(${rgb.r},${rgb.g},${rgb.b})`;
+    const baseColor = EDGE_COLOR[edgeType];
+
+    // -----------------------------------------------------------------------
+    // Step 6b: Tension tinting (EDGE-09) — smooth tintFactor and lerp color
+    // -----------------------------------------------------------------------
+    const targetTint = currentTension > 0.6 ? (currentTension - 0.6) / 0.4 : 0;
+    animState.tintFactor = lerpExp(animState.tintFactor, targetTint, 0.1, deltaMs);
+
+    const colorString = animState.tintFactor > 0.01
+      ? getTintedColor(baseColor.r, baseColor.g, baseColor.b, animState.tintFactor, currentTension)
+      : `rgb(${baseColor.r},${baseColor.g},${baseColor.b})`;
 
     // -----------------------------------------------------------------------
     // Step 7: Draw with ctx.save()/ctx.restore() for lineDash isolation
@@ -209,5 +223,16 @@ export function drawCommunicationEdges(
     }
 
     ctx.restore();
+
+    // -----------------------------------------------------------------------
+    // Step 8: Resolution flash (EDGE-10) — cool blue-white glow at midpoint
+    // -----------------------------------------------------------------------
+    if (animState.resolutionFlashIntensity > 0.01) {
+      const midX = (startX + endX) / 2;
+      const midY = (startY + endY) / 2;
+      drawGlow(ctx, animState.resolutionGlowCanvas, midX, midY, animState.resolutionFlashIntensity);
+      animState.resolutionFlashIntensity = lerpExp(animState.resolutionFlashIntensity, 0, 0.08, deltaMs);
+      if (animState.resolutionFlashIntensity < 0.02) animState.resolutionFlashIntensity = 0;
+    }
   }
 }
