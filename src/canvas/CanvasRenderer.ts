@@ -76,8 +76,17 @@ export class CanvasRenderer {
   /** Per-instrument animation state objects — one per INSTRUMENT_ORDER entry */
   private nodeAnimStates: NodeAnimState[] = [];
 
-  /** Background beat pulse progress [0,1] — for VIZ-11, wired in 05-05 */
+  /** Background beat pulse progress [0,1] — for VIZ-11 (background breath on beat) */
   private bgPulseProgress = 0;
+
+  /** Shared beat pulse radius boost [px] applied to ALL nodes on each drum onset (VIZ-10) */
+  private beatPulse = 0;
+
+  /** Last drum onset timestamp seen globally — used for all-node pulse trigger (VIZ-10) */
+  private lastSeenGlobalDrumOnset = -1;
+
+  /** Last downbeat timestamp seen globally — used for stronger all-node pulse on downbeat (VIZ-10) */
+  private lastSeenGlobalDownbeat = -1;
 
   /** Optional callback fired when an instrument's role label changes */
   private onRoleChange?: (instrument: string, role: RoleLabel) => void;
@@ -270,16 +279,41 @@ export class CanvasRenderer {
     const deltaMs = Math.min(rawDelta, 100);
     this.prevTimestamp = timestamp;
 
-    // Suppress unused variable lint warning for bgPulseProgress — wired in 05-05
-    void this.bgPulseProgress;
-
-    // -- Background ----------------------------------------------------------
-    ctx.fillStyle = '#0a0a0f';
-    ctx.fillRect(0, 0, w, h);
-
     // -- Read audio state (zero allocations) ---------------------------------
     const state = this.audioStateRef.current;
     const freqData = state.smoothedFreqData;
+
+    // -- Global onset detection (VIZ-10, VIZ-11) — BEFORE per-node loop ------
+    // Single detection at top of frame: downbeat > beat pulse (stronger signal).
+    // Guard: both beat and bpm must be non-null to detect onsets.
+    const beatState = state.beat;
+    if (beatState !== null && beatState.bpm !== null) {
+      if (beatState.lastDrumOnsetSec !== this.lastSeenGlobalDrumOnset) {
+        this.lastSeenGlobalDrumOnset = beatState.lastDrumOnsetSec;
+        this.beatPulse = 2;            // +2px on regular drum beat (VIZ-10)
+        this.bgPulseProgress = 1.0;   // Background breath on every drum onset (VIZ-11)
+      }
+      if (beatState.lastDownbeatSec !== this.lastSeenGlobalDownbeat) {
+        this.lastSeenGlobalDownbeat = beatState.lastDownbeatSec;
+        this.beatPulse = 4;            // +4px override on downbeat (VIZ-10)
+        // bgPulseProgress already triggered by drum onset above (downbeat is also a beat)
+      }
+    }
+
+    // -- Decay beat pulse each frame (VIZ-10) --------------------------------
+    this.beatPulse = lerpExp(this.beatPulse, 0, 0.88, deltaMs);
+    if (this.beatPulse < 0.3) this.beatPulse = 0; // snap to 0 to avoid float drift
+
+    // -- Decay background pulse progress (VIZ-11): linear 200ms decay --------
+    this.bgPulseProgress = Math.max(0, this.bgPulseProgress - deltaMs / 200);
+
+    // -- Background fill with breath color interpolation (VIZ-11) -----------
+    // Base: #0a0a0f  →  Peak: #0d0d18 driven by bgPulseProgress [0,1]
+    const bgR = Math.round(0x0a + (0x0d - 0x0a) * this.bgPulseProgress);
+    const bgG = Math.round(0x0a + (0x0d - 0x0a) * this.bgPulseProgress);
+    const bgB = Math.round(0x0f + (0x18 - 0x0f) * this.bgPulseProgress);
+    ctx.fillStyle = `rgb(${bgR},${bgG},${bgB})`;
+    ctx.fillRect(0, 0, w, h);
 
     // -- Pull FFT data once per frame (not per node) -------------------------
     if (freqData && state.smoothedAnalyser) {
@@ -310,12 +344,13 @@ export class CanvasRenderer {
       const instrAnalysis = instruments?.find((ia) => ia.instrument === instrument) ?? null;
       const role = instrAnalysis?.role ?? 'silent';
 
-      // Update target radius and smoothly transition current radius (VIZ-12)
+      // Update target radius and smoothly transition current radius (VIZ-12).
+      // All nodes include this.beatPulse — shared pulse on every drum onset (VIZ-10).
       const targetRadius = getRoleRadius(role);
       animState.baseRadius = targetRadius;
       animState.currentRadius = lerpExp(
         animState.currentRadius,
-        targetRadius + animState.radiusNudge,
+        targetRadius + animState.radiusNudge + this.beatPulse,
         0.15,
         deltaMs,
       );
