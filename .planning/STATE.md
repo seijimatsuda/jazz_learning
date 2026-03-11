@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-10)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 2 — Instrument Activity Analysis COMPLETE (gap closure done) — ready for Phase 3
+**Current focus:** Phase 3 — Chord Detection & Harmonic Analysis
 
 ## Current Position
 
-Phase: 2 of 8 (Instrument Activity Analysis) — PHASE COMPLETE (including gap closure 02-05)
-Plan: 5 of 5 in current phase (02-05 gap closure)
-Status: Phase 2 fully complete — ready for Phase 3 (Chord Detection)
-Last activity: 2026-03-11 — Completed 02-05-PLAN.md — InstrumentRoleOverlay gap closure; Phase 2 verification fully satisfied.
+Phase: 3 of 8 (Chord Detection & Harmonic Analysis)
+Plan: 0 of 5 in current phase
+Status: Ready to plan
+Last activity: 2026-03-11 — Phase 2 complete and verified (5/5 must-haves passed). Gap closure (02-05 InstrumentRoleOverlay) closed display gap.
 
-Progress: [█████████░] 25% (10/40 total plans estimated)
+Progress: [██████████░░░░░░░░░░] 25% (10/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -92,6 +92,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11T03:01:26Z
-Stopped at: Completed 02-05-PLAN.md — InstrumentRoleOverlay gap closure. Phase 2 fully complete including UI surface.
+Last session: 2026-03-11
+Stopped at: Phase 2 complete and verified. Ready for Phase 3 (Chord Detection & Harmonic Analysis).
 Resume file: None

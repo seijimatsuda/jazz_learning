@@ -19,15 +19,15 @@
 
 ### Instrument Analysis
 
-- [ ] **INST-01**: Frequency band splitting per instrument type (bass 20–250Hz, drums 60–300Hz+2–8kHz+6–10kHz, keyboard 250–2000Hz, guitar 300–3000Hz)
-- [ ] **INST-02**: Per-instrument activity score (0.0–1.0) computed every analysis frame (~10fps)
-- [ ] **INST-03**: Role classification per instrument per frame: soloing / comping / holding / silent
-- [ ] **INST-04**: Keyboard vs guitar disambiguation using zero-crossing rate + spectral flux when both present
-- [ ] **INST-05**: If only one mid-range instrument in lineup, full mid-range assigned to it
-- [ ] **INST-06**: Cross-correlation communication edge detection between all instrument pairs (2-second sliding window)
-- [ ] **INST-07**: Edge suppression when cross-correlation weight < 0.3
-- [ ] **INST-08**: Rolling 10-second activity history per instrument
-- [ ] **INST-09**: Cumulative time-in-role tracking per instrument since playback started
+- [x] **INST-01**: Frequency band splitting per instrument type (bass 20–250Hz, drums 60–300Hz+2–8kHz+6–10kHz, keyboard 250–2000Hz, guitar 300–3000Hz)
+- [x] **INST-02**: Per-instrument activity score (0.0–1.0) computed every analysis frame (~10fps)
+- [x] **INST-03**: Role classification per instrument per frame: soloing / comping / holding / silent
+- [x] **INST-04**: Keyboard vs guitar disambiguation using zero-crossing rate + spectral flux when both present
+- [x] **INST-05**: If only one mid-range instrument in lineup, full mid-range assigned to it
+- [x] **INST-06**: Cross-correlation communication edge detection between all instrument pairs (2-second sliding window)
+- [x] **INST-07**: Edge suppression when cross-correlation weight < 0.3
+- [x] **INST-08**: Rolling 10-second activity history per instrument
+- [x] **INST-09**: Cumulative time-in-role tracking per instrument since playback started
 
 ### Chord Detection
 
@@ -178,15 +178,15 @@
 | XCUT-02 | Phase 1 | Complete |
 | XCUT-03 | Phase 1 | Complete |
 | XCUT-04 | Phase 1 | Complete |
-| INST-01 | Phase 2 | Pending |
-| INST-02 | Phase 2 | Pending |
-| INST-03 | Phase 2 | Pending |
-| INST-04 | Phase 2 | Pending |
-| INST-05 | Phase 2 | Pending |
-| INST-06 | Phase 2 | Pending |
-| INST-07 | Phase 2 | Pending |
-| INST-08 | Phase 2 | Pending |
-| INST-09 | Phase 2 | Pending |
+| INST-01 | Phase 2 | Complete |
+| INST-02 | Phase 2 | Complete |
+| INST-03 | Phase 2 | Complete |
+| INST-04 | Phase 2 | Complete |
+| INST-05 | Phase 2 | Complete |
+| INST-06 | Phase 2 | Complete |
+| INST-07 | Phase 2 | Complete |
+| INST-08 | Phase 2 | Complete |
+| INST-09 | Phase 2 | Complete |
 | CHORD-01 | Phase 3 | Pending |
 | CHORD-02 | Phase 3 | Pending |
 | CHORD-03 | Phase 3 | Pending |

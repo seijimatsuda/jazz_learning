@@ -13,7 +13,7 @@ The build proceeds as a strict dependency chain through the audio pipeline, then
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Audio Pipeline Foundation** - iOS-safe AudioContext, dual AnalyserNode, FrequencyBandSplitter, audioStateRef shape, all performance constraints locked in
-- [ ] **Phase 2: Instrument Activity Analysis** - Per-instrument frequency band analysis, activity scoring, role classification, cross-correlation edge detection
+- [x] **Phase 2: Instrument Activity Analysis** - Per-instrument frequency band analysis, activity scoring, role classification, cross-correlation edge detection
 - [ ] **Phase 3: Chord Detection & Harmonic Analysis** - Chroma extraction, 8-chord template matching, tension scoring, smoothing and confidence display
 - [ ] **Phase 4: Beat Detection, BPM & Pocket Score** - Dual-stream beat detection, swing ratio handling, BPM derivation, pocket score with rubato suppression
 - [ ] **Phase 5: Canvas Node Graph** - Animated node graph with role-based visuals, beat-synchronized pulse, offscreen glow compositing, layout engine
@@ -52,13 +52,14 @@ Plans:
   3. When both keyboard and guitar are in the lineup, disambiguation via ZCR + spectral flux assigns activity to the correct instrument
   4. Cross-correlation edges between instrument pairs appear and disappear based on whether instruments are interacting, and edges below 0.3 are suppressed
   5. Rolling 10-second activity history and cumulative time-in-role are tracked and available for UI consumption
-**Plans**: TBD
+**Plans**: 5 plans in 4 waves (sequential + parallel + gap closure)
 
 Plans:
-- [ ] 02-01: InstrumentActivityScorer — per-band RMS → 0.0–1.0 activity score at 10fps
-- [ ] 02-02: RoleClassifier — activity thresholds → soloing/comping/holding/silent state machine
-- [ ] 02-03: Keyboard vs guitar disambiguation (ZCR + spectral flux) and single-instrument fallback
-- [ ] 02-04: Cross-correlation edge detection (2-second sliding window, weight < 0.3 suppression), rolling history
+- [x] 02-01-PLAN.md — InstrumentActivityScorer — per-band RMS → 0.0–1.0 activity score at 10fps (Wave 1)
+- [x] 02-02-PLAN.md — RoleClassifier — activity thresholds → soloing/comping/holding/silent state machine (Wave 2)
+- [x] 02-03-PLAN.md — Keyboard vs guitar disambiguation (ZCR + spectral flux) and single-instrument fallback (Wave 2)
+- [x] 02-04-PLAN.md — Cross-correlation edge detection (2-second sliding window, weight < 0.3 suppression), rolling history (Wave 3)
+- [x] 02-05-PLAN.md — InstrumentRoleOverlay gap closure — visible role labels and activity scores (Wave 4)
 
 ### Phase 3: Chord Detection & Harmonic Analysis
 **Goal**: Users see the current chord name with confidence indicator and a smooth harmonic tension score that rises and falls with the music's harmonic movement
@@ -179,7 +180,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Audio Pipeline Foundation | 5/5 | Complete | 2026-03-10 |
-| 2. Instrument Activity Analysis | 0/4 | Not started | - |
+| 2. Instrument Activity Analysis | 5/5 | Complete | 2026-03-11 |
 | 3. Chord Detection & Harmonic Analysis | 0/5 | Not started | - |
 | 4. Beat Detection, BPM & Pocket Score | 0/4 | Not started | - |
 | 5. Canvas Node Graph | 0/5 | Not started | - |
