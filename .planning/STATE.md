@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 6 of 8 (Edge Visualization) — In progress
-Plan: 2 of 4 complete
-Status: In progress — 06-02 complete, communication edges (EDGE-07, EDGE-08) done
-Last activity: 2026-03-11 — Completed 06-02 (communication edge rendering for all non-pocket pairs)
+Plan: 3 of 4 complete
+Status: In progress — 06-03 complete, tension tinting (EDGE-09) and resolution flash (EDGE-10) done
+Last activity: 2026-03-11 — Completed 06-03 (tension tinting and resolution flash for all edges)
 
-Progress: [███████████████████████████░] 67% (27/40 total plans estimated)
+Progress: [████████████████████████████░] 70% (28/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -32,10 +32,10 @@ Progress: [███████████████████████
 | 03 - Chord Detection & Harmonic Analysis | 5/5 COMPLETE | ~8m 13s | ~1m 38s |
 | 04 - Beat Detection, BPM & Pocket Score | 4/4 COMPLETE | ~11m | ~2m 45s |
 | 05 - Canvas Node Graph | 5/5 COMPLETE | ~15m | ~3m |
-| 06 - Edge Visualization | 2/4 in progress | ~5m | ~2m 30s |
+| 06 - Edge Visualization | 3/4 in progress | ~9m | ~3m |
 
 **Recent Trend:**
-- Last 5 plans: 05-05 (~3m), 06-01 (~3m), 06-02 (~2m)
+- Last 5 plans: 05-05 (~3m), 06-01 (~3m), 06-02 (~2m), 06-03 (~4m)
 - Trend: Consistent sub-3min per plan
 
 *Updated after each plan completion*
@@ -141,6 +141,10 @@ Recent decisions affecting current work:
 - [D-06-02-2]: visualState string dispatch ('hidden'/'static_thin'/'subtle'/'animated') — clear intent at each weight threshold without numeric comparisons in draw block
 - [D-06-02-3]: nodeRadii 4-element array created in render() per frame — acceptable as small non-typed array from existing values; avoids exposing NodeAnimState internals into edge draw function
 - [D-06-02-4]: dashOffset speed 0.04 vs pocket line 0.06 — communication edges animate slightly slower to visually distinguish from the primary pocket line
+- [D-06-03-1]: getTintedColor placed in edgeTypes.ts — colocation with TENSION_AMBER_RGB/TENSION_RED_RGB constants it depends on; follows drawGlow.ts pattern
+- [D-06-03-2]: tintFactor > 0.01 guard before getTintedColor — skips string allocation when tint is perceptually invisible
+- [D-06-03-3]: Resolution flash triggers on all visible edges (weight >= 0.3) plus bass_drums — harmonic resolution illuminates the whole graph
+- [D-06-03-4]: prevTension crossing check: prevTension > 0.3 && currentTension <= 0.3 — fires once per resolution event, not continuously
 
 ### Pending Todos
 
@@ -156,5 +160,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: 06-02 complete — Communication edges (EDGE-07, EDGE-08) rendering for all non-pocket pairs.
+Stopped at: 06-03 complete — Tension tinting (EDGE-09) and resolution flash (EDGE-10) for all edges. Phase 6 EDGE-01 through EDGE-10 complete.
 Resume file: None
