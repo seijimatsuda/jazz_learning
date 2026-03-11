@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 5 of 8 (Canvas Node Graph) — In progress
-Plan: 2 of 5 complete
+Plan: 4 of 5 complete
 Status: In progress
-Last activity: 2026-03-11 — Completed 05-02-PLAN.md (drawNode.ts, role-based node rendering in CanvasRenderer)
+Last activity: 2026-03-11 — Completed 05-04-PLAN.md (drums beat nudge, ripple, downbeat double-ripple, orbit)
 
-Progress: [█████████████████████░░░] 55% (22/40 total plans estimated)
+Progress: [████████████████████████░] 60% (24/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -121,6 +121,9 @@ Recent decisions affecting current work:
 - [D-05-02-1]: Initial glowCanvas color set to ROLE_FILL_COLOR['holding'] for all nodes — glow re-creation gated by pocketScore threshold in 05-03; avoids per-frame HTMLCanvasElement allocation
 - [D-05-02-2]: INSTRUMENT_COLORS removed from CanvasRenderer — all color authority delegated to ROLE_FILL_COLOR in drawNode.ts (single source of truth)
 - [D-05-02-3]: lerpExp factor=0.15 per 16.667ms frame (~200ms transition) — consistent with future nudge/pulse animations in 05-03/04
+- [D-05-04-1]: Downbeat double-ripple check inside bpm !== null guard — downbeat fires alongside regular onset on beat 1, both ripples spawn simultaneously
+- [D-05-04-2]: Ripple baseX/baseY at unorbited (x, y) coordinates — ripples emanate from node's logical center, not the orbited offset position
+- [D-05-04-3]: Beat nudge assigned after decay — ensures fresh onset always restores full +6px regardless of mid-decay state
 
 ### Pending Todos
 
@@ -136,5 +139,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 05-02-PLAN.md. drawNode.ts created with ROLE_BASE_RADIUS/ROLE_FILL_COLOR constants. CanvasRenderer now reads role from analysis.instruments each frame and uses lerpExp for smooth radius transitions. Labels capitalized. Ready for 05-03 (bass glow + pocket color).
+Stopped at: Completed 05-04-PLAN.md. Drums node now has beat nudge (+6px, lerpExp decay), crisp #e0f2fe ripple rings (300ms), downbeat double-ripple (500ms), and timing-offset orbit (+/-3px). All gated on bpm !== null for rubato safety. 05-03 (bass animations) was parallel work — bass breathe method added to CanvasRenderer but bass render-loop wiring still pending. Ready for 05-05 (background beat pulse).
 Resume file: None
