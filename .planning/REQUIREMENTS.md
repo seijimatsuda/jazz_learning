@@ -96,24 +96,24 @@
 
 ### UI Panels
 
-- [ ] **UI-01**: Left panel: band setup with dropdown to add keyboard/bass/drums/guitar
-- [ ] **UI-02**: Each instrument row shows icon, name, frequency band label, remove button
-- [ ] **UI-03**: "Load Audio" file picker + "Calibrate & Play" button
-- [ ] **UI-04**: Node detail panel on instrument click: name, icon, current role badge
-- [ ] **UI-05**: Node detail: activity sparkline (last 10 seconds)
-- [ ] **UI-06**: Node detail: role breakdown pie chart (% time in each role since playback start)
-- [ ] **UI-07**: Node detail: "Most active with" showing highest-synced partner
-- [ ] **UI-08**: Role legend with color/role key
-- [ ] **UI-09**: BPM display in bottom corner of canvas (♩ = 124 or ♩ = —)
-- [ ] **UI-10**: Chord log: expandable drawer below timeline
-- [ ] **UI-11**: Chord log entries: timestamp | chord name | function | confidence, color-coded by tension
-- [ ] **UI-12**: Chord log entries clickable to jump playback to that moment
+- [x] **UI-01**: Left panel: band setup with dropdown to add keyboard/bass/drums/guitar
+- [x] **UI-02**: Each instrument row shows icon, name, frequency band label, remove button
+- [x] **UI-03**: "Load Audio" file picker + "Calibrate & Play" button
+- [x] **UI-04**: Node detail panel on instrument click: name, icon, current role badge
+- [x] **UI-05**: Node detail: activity sparkline (last 10 seconds)
+- [x] **UI-06**: Node detail: role breakdown pie chart (% time in each role since playback start)
+- [x] **UI-07**: Node detail: "Most active with" showing highest-synced partner
+- [x] **UI-08**: Role legend with color/role key
+- [x] **UI-09**: BPM display in bottom corner of canvas (♩ = 124 or ♩ = —)
+- [x] **UI-10**: Chord log: expandable drawer below timeline
+- [x] **UI-11**: Chord log entries: timestamp | chord name | function | confidence, color-coded by tension
+- [x] **UI-12**: Chord log entries clickable to jump playback to that moment
 
 ### Key Detection
 
-- [ ] **KEY-01**: Rolling window key detection from chord history
-- [ ] **KEY-02**: Display chord function relative to detected key (e.g. "G7 is the V chord in C major")
-- [ ] **KEY-03**: Bar/beat grid overlay on timeline derived from detected BPM
+- [x] **KEY-01**: Rolling window key detection from chord history
+- [x] **KEY-02**: Display chord function relative to detected key (e.g. "G7 is the V chord in C major")
+- [x] **KEY-03**: Bar/beat grid overlay on timeline derived from detected BPM
 
 ### Melody Analysis
 
@@ -237,21 +237,21 @@
 | EDGE-08 | Phase 6 | Complete |
 | EDGE-09 | Phase 6 | Complete |
 | EDGE-10 | Phase 6 | Complete |
-| UI-01 | Phase 7 | Pending |
-| UI-02 | Phase 7 | Pending |
-| UI-03 | Phase 7 | Pending |
-| UI-04 | Phase 7 | Pending |
-| UI-05 | Phase 7 | Pending |
-| UI-06 | Phase 7 | Pending |
-| UI-07 | Phase 7 | Pending |
-| UI-08 | Phase 7 | Pending |
-| UI-09 | Phase 7 | Pending |
-| UI-10 | Phase 7 | Pending |
-| UI-11 | Phase 7 | Pending |
-| UI-12 | Phase 7 | Pending |
-| KEY-01 | Phase 7 | Pending |
-| KEY-02 | Phase 7 | Pending |
-| KEY-03 | Phase 7 | Pending |
+| UI-01 | Phase 7 | Complete |
+| UI-02 | Phase 7 | Complete |
+| UI-03 | Phase 7 | Complete |
+| UI-04 | Phase 7 | Complete |
+| UI-05 | Phase 7 | Complete |
+| UI-06 | Phase 7 | Complete |
+| UI-07 | Phase 7 | Complete |
+| UI-08 | Phase 7 | Complete |
+| UI-09 | Phase 7 | Complete |
+| UI-10 | Phase 7 | Complete |
+| UI-11 | Phase 7 | Complete |
+| UI-12 | Phase 7 | Complete |
+| KEY-01 | Phase 7 | Complete |
+| KEY-02 | Phase 7 | Complete |
+| KEY-03 | Phase 7 | Complete |
 | MEL-01 | Phase 8 | Pending |
 | MEL-02 | Phase 8 | Pending |
 | MEL-03 | Phase 8 | Pending |
