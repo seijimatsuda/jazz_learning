@@ -189,10 +189,12 @@ export function getCurrentPosition(
  * Pre-allocates typed arrays for FFT frequency and time domain data.
  *
  * These arrays are reused every animation frame to avoid GC pressure.
- * All arrays are sized to fftSize/2 (the number of frequency bins in a
- * getByteFrequencyData result).
+ * Frequency arrays are sized to fftSize/2 (the number of frequency bins in a
+ * getByteFrequencyData result). The time domain array is sized to fftSize because
+ * getByteTimeDomainData fills fftSize bytes (one per sample in the FFT window),
+ * NOT fftSize/2.
  *
- * @param fftSize - FFT size (e.g. 4096); arrays will have fftSize/2 elements
+ * @param fftSize - FFT size (e.g. 4096); freq arrays have fftSize/2 elements, rawTimeData has fftSize
  * @returns Object with three pre-allocated Uint8Arrays
  */
 export function allocateTypedArrays(fftSize: number): {
@@ -204,6 +206,6 @@ export function allocateTypedArrays(fftSize: number): {
   return {
     smoothedFreqData: new Uint8Array(binCount),
     rawFreqData:      new Uint8Array(binCount),
-    rawTimeData:      new Uint8Array(binCount),
+    rawTimeData:      new Uint8Array(fftSize),  // getByteTimeDomainData fills fftSize bytes (not fftSize/2)
   };
 }

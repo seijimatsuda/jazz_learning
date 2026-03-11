@@ -7,6 +7,8 @@ import { VisualizerCanvas } from './components/VisualizerCanvas';
 import { useAppStore } from './store/useAppStore';
 import { runCalibrationPass } from './audio/CalibrationPass';
 import { computeTensionHeatmap } from './audio/TensionHeatmap';
+import { initAnalysisState } from './audio/InstrumentActivityScorer';
+import type { InstrumentName } from './audio/InstrumentActivityScorer';
 
 function App() {
   const audioStateRef = useAudioRef();
@@ -33,7 +35,14 @@ function App() {
     const sampleRate = state.sampleRate;
 
     runCalibrationPass(state, setCalibrating)
-      .then(() => computeTensionHeatmap(buffer, sampleRate))
+      .then(() => {
+        // Initialize Phase 2 analysis state with default quartet lineup
+        const lineup: InstrumentName[] = ['bass', 'drums', 'keyboard', 'guitar'];
+        audioStateRef.current.analysis = initAnalysisState(lineup, audioStateRef.current.fftSize);
+        audioStateRef.current.analysis.isAnalysisActive = true;
+        console.log('[App] Analysis state initialized for lineup:', lineup);
+        return computeTensionHeatmap(buffer, sampleRate);
+      })
       .then((heatmap) => {
         audioStateRef.current.tensionHeatmap = heatmap;
         // Bump version to trigger Timeline re-render so it reads the new heatmap

@@ -10,9 +10,10 @@
  */
 
 import type { MutableRefObject } from 'react';
-import type { AudioStateRef } from '../audio/types';
+import type { AudioStateRef, RoleLabel } from '../audio/types';
 import { getBandEnergy } from '../audio/FrequencyBandSplitter';
 import { createGlowLayer } from './offscreen/glowLayer';
+import { runAnalysisTick } from '../audio/AnalysisTick';
 
 // ---------------------------------------------------------------------------
 // Node layout — six circles, one per frequency band, arranged in an arc
@@ -58,6 +59,9 @@ export class CanvasRenderer {
   /** rAF handle — stored so we can cancel on destroy */
   private rafHandle = 0;
 
+  /** Optional callback fired when an instrument's role label changes */
+  private onRoleChange?: (instrument: string, role: RoleLabel) => void;
+
   /** Bind render to this for rAF callback */
   private readonly boundRender: () => void;
 
@@ -92,6 +96,19 @@ export class CanvasRenderer {
    */
   resize(): void {
     this.setupHiDPI();
+  }
+
+  /**
+   * Wires a callback that fires when any instrument's role label changes.
+   *
+   * Called by VisualizerCanvas after CanvasRenderer construction to bridge
+   * role change events to the Zustand store for UI consumption.
+   * The callback is passed through to runAnalysisTick on every 10fps tick.
+   *
+   * @param cb - Callback receiving (instrument: string, role: RoleLabel)
+   */
+  setOnRoleChange(cb: (instrument: string, role: RoleLabel) => void): void {
+    this.onRoleChange = cb;
   }
 
   /** Stop the animation loop and release resources. */
@@ -156,6 +173,19 @@ export class CanvasRenderer {
     // -- Pull FFT data once per frame (not per node) -------------------------
     if (freqData && state.smoothedAnalyser) {
       state.smoothedAnalyser.getByteFrequencyData(freqData);
+    }
+
+    // -- 10fps analysis gate -------------------------------------------------
+    // runAnalysisTick pulls from BOTH analysers (smoothed AND raw).
+    // The smoothed pull above is redundant on analysis frames but harmless —
+    // same pre-allocated array, same data. Keep both for clarity.
+    const analysis = state.analysis;
+    if (analysis && analysis.isAnalysisActive) {
+      const now = performance.now();
+      if ((now - analysis.lastAnalysisMs) >= 100) {
+        analysis.lastAnalysisMs = now;
+        runAnalysisTick(state, this.onRoleChange);
+      }
     }
 
     // -- Draw nodes ----------------------------------------------------------

@@ -12,6 +12,7 @@ import { useEffect, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import type { AudioStateRef } from '../audio/types';
 import { CanvasRenderer } from '../canvas/CanvasRenderer';
+import { useAppStore } from '../store/useAppStore';
 
 interface VisualizerCanvasProps {
   audioStateRef: MutableRefObject<AudioStateRef>;
@@ -28,6 +29,12 @@ export function VisualizerCanvas({ audioStateRef }: VisualizerCanvasProps) {
     // Create renderer — starts rAF loop immediately
     const renderer = new CanvasRenderer(canvas, audioStateRef);
     rendererRef.current = renderer;
+
+    // Wire role change callback — pushes role label updates to Zustand for UI consumption.
+    // Only fires when role actually changes (not every tick), so Zustand re-renders are minimal.
+    renderer.setOnRoleChange((instrument, role) => {
+      useAppStore.getState().setInstrumentRole(instrument, role);
+    });
 
     // Resize observer keeps HiDPI scaling correct when element resizes
     const observer = new ResizeObserver(() => {
