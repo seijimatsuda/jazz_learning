@@ -126,12 +126,12 @@ Plans:
   2. Communication edges between other instrument pairs appear, thicken, and fade as the cross-correlation weight changes, and are hidden below 0.3
   3. Edges visibly shift from their base color toward amber/orange at high harmonic tension and flash cool blue-white when tension resolves
   4. Edge flash on confirmed sync event is visible as a brief bright pulse on the pocket line
-**Plans**: TBD
+**Plans**: 3 plans in 3 waves (sequential dependency chain)
 
 Plans:
-- [ ] 06-01: Pocket line rendering — three visual states (tight/loose/free), flowing dash animation, sync flash, floating label
-- [ ] 06-02: Communication edge rendering — weight thresholds, thickness/opacity mapping, animated vs static states
-- [ ] 06-03: Edge type color (green=rhythmic, purple=melodic, blue=support) and tension tinting (amber/orange/red shift + resolution flash)
+- [ ] 06-01-PLAN.md — Edge foundation (EdgeAnimState, edgeTypes, lastSyncEventSec data gap) + pocket line rendering with 3 visual states, sync flash, floating label (Wave 1)
+- [ ] 06-02-PLAN.md — Communication edge rendering: weight thresholds, thickness/opacity mapping, edge type coloring, animated vs static states (Wave 2)
+- [ ] 06-03-PLAN.md — Tension tinting (amber/orange/red shift on all edges) + resolution flash (blue-white on tension drop) (Wave 3)
 
 ### Phase 7: React UI Panels & Key Detection
 **Goal**: Users can configure the band lineup, read chord names and tension values in real-time React panels, inspect any instrument's history by clicking its node, and navigate the chord log
