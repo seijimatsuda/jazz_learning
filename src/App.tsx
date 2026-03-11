@@ -17,6 +17,7 @@ import { initChordDetector, initChordState } from './audio/ChordDetector';
 import { initTensionState } from './audio/TensionScorer';
 import { initBeatState } from './audio/DrumTransientDetector';
 import { initInstrumentPitchState } from './audio/PitchDetector';
+import { initCallResponseState } from './audio/CallResponseDetector';
 
 function App() {
   const audioStateRef = useAudioRef();
@@ -70,9 +71,11 @@ function App() {
             keyboard: initInstrumentPitchState(pitchFftSize),
             guitar:   initInstrumentPitchState(pitchFftSize),
           };
-          console.log('[App] Phase 8 pitch state initialized for keyboard + guitar.');
+          audioStateRef.current.callResponse = initCallResponseState();
+          console.log('[App] Phase 8 pitch + call-response state initialized for keyboard + guitar.');
         } else {
           audioStateRef.current.pitch = null;
+          audioStateRef.current.callResponse = null;
           console.log('[App] Phase 8 pitch state skipped (keyboard+guitar not both in lineup).');
         }
 

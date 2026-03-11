@@ -234,5 +234,19 @@ export function drawCommunicationEdges(
       animState.resolutionFlashIntensity = lerpExp(animState.resolutionFlashIntensity, 0, 0.08, deltaMs);
       if (animState.resolutionFlashIntensity < 0.02) animState.resolutionFlashIntensity = 0;
     }
+
+    // -----------------------------------------------------------------------
+    // Step 9: Call-response purple flash (MEL-04) — purple glow at midpoint
+    //         Only active on guitar_keyboard edge; decayed by CanvasRenderer
+    // -----------------------------------------------------------------------
+    if (animState.callResponseFlashIntensity > 0.01) {
+      const midX = (startX + endX) / 2;
+      const midY = (startY + endY) / 2;
+      // Draw purple glow with scaled alpha — full intensity at 0.8 globalAlpha
+      const savedAlpha = ctx.globalAlpha;
+      ctx.globalAlpha = animState.callResponseFlashIntensity * 0.8;
+      drawGlow(ctx, animState.callResponseGlowCanvas, midX, midY, 1.0);
+      ctx.globalAlpha = savedAlpha;
+    }
   }
 }

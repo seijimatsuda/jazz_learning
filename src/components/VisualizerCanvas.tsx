@@ -55,9 +55,13 @@ export function VisualizerCanvas({ audioStateRef }: VisualizerCanvasProps) {
     });
 
     // Wire melody update callback — pushes keyboard/guitar melodic state to Zustand (Phase 8)
-    // Fires every tick when pitch state is initialized (keyboard+guitar in lineup)
-    renderer.setOnMelodyUpdate((kbMelodic, gtMelodic) => {
+    // Fires every tick when pitch state is initialized (keyboard+guitar in lineup).
+    // callResponse is non-null only when a call-and-response event is detected (MEL-03).
+    renderer.setOnMelodyUpdate((kbMelodic, gtMelodic, callResponse) => {
       useAppStore.getState().setMelodyState(kbMelodic, gtMelodic);
+      if (callResponse !== null) {
+        useAppStore.getState().addCallResponseEntry(callResponse);
+      }
     });
 
     // Resize observer keeps HiDPI scaling correct when element resizes

@@ -17,6 +17,7 @@
  *  10. Rubato gate — applyRubatoGate via IOI CV (Phase 4)
  *  11. Pocket score — updatePocketScore via bass↔drums sync (Phase 4)
  *  12. Pitch detection — updatePitchState for keyboard and guitar (Phase 8)
+ *  13. Call-response detection — updateCallResponse keyboard→guitar exchange (Phase 8)
  *
  * CRITICAL: This function must NOT allocate any new typed arrays. All buffers
  * (historyBuffer, prevRawFreqData, rawTimeDataFloat) are pre-allocated in
@@ -26,7 +27,7 @@
  * This function assumes that guard has already passed.
  */
 
-import type { AudioStateRef, RoleLabel } from './types';
+import type { AudioStateRef, RoleLabel, CallResponseEntry } from './types';
 import type { ChordFunction } from './types';
 import { computeActivityScore, pushHistory } from './InstrumentActivityScorer';
 import { classifyRole, updateTimeInRole } from './RoleClassifier';
@@ -39,6 +40,7 @@ import { updateBpm, detectBassOnset } from './BpmTracker';
 import { applyRubatoGate } from './SwingAnalyzer';
 import { updatePocketScore } from './PocketScorer';
 import { updatePitchState } from './PitchDetector';
+import { initCallResponseState, updateCallResponse } from './CallResponseDetector';
 
 // ---------------------------------------------------------------------------
 // Chord display label maps (module-level constants — zero allocations in tick)
@@ -85,7 +87,7 @@ const FAMILY_LABELS: Record<ChordFunction, string> = {
  * @param onChordChange   - Optional callback fired when displayed chord changes
  * @param onTensionUpdate - Optional callback fired every tick with current tension
  * @param onBeatUpdate    - Optional callback fired when BPM or pocket score changes (Phase 4)
- * @param onMelodyUpdate  - Optional callback fired with keyboard/guitar melodic state (Phase 8)
+ * @param onMelodyUpdate  - Optional callback fired with keyboard/guitar melodic state and call-response event (Phase 8)
  */
 export function runAnalysisTick(
   state: AudioStateRef,
@@ -93,7 +95,7 @@ export function runAnalysisTick(
   onChordChange?: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, tension: number, chordIdx: number) => void,
   onTensionUpdate?: (tension: number) => void,
   onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void,
-  onMelodyUpdate?: (kbMelodic: boolean, gtMelodic: boolean) => void
+  onMelodyUpdate?: (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => void
 ): void {
   // Guard: must be calibrated and have all required state before analysis can run
   if (
@@ -329,8 +331,24 @@ export function runAnalysisTick(
       state.pitch.guitar.stablePitchHz = -1;
     }
 
-    // Push melodic state to Zustand via callback (only fires when pitch state is initialized)
-    onMelodyUpdate?.(state.pitch.keyboard.isMelodic, state.pitch.guitar.isMelodic);
+    // ---------------------------------------------------------------------------
+    // Step 13: Call-response detection (Phase 8 — MEL-03)
+    // ---------------------------------------------------------------------------
+    // Initialize callResponse state on first tick if not yet set (lazy init alongside pitch)
+    if (!state.callResponse) {
+      state.callResponse = initCallResponseState();
+    }
+
+    const audioTimeSec = state.audioCtx?.currentTime ?? 0;
+    const crEvent = updateCallResponse(
+      state.callResponse,
+      state.pitch.keyboard.isMelodic,
+      state.pitch.guitar.isMelodic,
+      audioTimeSec,
+    );
+
+    // Push melodic state + call-response event to callback (fires every tick when pitch is initialized)
+    onMelodyUpdate?.(state.pitch.keyboard.isMelodic, state.pitch.guitar.isMelodic, crEvent);
   }
 
   // Save current rawFreqData as previous for next tick's spectral flux computation

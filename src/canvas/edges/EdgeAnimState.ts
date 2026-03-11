@@ -39,6 +39,8 @@ export interface EdgeAnimState {
   flashIntensity: number;
   /** Flash intensity [0,1] for tension resolution flash (EDGE-10) — decays per frame */
   resolutionFlashIntensity: number;
+  /** Flash intensity [0,1] for call-response purple flash (MEL-04) — decays per frame */
+  callResponseFlashIntensity: number;
 
   // --- Animation phases ----------------------------------------------------
   /** Dash offset for flowing dash animation on tight pocket line (EDGE-02) */
@@ -55,6 +57,8 @@ export interface EdgeAnimState {
   flashGlowCanvas: HTMLCanvasElement;
   /** Blue glow canvas for tension resolution flash (EDGE-10) — created once at init */
   resolutionGlowCanvas: HTMLCanvasElement;
+  /** Purple glow canvas for call-response flash (MEL-04) — created once at init */
+  callResponseGlowCanvas: HTMLCanvasElement;
 }
 
 // ---------------------------------------------------------------------------
@@ -74,10 +78,12 @@ export function createEdgeAnimState(): EdgeAnimState {
     tintFactor: 0,
     flashIntensity: 0,
     resolutionFlashIntensity: 0,
+    callResponseFlashIntensity: 0,
     dashOffset: 0,
     wobblePhase: 0,
     lastSeenSyncEventSec: -1,
     flashGlowCanvas: createGlowLayer(30, '#ffffff'),          // sync flash — EDGE-05
     resolutionGlowCanvas: createGlowLayer(30, '#bfdbfe'),     // tension resolution — EDGE-10
+    callResponseGlowCanvas: createGlowLayer(30, '#a855f7'),   // call-response purple — MEL-04
   };
 }

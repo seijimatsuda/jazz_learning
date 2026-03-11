@@ -11,7 +11,7 @@
  */
 
 import type { MutableRefObject } from 'react';
-import type { AudioStateRef, RoleLabel } from '../audio/types';
+import type { AudioStateRef, RoleLabel, CallResponseEntry } from '../audio/types';
 import { runAnalysisTick } from '../audio/AnalysisTick';
 import { TensionMeter } from './TensionMeter';
 import { getGhostTension } from '../audio/TensionScorer';
@@ -111,11 +111,14 @@ export class CanvasRenderer {
   /** Optional callback fired when BPM or pocket score changes (Phase 4) */
   private onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void;
 
-  /** Optional callback fired with keyboard/guitar melodic state (Phase 8) */
-  private onMelodyUpdate?: (kbMelodic: boolean, gtMelodic: boolean) => void;
+  /** Optional callback fired with keyboard/guitar melodic state and call-response event (Phase 8) */
+  private onMelodyUpdate?: (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => void;
 
   /** Bound rAF callback — receives DOMHighResTimeStamp for delta-time */
   private readonly boundRender: (ts: DOMHighResTimeStamp) => void;
+
+  /** Bound melody update handler — intercepts call-response events to trigger purple flash */
+  private readonly boundHandleMelodyUpdate: (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => void;
 
   constructor(canvas: HTMLCanvasElement, audioStateRef: MutableRefObject<AudioStateRef>) {
     this.canvas = canvas;
@@ -147,6 +150,20 @@ export class CanvasRenderer {
 
     // rAF callback receives DOMHighResTimeStamp for delta-time computation
     this.boundRender = (ts: DOMHighResTimeStamp) => this.render(ts);
+
+    // Melody update handler — intercepts call-response events to trigger purple edge flash (MEL-04)
+    this.boundHandleMelodyUpdate = (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => {
+      // When a call-response event fires, trigger the purple edge flash on guitar_keyboard
+      if (callResponse !== null) {
+        const guitarKbEdge = this.edgeAnimStates['guitar_keyboard'];
+        if (guitarKbEdge) {
+          guitarKbEdge.callResponseFlashIntensity = 1.0;
+          console.log('[CanvasRenderer] Call-response detected — gap:', callResponse.gapSec.toFixed(2), 's');
+        }
+      }
+      // Forward to external callback (Zustand bridge)
+      this.onMelodyUpdate?.(kbMelodic, gtMelodic, callResponse);
+    };
 
     // HiDPI + start loop
     this.setupHiDPI();
@@ -207,7 +224,7 @@ export class CanvasRenderer {
   }
 
   /** Set callback for keyboard/guitar melodic state updates (Phase 8). */
-  setOnMelodyUpdate(cb: (kbMelodic: boolean, gtMelodic: boolean) => void): void {
+  setOnMelodyUpdate(cb: (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => void): void {
     this.onMelodyUpdate = cb;
   }
 
@@ -362,7 +379,7 @@ export class CanvasRenderer {
       const now = performance.now();
       if ((now - analysis.lastAnalysisMs) >= 100) {
         analysis.lastAnalysisMs = now;
-        runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate, this.onBeatUpdate, this.onMelodyUpdate);
+        runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate, this.onBeatUpdate, this.boundHandleMelodyUpdate);
       }
     }
 
@@ -381,6 +398,14 @@ export class CanvasRenderer {
       }
     }
     this.prevTension = currentTension;
+
+    // -- Call-response purple flash decay (MEL-04) — per-frame exponential decay ------
+    // Decay factor 0.03 gives ~2 second half-life at 60fps, matching existing flash patterns.
+    const guitarKbAnim = this.edgeAnimStates['guitar_keyboard'];
+    if (guitarKbAnim && guitarKbAnim.callResponseFlashIntensity > 0.01) {
+      guitarKbAnim.callResponseFlashIntensity = lerpExp(guitarKbAnim.callResponseFlashIntensity, 0, 0.03, deltaMs);
+      if (guitarKbAnim.callResponseFlashIntensity < 0.01) guitarKbAnim.callResponseFlashIntensity = 0;
+    }
 
     const beat = state.beat;
     if (beat !== null) {
