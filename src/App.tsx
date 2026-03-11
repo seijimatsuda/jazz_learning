@@ -5,6 +5,7 @@ import { TransportControls } from './components/TransportControls';
 import { Timeline } from './components/Timeline';
 import { VisualizerCanvas } from './components/VisualizerCanvas';
 import { InstrumentRoleOverlay } from './components/InstrumentRoleOverlay';
+import { ChordDisplay } from './components/ChordDisplay';
 import { useAppStore } from './store/useAppStore';
 import { runCalibrationPass } from './audio/CalibrationPass';
 import { computeTensionHeatmap } from './audio/TensionHeatmap';
@@ -86,6 +87,13 @@ function App() {
           {!isCalibrating && (
             <InstrumentRoleOverlay audioStateRef={audioStateRef} />
           )}
+        </div>
+      )}
+
+      {/* Chord display — shown after calibration completes */}
+      {isFileLoaded && !isCalibrating && (
+        <div className="w-full max-w-2xl">
+          <ChordDisplay />
         </div>
       )}
 
