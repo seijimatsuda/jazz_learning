@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 8 of 8 (Advanced Features) — In progress
-Plan: 4 of 5 complete
-Status: In progress — 08-04 complete, ready for 08-05
-Last activity: 2026-03-11 — Completed 08-04-PLAN.md (Timeline Annotation System)
+Plan: 4 of 5 complete (08-03 now also complete — was parallel to 08-04)
+Status: In progress — 08-03, 08-04 complete, ready for 08-05
+Last activity: 2026-03-11 — Completed 08-03-PLAN.md (Conversation Log Panel — MEL-05)
 
 Progress: [████████████████████████████████████] 95% (40/42 total plans estimated)
 
@@ -172,6 +172,8 @@ Recent decisions affecting current work:
 - [D-08-04-1]: Annotation interface defined in useAppStore.ts (not types.ts) — annotations are UI-only, not audio hot-path
 - [D-08-04-2]: Annotation input overlay placed outside overflow-hidden scrubber bar in wrapper div — negative-top overlay inside overflow:hidden is clipped entirely
 - [D-08-04-3]: Annotation markers at zIndex:2 inside bar — above progress fill (zIndex:1) and beat grid (zIndex:0)
+- [D-08-03-1]: ConversationLogPanel subscribes to callResponseLog directly via useAppStore selector (no polling) — entries are pushed as discrete events by onMelodyUpdate; no polling cadence needed unlike chord log
+- [D-08-03-2]: onMelodyUpdate Zustand bridge was already wired in VisualizerCanvas.tsx (08-02 Task 2) — Task 2 of 08-03 only required adding ConversationLogPanel to App.tsx JSX
 
 ### Pending Todos
 
@@ -187,5 +189,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 08-02-PLAN.md — Call-and-response detection + purple edge flash complete (MEL-03, MEL-04). (Also: 08-04 previously completed in parallel — annotations system.)
+Stopped at: Completed 08-03-PLAN.md — ConversationLogPanel (MEL-05) complete.
 Resume file: None
