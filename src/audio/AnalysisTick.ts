@@ -1,14 +1,16 @@
 /**
- * AnalysisTick.ts — 10fps orchestrator for all Phase 2 instrument analysis modules.
+ * AnalysisTick.ts — 10fps orchestrator for all Phase 2 + Phase 3 analysis modules.
  *
  * runAnalysisTick is called by CanvasRenderer's rAF loop when the 100ms time gate
- * fires. It pulls fresh FFT data from both analysers, then runs all four Phase 2
- * modules in order:
+ * fires. It pulls fresh FFT data from both analysers, then runs all Phase 2 and
+ * Phase 3 modules in order:
  *
  *   1. Activity scoring  — computeActivityScore + pushHistory per instrument
  *   2. Role classification — classifyRole + updateTimeInRole per instrument
  *   3. Keyboard/guitar disambiguation — only when both are in the lineup
  *   4. Cross-correlation — Pearson r edge weights for all instrument pairs
+ *   5. Chord detection — extractAndMatchChord (Phase 3)
+ *   6. Tension scoring — updateTension with displayed chord function (Phase 3)
  *
  * CRITICAL: This function must NOT allocate any new typed arrays. All buffers
  * (historyBuffer, prevRawFreqData, rawTimeDataFloat) are pre-allocated in
@@ -19,10 +21,33 @@
  */
 
 import type { AudioStateRef, RoleLabel } from './types';
+import type { ChordFunction } from './types';
 import { computeActivityScore, pushHistory } from './InstrumentActivityScorer';
 import { classifyRole, updateTimeInRole } from './RoleClassifier';
 import { disambiguate } from './KbGuitarDisambiguator';
 import { pearsonR, computeEdgeWeight } from './CrossCorrelationTracker';
+import { extractAndMatchChord, CHORD_TEMPLATES } from './ChordDetector';
+import { updateTension } from './TensionScorer';
+
+// ---------------------------------------------------------------------------
+// Chord display label maps (module-level constants — zero allocations in tick)
+// ---------------------------------------------------------------------------
+
+/** Plain English description of each chord function (CHORD-09, CHORD-10) */
+const FUNCTION_LABELS: Record<ChordFunction, string> = {
+  tonic:       'home -- relaxed and stable',
+  subdominant: 'color -- adding warmth',
+  dominant:    'tension -- wants to resolve',
+  altered:     'altered -- maximum tension',
+};
+
+/** Family label shown at low confidence (CHORD-07) */
+const FAMILY_LABELS: Record<ChordFunction, string> = {
+  tonic:       'major chord',
+  subdominant: 'minor chord',
+  dominant:    'dominant chord',
+  altered:     'altered chord',
+};
 
 /**
  * Runs one 10fps analysis tick over the current audio state.
@@ -34,14 +59,19 @@ import { pearsonR, computeEdgeWeight } from './CrossCorrelationTracker';
  *      Role changes push to onRoleChange callback (Zustand bridge via CanvasRenderer)
  *   4. Keyboard/guitar disambiguation (only when both are in lineup)
  *   5. Cross-correlation edge weights for all instrument pairs
- *   6. Save current rawFreqData as prevRawFreqData for next tick's spectral flux
+ *   6. Chord detection — extractAndMatchChord (Phase 3)
+ *   7. Tension scoring — updateTension with displayed chord function (Phase 3)
+ *      Chord/tension pushed to onChordChange only when displayedChordIdx changes
+ *   8. Save current rawFreqData as prevRawFreqData for next tick's spectral flux
  *
- * @param state         - AudioStateRef (lives in useRef, never in React state)
- * @param onRoleChange  - Optional callback fired when an instrument's role changes
+ * @param state           - AudioStateRef (lives in useRef, never in React state)
+ * @param onRoleChange    - Optional callback fired when an instrument's role changes
+ * @param onChordChange   - Optional callback fired when displayed chord changes
  */
 export function runAnalysisTick(
   state: AudioStateRef,
-  onRoleChange?: (instrument: string, role: RoleLabel) => void
+  onRoleChange?: (instrument: string, role: RoleLabel) => void,
+  onChordChange?: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, tension: number) => void
 ): void {
   // Guard: must be calibrated and have all required state before analysis can run
   if (
@@ -120,6 +150,12 @@ export function runAnalysisTick(
 
     if (kb) kb.activityScore *= keyboardWeight;
     if (gt) gt.activityScore *= guitarWeight;
+  } else {
+    // Guarantee rawTimeDataFloat is populated even when disambiguation doesn't run.
+    // extractAndMatchChord (Phase 3) needs it for Meyda chroma extraction.
+    for (let i = 0; i < state.fftSize; i++) {
+      analysis.rawTimeDataFloat[i] = (state.rawTimeData[i] - 128) / 128;
+    }
   }
 
   // Cross-correlation edge weights for all instrument pairs
@@ -135,6 +171,57 @@ export function runAnalysisTick(
         instrs[b].historySamples
       );
       analysis.edgeWeights[key] = computeEdgeWeight(r);
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Phase 3: Chord detection and tension scoring
+  // ---------------------------------------------------------------------------
+
+  if (state.chord && state.tension) {
+    const prevDisplayedChordIdx = state.chord.displayedChordIdx;
+
+    // Read audioCtx time for chord log timestamping
+    const audioTimeSec = state.audioCtx?.currentTime ?? 0;
+
+    // Extract chroma and match against 96 chord templates
+    extractAndMatchChord(state, audioTimeSec);
+
+    // Determine displayed chord info
+    const chordState  = state.chord;
+    const displayIdx  = chordState.displayedChordIdx;
+    const gap         = chordState.confidenceGap;
+
+    // Map confidence gap to tier (CHORD-04)
+    const confidence: 'low' | 'medium' | 'high' =
+      gap < 0.05  ? 'low'    :
+      gap < 0.15  ? 'medium' :
+                    'high';
+
+    // Get displayed chord function (default to tonic when no chord yet)
+    let displayedFunction: ChordFunction = 'tonic';
+    let displayName = '--';
+
+    if (displayIdx >= 0 && displayIdx < CHORD_TEMPLATES.length) {
+      const tmpl = CHORD_TEMPLATES[displayIdx];
+      displayedFunction = tmpl.function;
+
+      if (confidence === 'low') {
+        // CHORD-07: low confidence — show chord family only
+        displayName = FAMILY_LABELS[displayedFunction];
+      } else {
+        // CHORD-08: medium/high confidence — show full chord name
+        displayName = `${tmpl.root}${tmpl.type}`;
+      }
+    }
+
+    // Update tension with the displayed chord's function
+    updateTension(state.tension, displayedFunction);
+
+    // Push to Zustand only when displayedChordIdx changes (avoids continuous mutations)
+    if (displayIdx !== prevDisplayedChordIdx && onChordChange) {
+      const fnLabel = displayIdx >= 0 ? FUNCTION_LABELS[displayedFunction] : '';
+      onChordChange(displayName, confidence, fnLabel, state.tension.currentTension);
     }
   }
 
