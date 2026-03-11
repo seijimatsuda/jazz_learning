@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 3 of 8 (Chord Detection & Harmonic Analysis)
-Plan: 0 of 5 in current phase
-Status: Ready to plan
-Last activity: 2026-03-11 — Phase 2 complete and verified (5/5 must-haves passed). Gap closure (02-05 InstrumentRoleOverlay) closed display gap.
+Plan: 1 of 5 in current phase
+Status: In progress
+Last activity: 2026-03-11 — Completed 03-01-PLAN.md (ChordDetector core: types, templates, extraction, matching)
 
-Progress: [██████████░░░░░░░░░░] 25% (10/40 total plans estimated)
+Progress: [███████████░░░░░░░░░] 27.5% (11/40 total plans estimated)
 
 ## Performance Metrics
 
@@ -29,10 +29,11 @@ Progress: [██████████░░░░░░░░░░] 25% (10
 |-------|-------|-------|----------|
 | 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
 | 02 - Instrument Activity Analysis | 5/5 COMPLETE | ~7m 37s | ~1m 31s |
+| 03 - Chord Detection & Harmonic Analysis | 1/5 | ~3m | ~3m |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (2m 7s), 02-02 (1m 2s), 02-03 (~1m), 02-04 (3m 4s), 02-05 (1m 24s)
-- Trend: Consistent sub-3min per plan; Phase 2 avg 1m 31s — notably faster than Phase 1
+- Last 5 plans: 02-02 (1m 2s), 02-03 (~1m), 02-04 (3m 4s), 02-05 (1m 24s), 03-01 (~3m)
+- Trend: Consistent sub-3min per plan
 
 *Updated after each plan completion*
 
@@ -78,6 +79,11 @@ Recent decisions affecting current work:
 - [D-02-04-4]: Role changes push to Zustand only on actual change — prevents continuous mutations during steady-state playback
 - [D-02-05-1]: Activity scores polled from audioStateRef via 100ms setInterval, not Zustand — high-frequency numeric data; Zustand used only for role labels (occasional changes driving re-renders)
 - [D-02-05-2]: !isCalibrating guard on InstrumentRoleOverlay — analysis state null until calibration resolves; guard prevents interval reading undefined
+- [D-03-01-1]: RIGHT rotation for chord template transposition — rotateRight(cMajorVec, 7) gives G major (indices 2,7,11=1)
+- [D-03-01-2]: Meyda chromaFilterBank forced to undefined before sampleRate — iOS fix; stale 44.1kHz bank on 48kHz Safari produces wrong chroma
+- [D-03-01-3]: rawTimeDataFloat populated conditionally in extractAndMatchChord — only converts from rawTimeData if all-zeros (kb/guitar disambiguation didn't run)
+- [D-03-01-4]: Bass weighting skips if maxEnergy < 20 — prevents noise floor from biasing root detection
+- [D-03-01-5]: Chord log push only on displayedChordIdx change — avoids duplicate entries during stable chord holds
 
 ### Pending Todos
 
@@ -85,13 +91,13 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 2 pre-work]: Verify Meyda chroma internal sample rate handling empirically — test same file on iOS (48kHz) vs desktop Chrome (44.1kHz); if chroma vectors differ, custom chroma normalization required (~50 lines)
+- [Phase 3 ongoing]: Verify Meyda chroma output quality on iOS (48kHz) vs desktop Chrome (44.1kHz) — chromaFilterBank rebuild applied in 03-01, but empirical test with real jazz still needed
 - [All phases]: iOS Safari AudioContext `{ sampleRate: 44100 }` constructor option behavior unconfirmed — always read back `audioCtx.sampleRate` after creation
 - [All visual phases]: iOS Low Power Mode caps rAF at 30fps — documented known limitation; test with Low Power Mode OFF
 - [Note]: Requirements count discrepancy — REQUIREMENTS.md header says 83 but traceability table contains 96 entries across all categories. All 96 entries are mapped in the roadmap. Reconcile count before Phase 2 planning.
 
 ## Session Continuity
 
-Last session: 2026-03-11
-Stopped at: Phase 2 complete and verified. Ready for Phase 3 (Chord Detection & Harmonic Analysis).
+Last session: 2026-03-11T03:36:30Z
+Stopped at: Completed 03-01-PLAN.md. ChordDetector core ready. Next: 03-02 (wire extractAndMatchChord into AnalysisTick, confidence display, chord function labels).
 Resume file: None
