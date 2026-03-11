@@ -42,6 +42,11 @@ const FUNCTION_LABELS: Record<ChordFunction, string> = {
 };
 
 /** Family label shown at low confidence (CHORD-07) */
+const TYPE_DISPLAY: Record<string, string> = {
+  major: '', minor: 'm', maj7: 'maj7', m7: 'm7',
+  dom7: '7', dim7: 'dim7', m7b5: 'm7b5', alt: 'alt',
+};
+
 const FAMILY_LABELS: Record<ChordFunction, string> = {
   tonic:       'major chord',
   subdominant: 'minor chord',
@@ -67,11 +72,13 @@ const FAMILY_LABELS: Record<ChordFunction, string> = {
  * @param state           - AudioStateRef (lives in useRef, never in React state)
  * @param onRoleChange    - Optional callback fired when an instrument's role changes
  * @param onChordChange   - Optional callback fired when displayed chord changes
+ * @param onTensionUpdate - Optional callback fired every tick with current tension
  */
 export function runAnalysisTick(
   state: AudioStateRef,
   onRoleChange?: (instrument: string, role: RoleLabel) => void,
-  onChordChange?: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, tension: number) => void
+  onChordChange?: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, tension: number) => void,
+  onTensionUpdate?: (tension: number) => void
 ): void {
   // Guard: must be calibrated and have all required state before analysis can run
   if (
@@ -211,14 +218,19 @@ export function runAnalysisTick(
         displayName = FAMILY_LABELS[displayedFunction];
       } else {
         // CHORD-08: medium/high confidence — show full chord name
-        displayName = `${tmpl.root}${tmpl.type}`;
+        displayName = `${tmpl.root}${TYPE_DISPLAY[tmpl.type] ?? tmpl.type}`;
       }
     }
 
     // Update tension with the displayed chord's function
     updateTension(state.tension, displayedFunction);
 
-    // Push to Zustand only when displayedChordIdx changes (avoids continuous mutations)
+    // Push tension to Zustand every tick (lerp-smoothed value changes continuously)
+    if (onTensionUpdate) {
+      onTensionUpdate(state.tension.currentTension);
+    }
+
+    // Push chord info to Zustand only when displayedChordIdx changes (avoids continuous mutations)
     if (displayIdx !== prevDisplayedChordIdx && onChordChange) {
       const fnLabel = displayIdx >= 0 ? FUNCTION_LABELS[displayedFunction] : '';
       onChordChange(displayName, confidence, fnLabel, state.tension.currentTension);

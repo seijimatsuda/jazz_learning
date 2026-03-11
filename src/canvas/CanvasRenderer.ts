@@ -77,6 +77,9 @@ export class CanvasRenderer {
   /** Optional callback fired when the displayed chord changes (Phase 3) */
   private onChordChange?: ChordChangeCallback;
 
+  /** Optional callback fired every tick with current tension value (Phase 3) */
+  private onTensionUpdate?: (tension: number) => void;
+
   /** Bind render to this for rAF callback */
   private readonly boundRender: () => void;
 
@@ -144,6 +147,11 @@ export class CanvasRenderer {
    */
   setOnChordChange(cb: ChordChangeCallback): void {
     this.onChordChange = cb;
+  }
+
+  /** Set callback for per-tick tension updates (Phase 3). */
+  setOnTensionUpdate(cb: (tension: number) => void): void {
+    this.onTensionUpdate = cb;
   }
 
   /** Stop the animation loop and release resources. */
@@ -219,7 +227,7 @@ export class CanvasRenderer {
       const now = performance.now();
       if ((now - analysis.lastAnalysisMs) >= 100) {
         analysis.lastAnalysisMs = now;
-        runAnalysisTick(state, this.onRoleChange, this.onChordChange);
+        runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate);
       }
     }
 
