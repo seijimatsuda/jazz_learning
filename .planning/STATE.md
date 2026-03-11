@@ -165,6 +165,10 @@ Recent decisions affecting current work:
 - [D-08-01-3]: stablePitchHz field added to InstrumentPitchState (plan had 4 fields; added 5th) — needed by 08-02 call-response detector to track pitch at melodic onset
 - [D-08-01-4]: Pitch state initialized only when keyboard AND guitar both in lineup — state.pitch = null otherwise, Phase 8 AnalysisTick block skipped entirely
 - [D-08-01-5]: onMelodyUpdate fires every tick when state.pitch non-null (not edge-triggered) — call-response detector needs continuous presence signal, not just change events
+- [D-08-02-1]: boundHandleMelodyUpdate pattern — CanvasRenderer intercepts callResponse!=null to set flash=1.0, then forwards to external onMelodyUpdate; avoids polling, preserves callback chain
+- [D-08-02-2]: Dual init for callResponse state — explicit in App.tsx plus lazy guard in AnalysisTick (if !state.callResponse); belt-and-suspenders for timing edge cases
+- [D-08-02-3]: callResponseFlashIntensity decayed only in CanvasRenderer (not in drawCommunicationEdges) — decay belongs to entity that owns trigger, consistent with resolutionFlashIntensity pattern
+- [D-08-02-4]: Purple glow with ctx.globalAlpha = intensity*0.8 then drawGlow(..., 1.0) then globalAlpha restored — avoids full ctx.save()/restore() overhead for simple alpha set
 - [D-08-04-1]: Annotation interface defined in useAppStore.ts (not types.ts) — annotations are UI-only, not audio hot-path
 - [D-08-04-2]: Annotation input overlay placed outside overflow-hidden scrubber bar in wrapper div — negative-top overlay inside overflow:hidden is clipped entirely
 - [D-08-04-3]: Annotation markers at zIndex:2 inside bar — above progress fill (zIndex:1) and beat grid (zIndex:0)
@@ -183,5 +187,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 08-04-PLAN.md — Timeline annotation system complete (USER-01). Ready for 08-05.
+Stopped at: Completed 08-02-PLAN.md — Call-and-response detection + purple edge flash complete (MEL-03, MEL-04). (Also: 08-04 previously completed in parallel — annotations system.)
 Resume file: None
