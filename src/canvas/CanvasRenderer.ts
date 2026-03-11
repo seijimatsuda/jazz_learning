@@ -1,5 +1,5 @@
 /**
- * CanvasRenderer.ts — rAF loop, HiDPI setup, and basic node rendering.
+ * CanvasRenderer.ts — rAF loop, HiDPI setup, and instrument node rendering.
  *
  * Performance constraints:
  * - NO shadowBlur anywhere — use offscreen glow via createGlowLayer + drawImage
@@ -7,15 +7,18 @@
  *   inside the rAF callback — all arrays are pre-allocated externally (AudioEngine)
  * - setupHiDPI() must be called once and again on every resize
  * - smoothedFreqData is read directly from audioStateRef — zero copying
+ * - Delta-time capped at 100ms to prevent jump on tab-resume
  */
 
 import type { MutableRefObject } from 'react';
 import type { AudioStateRef, RoleLabel } from '../audio/types';
-import { getBandEnergy } from '../audio/FrequencyBandSplitter';
-import { createGlowLayer } from './offscreen/glowLayer';
 import { runAnalysisTick } from '../audio/AnalysisTick';
 import { TensionMeter } from './TensionMeter';
 import { getGhostTension } from '../audio/TensionScorer';
+import { computeNodePositions, INSTRUMENT_ORDER } from './nodes/NodeLayout';
+import type { NodePosition } from './nodes/NodeLayout';
+import { createNodeAnimState } from './nodes/NodeAnimState';
+import type { NodeAnimState } from './nodes/NodeAnimState';
 
 type ChordChangeCallback = (
   chord: string,
@@ -25,29 +28,18 @@ type ChordChangeCallback = (
 ) => void;
 
 // ---------------------------------------------------------------------------
-// Node layout — six circles, one per frequency band, arranged in an arc
+// Instrument node colors (holding state — role-based sizing/color from 05-02)
 // ---------------------------------------------------------------------------
 
-interface NodeConfig {
-  label: string;
-  bandName: string;
-  x: number;  // fractional [0,1] of logical canvas width
-  y: number;  // fractional [0,1] of logical canvas height
-  color: string;
-}
+const INSTRUMENT_COLORS: Record<string, string> = {
+  guitar:   '#64748b', // slate
+  drums:    '#60a5fa', // blue
+  keyboard: '#0d9488', // teal
+  bass:     '#b45309', // amber
+};
 
-const NODE_CONFIGS: NodeConfig[] = [
-  { label: 'Bass',       bandName: 'bass',       x: 0.10, y: 0.55, color: '#f472b6' },
-  { label: 'Drums L',   bandName: 'drums_low',  x: 0.25, y: 0.70, color: '#fb923c' },
-  { label: 'Mid',        bandName: 'mid',        x: 0.42, y: 0.75, color: '#4ade80' },
-  { label: 'Mid High',   bandName: 'mid_high',   x: 0.58, y: 0.75, color: '#60a5fa' },
-  { label: 'Drums H',   bandName: 'drums_high', x: 0.75, y: 0.70, color: '#a78bfa' },
-  { label: 'Ride',       bandName: 'ride',       x: 0.90, y: 0.55, color: '#34d399' },
-];
-
-const MIN_RADIUS = 20;
-const MAX_RADIUS = 60;
-const GLOW_COLOR_DEFAULT = 'rgba(129,140,248,0.6)';
+/** Initial base radius for all nodes in holding state. Role-based sizing in 05-02. */
+const INITIAL_BASE_RADIUS = 28;
 
 // ---------------------------------------------------------------------------
 // CanvasRenderer class
@@ -62,14 +54,23 @@ export class CanvasRenderer {
   private logicalWidth = 0;
   private logicalHeight = 0;
 
-  /** Cached glow layer — created once, reused every frame */
-  private glowCanvas: HTMLCanvasElement;
-
-  /** Tension meter — gradient created once, reused every frame */
+  /** Tension meter — gradient created once, reused every frame (TENS-04) */
   private readonly tensionMeter: TensionMeter;
 
   /** rAF handle — stored so we can cancel on destroy */
   private rafHandle = 0;
+
+  /** Delta-time: previous rAF timestamp for computing deltaMs */
+  private prevTimestamp = 0;
+
+  /** Cached fractional node positions — recomputed on resize */
+  private nodePositions: NodePosition[] = [];
+
+  /** Per-instrument animation state objects — one per INSTRUMENT_ORDER entry */
+  private nodeAnimStates: NodeAnimState[] = [];
+
+  /** Background beat pulse progress [0,1] — for VIZ-11, wired in 05-05 */
+  private bgPulseProgress = 0;
 
   /** Optional callback fired when an instrument's role label changes */
   private onRoleChange?: (instrument: string, role: RoleLabel) => void;
@@ -83,8 +84,8 @@ export class CanvasRenderer {
   /** Optional callback fired when BPM or pocket score changes (Phase 4) */
   private onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void;
 
-  /** Bind render to this for rAF callback */
-  private readonly boundRender: () => void;
+  /** Bound rAF callback — receives DOMHighResTimeStamp for delta-time */
+  private readonly boundRender: (ts: DOMHighResTimeStamp) => void;
 
   constructor(canvas: HTMLCanvasElement, audioStateRef: MutableRefObject<AudioStateRef>) {
     this.canvas = canvas;
@@ -96,15 +97,20 @@ export class CanvasRenderer {
     }
     this.ctx = ctx;
 
-    // Pre-create a default glow layer (radius=40).  The exact radius doesn't
-    // matter much for the placeholder — Phase 2 will bind it to energy levels.
-    this.glowCanvas = createGlowLayer(40, GLOW_COLOR_DEFAULT);
+    // Compute diamond layout for 4 instruments (hardcoded jazz quartet)
+    this.nodePositions = computeNodePositions(4);
+
+    // Create per-instrument animation state objects
+    this.nodeAnimStates = INSTRUMENT_ORDER.map((instrument) =>
+      createNodeAnimState(INSTRUMENT_COLORS[instrument] ?? '#64748b', INITIAL_BASE_RADIUS)
+    );
 
     // Pre-create tension meter — gradient built once, reused every frame (TENS-04)
     // Use 360 as default height; resize() corrects this after layout settles.
     this.tensionMeter = new TensionMeter(360);
 
-    this.boundRender = this.render.bind(this);
+    // rAF callback receives DOMHighResTimeStamp for delta-time computation
+    this.boundRender = (ts: DOMHighResTimeStamp) => this.render(ts);
 
     // HiDPI + start loop
     this.setupHiDPI();
@@ -121,6 +127,8 @@ export class CanvasRenderer {
    */
   resize(): void {
     this.setupHiDPI();
+    // Recompute fractional positions (same values but explicit for future layout changes)
+    this.nodePositions = computeNodePositions(4);
     // Rebuild tension meter gradient at the new canvas height
     this.tensionMeter.resize(this.logicalHeight - 40);
   }
@@ -209,8 +217,18 @@ export class CanvasRenderer {
   // rAF render loop
   // -------------------------------------------------------------------------
 
-  private render(): void {
+  private render(timestamp: DOMHighResTimeStamp): void {
     const { ctx, logicalWidth: w, logicalHeight: h } = this;
+
+    // -- Delta-time computation (capped at 100ms to prevent tab-resume jump) -
+    const rawDelta = this.prevTimestamp > 0 ? timestamp - this.prevTimestamp : 16.667;
+    const deltaMs = Math.min(rawDelta, 100);
+    this.prevTimestamp = timestamp;
+
+    // Suppress unused variable lint warning for deltaMs — used in 05-02+ animations
+    void deltaMs;
+    // Suppress unused variable lint warning for bgPulseProgress — wired in 05-05
+    void this.bgPulseProgress;
 
     // -- Background ----------------------------------------------------------
     ctx.fillStyle = '#0a0a0f';
@@ -218,8 +236,7 @@ export class CanvasRenderer {
 
     // -- Read audio state (zero allocations) ---------------------------------
     const state = this.audioStateRef.current;
-    const freqData   = state.smoothedFreqData;
-    const bands      = state.bands;
+    const freqData = state.smoothedFreqData;
 
     // -- Pull FFT data once per frame (not per node) -------------------------
     if (freqData && state.smoothedAnalyser) {
@@ -228,8 +245,6 @@ export class CanvasRenderer {
 
     // -- 10fps analysis gate -------------------------------------------------
     // runAnalysisTick pulls from BOTH analysers (smoothed AND raw).
-    // The smoothed pull above is redundant on analysis frames but harmless —
-    // same pre-allocated array, same data. Keep both for clarity.
     const analysis = state.analysis;
     if (analysis && analysis.isAnalysisActive) {
       const now = performance.now();
@@ -239,48 +254,27 @@ export class CanvasRenderer {
       }
     }
 
-    // -- Draw nodes ----------------------------------------------------------
-    for (const cfg of NODE_CONFIGS) {
-      const x = cfg.x * w;
-      const y = cfg.y * h;
+    // -- Draw instrument nodes -----------------------------------------------
+    for (let i = 0; i < INSTRUMENT_ORDER.length; i++) {
+      const instrument = INSTRUMENT_ORDER[i];
+      const pos = this.nodePositions[i];
+      const animState = this.nodeAnimStates[i];
+      const x = pos.x * w;
+      const y = pos.y * h;
 
-      // Find matching band by name; fall back to energy=0 if not found yet
-      let energy = 0;
-      if (freqData && bands.length > 0) {
-        const band = bands.find((b) => b.name === cfg.bandName);
-        if (band) {
-          energy = getBandEnergy(freqData, band);
-        }
-      }
-
-      const radius = MIN_RADIUS + energy * (MAX_RADIUS - MIN_RADIUS);
-
-      // -- Glow (offscreen composite, NO shadowBlur) -------------------------
-      // drawImage the pre-rendered glow centered on the node.
-      // glowCanvas is radius*4 wide/tall — center it on (x, y).
-      const glowSize = this.glowCanvas.width; // already radius*4 from creation
-      ctx.globalAlpha = 0.5 + energy * 0.5;
-      ctx.drawImage(
-        this.glowCanvas,
-        x - glowSize / 2,
-        y - glowSize / 2,
-        glowSize,
-        glowSize
-      );
-      ctx.globalAlpha = 1;
-
-      // -- Node circle -------------------------------------------------------
+      // Placeholder circle rendering — 05-02 adds role-based sizing and glow,
+      // 05-03/04 add bass/drum animations driven by beat timestamps
       ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = cfg.color;
+      ctx.arc(x, y, animState.currentRadius, 0, Math.PI * 2);
+      ctx.fillStyle = INSTRUMENT_COLORS[instrument] ?? '#64748b';
       ctx.fill();
 
-      // -- Label -------------------------------------------------------------
+      // Instrument label below the node
       ctx.fillStyle = 'rgba(255,255,255,0.7)';
       ctx.font = '11px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
-      ctx.fillText(cfg.label, x, y + radius + 4);
+      ctx.fillText(instrument, x, y + animState.currentRadius + 4);
     }
 
     // -- Tension meter -------------------------------------------------------
