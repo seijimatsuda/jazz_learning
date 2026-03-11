@@ -10,7 +10,11 @@
  *   bass_drums     → rhythmic  (pocket line — the visual spine, EDGE-01)
  *   guitar_keyboard → melodic  (harmonic conversation)
  *   all others     → support   (structural connections)
+ *
+ * Also exports getTintedColor — tension-driven color lerp utility (EDGE-09).
  */
+
+import { lerp } from '../nodes/NodeAnimState';
 
 // ---------------------------------------------------------------------------
 // EdgeType
@@ -57,6 +61,36 @@ export const TENSION_RED_RGB = { r: 0xef, g: 0x44, b: 0x44 };
  * Matches Tailwind blue-200 (#bfdbfe).
  */
 export const RESOLUTION_BLUE_RGB = { r: 0xbf, g: 0xdb, b: 0xfe };
+
+// ---------------------------------------------------------------------------
+// getTintedColor — tension-driven color lerp (EDGE-09)
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns a CSS rgb() string that lerps a base color toward the tension
+ * target color (amber above 0.8 threshold, red above 0.8 threshold).
+ *
+ * Uses TENSION_AMBER_RGB for tension <= 0.8 and TENSION_RED_RGB for > 0.8.
+ * The tintFactor [0,1] controls how far the base color shifts toward the target.
+ *
+ * @param baseR      - Base color red channel [0,255]
+ * @param baseG      - Base color green channel [0,255]
+ * @param baseB      - Base color blue channel [0,255]
+ * @param tintFactor - Interpolation factor [0,1]
+ * @param tension    - Current tension value [0,1]; selects amber vs red target
+ * @returns CSS rgb() string for use as strokeStyle
+ */
+export function getTintedColor(
+  baseR: number, baseG: number, baseB: number,
+  tintFactor: number,
+  tension: number,
+): string {
+  const target = tension > 0.8 ? TENSION_RED_RGB : TENSION_AMBER_RGB;
+  const r = Math.round(lerp(baseR, target.r, tintFactor));
+  const g = Math.round(lerp(baseG, target.g, tintFactor));
+  const b = Math.round(lerp(baseB, target.b, tintFactor));
+  return `rgb(${r},${g},${b})`;
+}
 
 // ---------------------------------------------------------------------------
 // EDGE_TYPE — canonical pair → type mapping

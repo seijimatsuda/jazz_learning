@@ -1,18 +1,20 @@
 /**
  * drawPocketLine.ts — Pocket line rendering with 3 visual states.
  *
- * Implements EDGE-01 through EDGE-06:
+ * Implements EDGE-01 through EDGE-06, EDGE-09, EDGE-10:
  *   EDGE-01: Pocket line always visible between bass and drums
  *   EDGE-02: Tight pocket (>0.7) — thick green flowing dashes
  *   EDGE-03: Loose pocket (0.4-0.7) — medium yellow sine wobble
  *   EDGE-04: Free (< 0.4) — thin gray-blue static line
  *   EDGE-05: Sync flash — white glow at midpoint on confirmed sync event
  *   EDGE-06: Floating label — four pocket phrases above the midpoint
+ *   EDGE-09: Tension tinting — base color shifts amber/orange/red at high tension
+ *   EDGE-10: Resolution flash — cool blue-white glow when tension drops below 0.3
  *
  * Performance constraints:
  * - NO per-frame allocations
  * - Always ctx.save()/ctx.restore() for lineDash isolation (iOS Safari)
- * - flashGlowCanvas pre-created once in EdgeAnimState — never per frame
+ * - flashGlowCanvas and resolutionGlowCanvas pre-created once in EdgeAnimState
  *
  * Endpoint termination: line starts/ends at each node's circumference,
  * not the center. Computed via normalized direction vector.
@@ -21,6 +23,7 @@
 import { lerpExp } from '../nodes/NodeAnimState';
 import { drawGlow } from '../nodes/drawGlow';
 import type { EdgeAnimState } from './EdgeAnimState';
+import { getTintedColor } from './edgeTypes';
 
 // ---------------------------------------------------------------------------
 // getPocketLabel — EDGE-06
@@ -58,18 +61,21 @@ function getPocketLabel(pocketScore: number): string {
  *
  * Sync flash (EDGE-05): white glow at midpoint when lastSyncEventSec changes.
  * Floating label (EDGE-06): pocket phrase text above midpoint.
+ * Tension tinting (EDGE-09): base color lerps toward amber/red at high tension.
+ * Resolution flash (EDGE-10): cool blue-white glow when tension drops below 0.3.
  *
- * @param ctx             - Main canvas 2D rendering context
- * @param bassX           - Bass node center X in logical pixels
- * @param bassY           - Bass node center Y in logical pixels
- * @param bassRadius      - Bass node current radius in logical pixels
- * @param drumsX          - Drums node center X in logical pixels
- * @param drumsY          - Drums node center Y in logical pixels
- * @param drumsRadius     - Drums node current radius in logical pixels
- * @param animState       - Mutable EdgeAnimState (dashOffset, wobblePhase, flashIntensity, etc.)
- * @param pocketScore     - Current pocket score [0,1]
+ * @param ctx              - Main canvas 2D rendering context
+ * @param bassX            - Bass node center X in logical pixels
+ * @param bassY            - Bass node center Y in logical pixels
+ * @param bassRadius       - Bass node current radius in logical pixels
+ * @param drumsX           - Drums node center X in logical pixels
+ * @param drumsY           - Drums node center Y in logical pixels
+ * @param drumsRadius      - Drums node current radius in logical pixels
+ * @param animState        - Mutable EdgeAnimState (dashOffset, wobblePhase, flashIntensity, etc.)
+ * @param pocketScore      - Current pocket score [0,1]
  * @param lastSyncEventSec - BeatState.lastSyncEventSec from audioStateRef
- * @param deltaMs         - Elapsed ms since last frame (capped at 100ms by caller)
+ * @param currentTension   - Current harmonic tension [0,1] for EDGE-09/10
+ * @param deltaMs          - Elapsed ms since last frame (capped at 100ms by caller)
  */
 export function drawPocketLine(
   ctx: CanvasRenderingContext2D,
@@ -82,6 +88,7 @@ export function drawPocketLine(
   animState: EdgeAnimState,
   pocketScore: number,
   lastSyncEventSec: number,
+  currentTension: number,
   deltaMs: number,
 ): void {
   // -------------------------------------------------------------------------
@@ -113,6 +120,12 @@ export function drawPocketLine(
   const perpY =  nx;
 
   // -------------------------------------------------------------------------
+  // EDGE-09: Tension tinting — smooth tintFactor toward target each frame
+  // -------------------------------------------------------------------------
+  const targetTint = currentTension > 0.6 ? (currentTension - 0.6) / 0.4 : 0;
+  animState.tintFactor = lerpExp(animState.tintFactor, targetTint, 0.1, deltaMs);
+
+  // -------------------------------------------------------------------------
   // EDGE-05: Sync flash — detect new sync event before drawing
   // -------------------------------------------------------------------------
   if (lastSyncEventSec > 0 && lastSyncEventSec !== animState.lastSeenSyncEventSec) {
@@ -127,7 +140,11 @@ export function drawPocketLine(
 
   if (pocketScore > 0.7) {
     // -- EDGE-02: Tight pocket — thick green flowing dashes ------------------
-    ctx.strokeStyle = '#4ade80';
+    // Base: tight green #4ade80 (r=0x4a, g=0xde, b=0x80)
+    const tightColor = animState.tintFactor > 0.01
+      ? getTintedColor(0x4a, 0xde, 0x80, animState.tintFactor, currentTension)
+      : '#4ade80';
+    ctx.strokeStyle = tightColor;
     ctx.lineWidth = 4;
     ctx.setLineDash([12, 8]);
     ctx.lineDashOffset = -animState.dashOffset;
@@ -142,7 +159,11 @@ export function drawPocketLine(
 
   } else if (pocketScore > 0.4) {
     // -- EDGE-03: Loose pocket — medium yellow wobble curve ------------------
-    ctx.strokeStyle = '#fde68a';
+    // Base: loose yellow #fde68a (r=0xfd, g=0xe6, b=0x8a)
+    const looseColor = animState.tintFactor > 0.01
+      ? getTintedColor(0xfd, 0xe6, 0x8a, animState.tintFactor, currentTension)
+      : '#fde68a';
+    ctx.strokeStyle = looseColor;
     ctx.lineWidth = 2.5;
     ctx.setLineDash([]);
 
@@ -161,7 +182,11 @@ export function drawPocketLine(
 
   } else {
     // -- EDGE-04: Free — thin gray-blue static line --------------------------
-    ctx.strokeStyle = '#94a3b8';
+    // Base: free gray-blue #94a3b8 (r=0x94, g=0xa3, b=0xb8)
+    const freeColor = animState.tintFactor > 0.01
+      ? getTintedColor(0x94, 0xa3, 0xb8, animState.tintFactor, currentTension)
+      : '#94a3b8';
+    ctx.strokeStyle = freeColor;
     ctx.lineWidth = 1.5;
     ctx.setLineDash([]);
 
@@ -184,6 +209,15 @@ export function drawPocketLine(
     if (animState.flashIntensity < 0.02) {
       animState.flashIntensity = 0; // snap to zero to stop redundant drawGlow calls
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // EDGE-10: Resolution flash — cool blue-white glow when triggered
+  // -------------------------------------------------------------------------
+  if (animState.resolutionFlashIntensity > 0.01) {
+    drawGlow(ctx, animState.resolutionGlowCanvas, midX, midY, animState.resolutionFlashIntensity);
+    animState.resolutionFlashIntensity = lerpExp(animState.resolutionFlashIntensity, 0, 0.08, deltaMs);
+    if (animState.resolutionFlashIntensity < 0.02) animState.resolutionFlashIntensity = 0;
   }
 
   // -------------------------------------------------------------------------
