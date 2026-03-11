@@ -1,6 +1,37 @@
 // RoleLabel: per-instrument role classification output
 export type RoleLabel = 'soloing' | 'comping' | 'holding' | 'silent';
 
+// ChordFunction: harmonic function of a chord in context (Phase 3)
+export type ChordFunction = 'tonic' | 'subdominant' | 'dominant' | 'altered';
+
+// ChordState: per-tick chord detection state (Phase 3)
+// All Float32Array buffers are pre-allocated in initChordState — zero allocations after init.
+export interface ChordState {
+  chromaBuffer: Float32Array;       // length 12, pre-allocated; raw chroma from Meyda each tick
+  chromaHistory: Float32Array;      // length 36 (3 frames x 12), pre-allocated; ring buffer for 300ms smoothing
+  chromaHistoryHead: number;        // ring buffer write index 0-2
+  smoothedChroma: Float32Array;     // length 12, pre-allocated; averaged over 3-frame window
+  pendingChordIdx: number;          // index into CHORD_TEMPLATES, -1 = none
+  pendingHoldCount: number;         // ticks the pending chord has been stable
+  displayedChordIdx: number;        // -1 = no chord detected; updated after 200ms hold gate
+  confidenceGap: number;            // best - second-best cosine sim score (CHORD-04)
+  chordLog: Array<{                 // CHORD-11: timestamped chord history
+    audioTimeSec: number;
+    chordIdx: number;
+    confidenceGap: number;
+  }>;
+  chordLogMaxLen: number;           // cap at 1000 entries
+}
+
+// TensionState: harmonic tension tracking state (Phase 3)
+// All Float32Array buffers are pre-allocated — zero allocations after init.
+export interface TensionState {
+  currentTension: number;           // 0.0-1.0, lerp-smoothed
+  tensionHistory: Float32Array;     // length 32 (3s at 10fps + margin), pre-allocated
+  tensionHistoryHead: number;       // ring buffer write index
+  tensionHistorySamples: number;    // how many valid samples written
+}
+
 // InstrumentAnalysis: per-instrument analysis state, updated at 10fps
 export interface InstrumentAnalysis {
   instrument: string;           // 'bass' | 'drums' | 'keyboard' | 'guitar'
@@ -69,6 +100,8 @@ export interface AudioStateRef {
   isCalibrated: boolean;
   tensionHeatmap: Float32Array | null;   // pre-computed on load
   analysis: AnalysisState | null;        // Phase 2: per-instrument activity and role state
+  chord: ChordState | null;             // Phase 3: chord detection state
+  tension: TensionState | null;         // Phase 3: harmonic tension state
 }
 
 // Factory function for initial AudioStateRef
@@ -95,5 +128,7 @@ export function createInitialAudioState(): AudioStateRef {
     isCalibrated: false,
     tensionHeatmap: null,
     analysis: null,
+    chord: null,
+    tension: null,
   };
 }
