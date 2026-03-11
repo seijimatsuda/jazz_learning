@@ -163,14 +163,14 @@ Plans:
   3. User can click any point on the timeline to add a text annotation, which persists for the session
   4. User can export the full session as JSON (all analysis data plus annotations) and as a canvas screenshot PNG
   5. At least one pre-loaded example track with expert annotations is available for users who have not uploaded their own file
-**Plans**: TBD
+**Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 08-01: Pitch detection module (YIN/autocorrelation on mid-range bands), melodic vs energetic activity distinction
-- [ ] 08-02: Call-and-response detector (2–4s window, keyboard→guitar), animated purple conversation edge
-- [ ] 08-03: Conversation log panel — timestamped call/response entries, clickable seek
-- [ ] 08-04: User annotations on timeline — click-to-annotate, text input, annotation markers
-- [ ] 08-05: Export (JSON session data + annotations, canvas screenshot PNG), pre-loaded example tracks with expert annotations
+- [ ] 08-01-PLAN.md — PitchDetector (ACF2+ autocorrelation), melodic vs energetic distinction, AnalysisTick integration (Wave 1)
+- [ ] 08-02-PLAN.md — CallResponseDetector (2-4s window, keyboard→guitar), animated purple edge flash (Wave 2)
+- [ ] 08-03-PLAN.md — ConversationLogPanel: timestamped call/response entries, expandable drawer, clickable seek (Wave 3)
+- [ ] 08-04-PLAN.md — User annotations on timeline: Shift+click to annotate, text input overlay, amber markers (Wave 2)
+- [ ] 08-05-PLAN.md — Export (JSON + PNG with iOS fallback), pre-loaded example track infrastructure (Wave 3)
 
 ## Progress
 
@@ -186,4 +186,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Canvas Node Graph | 5/5 | Complete | 2026-03-10 |
 | 6. Edge Visualization | 3/3 | Complete | 2026-03-11 |
 | 7. React UI Panels & Key Detection | 6/6 | Complete | 2026-03-11 |
-| 8. Advanced Features | 0/5 | Not started | - |
+| 8. Advanced Features | 0/5 | Planned | - |
