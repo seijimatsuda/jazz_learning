@@ -1,5 +1,12 @@
 import { create } from 'zustand';
 
+// Phase 8: user annotations (UI-only, not audio hot-path)
+export interface Annotation {
+  id: string;
+  timeSec: number;
+  text: string;
+}
+
 interface AppState {
   // File state
   fileName: string | null;
@@ -35,6 +42,9 @@ interface AppState {
   kbIsMelodic: boolean;
   gtIsMelodic: boolean;
 
+  // Phase 8: user annotations
+  annotations: Annotation[];
+
   // Actions
   setFile: (name: string, duration: number) => void;
   setCalibrating: (val: boolean) => void;
@@ -47,6 +57,8 @@ interface AppState {
   setSelectedInstrument: (name: string | null) => void;
   setDetectedKey: (key: string | null, mode: 'major' | 'minor' | null) => void;
   setMelodyState: (kbMelodic: boolean, gtMelodic: boolean) => void;
+  addAnnotation: (timeSec: number, text: string) => void;
+  removeAnnotation: (id: string) => void;
   reset: () => void;
 }
 
@@ -79,6 +91,7 @@ export const useAppStore = create<AppState>((set) => ({
   // Phase 8 initial state
   kbIsMelodic: false,
   gtIsMelodic: false,
+  annotations: [],
 
   setFile: (name, duration) => set({ fileName: name, isFileLoaded: true, duration }),
   setCalibrating: (val) => set({ isCalibrating: val }),
@@ -93,6 +106,16 @@ export const useAppStore = create<AppState>((set) => ({
   setSelectedInstrument: (name) => set({ selectedInstrument: name }),
   setDetectedKey: (key, mode) => set({ detectedKey: key, detectedKeyMode: mode }),
   setMelodyState: (kbMelodic, gtMelodic) => set({ kbIsMelodic: kbMelodic, gtIsMelodic: gtMelodic }),
+  addAnnotation: (timeSec, text) => set((state) => ({
+    annotations: [...state.annotations, {
+      id: crypto.randomUUID(),
+      timeSec,
+      text,
+    }]
+  })),
+  removeAnnotation: (id) => set((state) => ({
+    annotations: state.annotations.filter(a => a.id !== id)
+  })),
   reset: () => set({
     fileName: null,
     isFileLoaded: false,
@@ -114,5 +137,6 @@ export const useAppStore = create<AppState>((set) => ({
     detectedKeyMode: null,
     kbIsMelodic: false,
     gtIsMelodic: false,
+    annotations: [],
   }),
 }));
