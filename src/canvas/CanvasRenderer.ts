@@ -202,6 +202,16 @@ export class CanvasRenderer {
     this.onBeatUpdate = cb;
   }
 
+  /**
+   * Returns the current fractional node positions and logical canvas dimensions
+   * for click hit detection in VisualizerCanvas.
+   *
+   * Positions are fractional [0,1] — multiply by logical width/height to get px coords.
+   */
+  getNodeLayout(): { positions: NodePosition[]; width: number; height: number } {
+    return { positions: this.nodePositions, width: this.logicalWidth, height: this.logicalHeight };
+  }
+
   /** Stop the animation loop and release resources. */
   destroy(): void {
     if (this.rafHandle) {

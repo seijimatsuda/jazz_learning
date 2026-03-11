@@ -12,6 +12,7 @@ import { useEffect, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import type { AudioStateRef } from '../audio/types';
 import { CanvasRenderer } from '../canvas/CanvasRenderer';
+import { INSTRUMENT_ORDER } from '../canvas/nodes/NodeLayout';
 import { useAppStore } from '../store/useAppStore';
 
 interface VisualizerCanvasProps {
@@ -59,7 +60,36 @@ export function VisualizerCanvas({ audioStateRef }: VisualizerCanvasProps) {
     });
     observer.observe(canvas);
 
+    // Click handler — detect which node was clicked (if any) and update selectedInstrument in Zustand
+    const handleCanvasClick = (e: MouseEvent) => {
+      const r = rendererRef.current;
+      if (!r) return;
+
+      const { positions } = r.getNodeLayout();
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+      // Convert CSS pixels to fractional canvas coordinates [0,1]
+      const fx = clickX / rect.width;
+      const fy = clickY / rect.height;
+
+      const hitRadius = 0.06; // ~48px on 800px canvas
+      for (let i = 0; i < positions.length; i++) {
+        const dx = fx - positions[i].x;
+        const dy = fy - positions[i].y;
+        if (Math.sqrt(dx * dx + dy * dy) < hitRadius) {
+          useAppStore.getState().setSelectedInstrument(INSTRUMENT_ORDER[i]);
+          return;
+        }
+      }
+      // Clicked outside all nodes — close detail panel
+      useAppStore.getState().setSelectedInstrument(null);
+    };
+
+    canvas.addEventListener('click', handleCanvasClick);
+
     return () => {
+      canvas.removeEventListener('click', handleCanvasClick);
       observer.disconnect();
       renderer.destroy();
       rendererRef.current = null;
