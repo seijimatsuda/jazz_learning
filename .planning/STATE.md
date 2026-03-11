@@ -10,27 +10,27 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 1 of 8 (Audio Pipeline Foundation)
-Plan: 4 of 5 in current phase
-Status: In progress
-Last activity: 2026-03-11 — Completed 01-04-PLAN.md (CalibrationPass + Transport Controls + Timeline)
+Plan: 5 of 5 in current phase
+Status: Phase complete — ready for Phase 2
+Last activity: 2026-03-11 — Completed 01-05-PLAN.md (Canvas Renderer + Tension Heatmap + Full App Layout)
 
-Progress: [████░░░░░░] 10% (4/40 total plans estimated)
+Progress: [█████░░░░░] 13% (5/40 total plans estimated)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: ~2m 17s
-- Total execution time: ~9 minutes
+- Total plans completed: 5
+- Average duration: ~2m 24s
+- Total execution time: ~12 minutes
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01 - Audio Pipeline Foundation | 4/5 | ~9m | ~2m 17s |
+| 01 - Audio Pipeline Foundation | 5/5 COMPLETE | ~12m | ~2m 24s |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (2m 22s), 01-02 (2m 12s), 01-03 (~3m), 01-04 (2m 12s)
+- Last 5 plans: 01-01 (2m 22s), 01-02 (2m 12s), 01-03 (~3m), 01-04 (2m 12s), 01-05 (~3m)
 - Trend: Consistent sub-3min per plan
 
 *Updated after each plan completion*
@@ -59,6 +59,10 @@ Recent decisions affecting current work:
 - [D-01-04-2]: Calibration source connected only to rawAnalyser (not destination) — silent pass, no audible noise
 - [D-01-04-3]: AudioBufferSourceNode single-use — fresh source created on every play call
 - [D-01-04-4]: Timeline 10fps setInterval polling — consistent with ref-based audio state pattern, off React hot-path
+- [D-01-05-1]: HTMLCanvasElement (off-DOM) for glow layers instead of OffscreenCanvas — iOS 16 Safari OffscreenCanvas support is incomplete per RESEARCH.md
+- [D-01-05-2]: Zero per-frame typed array allocations — getByteFrequencyData writes into pre-allocated audioStateRef.current.smoothedFreqData each rAF frame
+- [D-01-05-3]: Tension heatmap uses spectral centroid variance as proxy — placeholder for Phase 3 chord-function tension (fast, offline-safe)
+- [D-01-05-4]: File upload extended to accept m4a/aac/ogg/flac — Web Audio API decodeAudioData handles these natively; restriction was unnecessarily narrow for jazz recordings
 
 ### Pending Todos
 
@@ -66,13 +70,13 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 1 pre-work]: Verify Meyda.js 5.6.3 ScriptProcessorNode vs AudioWorklet default via Context7 before writing analysis code
-- [Phase 2 pre-work]: Verify Meyda chroma internal sample rate handling empirically — test same file on iOS (48kHz) vs desktop Chrome (44.1kHz); if chroma vectors differ, custom chroma mapping required (~50 lines)
+- [Phase 2 pre-work]: Verify Meyda chroma internal sample rate handling empirically — test same file on iOS (48kHz) vs desktop Chrome (44.1kHz); if chroma vectors differ, custom chroma normalization required (~50 lines)
 - [All phases]: iOS Safari AudioContext `{ sampleRate: 44100 }` constructor option behavior unconfirmed — always read back `audioCtx.sampleRate` after creation
-- [Note]: Requirements count discrepancy — REQUIREMENTS.md header says 83 but traceability table contains 96 entries across all categories. All 96 entries are mapped in the roadmap. Reconcile count before Phase 1 planning.
+- [All visual phases]: iOS Low Power Mode caps rAF at 30fps — documented known limitation; test with Low Power Mode OFF
+- [Note]: Requirements count discrepancy — REQUIREMENTS.md header says 83 but traceability table contains 96 entries across all categories. All 96 entries are mapped in the roadmap. Reconcile count before Phase 2 planning.
 
 ## Session Continuity
 
-Last session: 2026-03-11T00:04:13Z
-Stopped at: Completed 01-04-PLAN.md — CalibrationPass, TransportControls, Timeline, and full app wiring. Ready for 01-05 (analysis loop / Meyda integration).
+Last session: 2026-03-11
+Stopped at: Completed 01-05-PLAN.md — CanvasRenderer, offscreen glow, TensionHeatmap, full app layout. Phase 1 complete, human verification passed. Ready for Phase 2 (role classification).
 Resume file: None
