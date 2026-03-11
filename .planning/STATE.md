@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-03-10)
 ## Current Position
 
 Phase: 7 of 8 (React UI Panels & Key Detection) — In progress
-Plan: 6 of 6 complete (wave 2: 07-02, 07-04 done)
+Plan: 6 of 6 complete (wave 2: 07-02, 07-03, 07-04 done)
 Status: In progress
-Last activity: 2026-03-11 — Completed 07-04-PLAN.md (useSeek hook + bar/beat grid overlay)
+Last activity: 2026-03-11 — Completed 07-03-PLAN.md (NodeDetailPanel, canvas click-to-select, getNodeLayout)
 
 Progress: [██████████████████████████████░] 85% (34/40 total plans estimated)
 
@@ -152,6 +152,10 @@ Recent decisions affecting current work:
 - [D-07-04-1]: useSeek takes MutableRefObject<AudioStateRef> as param — hook reads full state (wasPlaying, smoothedAnalyser, rawAnalyser); can't be split to primitive props
 - [D-07-04-2]: beatGrid polled inside existing 100ms setInterval — avoids second timer; identity check (bpm + lastDownbeatSec delta < 0.01) prevents spurious re-renders
 - [D-07-04-3]: Beat grid at zIndex:0 behind progress fill (zIndex:1) — grid visible through semi-transparent indigo overlay
+- [D-07-03-1]: getNodeLayout() returns NodePosition[] reference not copy — positions array is recomputed on resize, not per-frame; returning reference is safe and zero-allocation
+- [D-07-03-2]: initMiniCanvas called on selectedInstrument change (not just mount) — canvas element re-mounts when panel appears; ensures correct dpr scaling each time
+- [D-07-03-3]: bestWeight threshold 0.3 (same as EDGE-07 communication edge visibility minimum) — consistent partner display threshold
+- [D-07-03-4]: timeInRole text percentages read audioStateRef directly in render path — stays current without extra state slice; sparkline/pie drawn on canvas via interval
 
 ### Pending Todos
 
@@ -167,5 +171,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: Completed 07-04-PLAN.md — useSeek hook extracted, bar/beat grid overlay added to Timeline. Wave 2 plans: 07-02 and 07-04 done; 07-06 remaining.
+Stopped at: Completed 07-03-PLAN.md — NodeDetailPanel.tsx created with sparkline, pie chart, most-active partner. Canvas click-to-select wired in VisualizerCanvas. Wave 2 plans: 07-02, 07-03, 07-04 done; 07-06 remaining.
 Resume file: None
