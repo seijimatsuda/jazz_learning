@@ -46,11 +46,11 @@ Plans:
   1. Each instrument node displays a colored ring stroke indicating its family (brass, woodwind, rhythm, keyboard) while the fill color still reflects the current role (soloing/comping/holding/silent)
   2. Instruments from the same family appear adjacent on the circular layout (horns cluster together, rhythm section clusters together) rather than in arbitrary order
   3. Communication edges between instrument pairs animate differently based on type — rhythmic edges pulse with the beat, melodic edges show a gradient flow, support edges breathe in opacity
-**Plans**: TBD
+**Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 13-01: TBD
-- [ ] 13-02: TBD
+- [ ] 13-01-PLAN.md — Family ring stroke on nodes (VIS-01) + family-sorted circular layout (VIS-02) (Wave 1)
+- [ ] 13-02-PLAN.md — Per-type edge animation: rhythmic beat-pulse, melodic gradient, support breathe (VIS-03) (Wave 2)
 
 ### Phase 14: Tech Debt and Polish
 **Goal**: Codebase is cleaned up from v1.1 audit findings — no dead code paths, no crash risks from malformed data
@@ -81,5 +81,5 @@ Plans:
 | 10. Band Setup UI and Canvas Layout | v1.1 | 3/3 | Complete | 2026-03-12 |
 | 11. Gap Closures | v1.1 | 2/2 | Complete | 2026-03-12 |
 | 12. Disambiguation Engine | v1.2 | 6/6 | Complete | 2026-03-12 |
-| 13. Visual Family Identity | v1.2 | 0/? | Not started | - |
+| 13. Visual Family Identity | v1.2 | 0/2 | Not started | - |
 | 14. Tech Debt and Polish | v1.2 | 0/? | Not started | - |
