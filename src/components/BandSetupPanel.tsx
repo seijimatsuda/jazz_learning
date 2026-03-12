@@ -12,8 +12,6 @@
 
 import { useAppStore } from '../store/useAppStore';
 
-const AVAILABLE_INSTRUMENTS = ['keyboard', 'bass', 'drums', 'guitar', 'saxophone', 'trumpet', 'trombone', 'vibes'] as const;
-
 const INSTRUMENT_ICONS: Record<string, string> = {
   keyboard: '\u{1F3B9}',
   bass: '\u{1F3B8}',
@@ -23,17 +21,6 @@ const INSTRUMENT_ICONS: Record<string, string> = {
   trumpet: '\u{1F3BA}',
   trombone: '\u{1F3B6}',
   vibes: '\u{1F3B5}',
-};
-
-const BAND_LABELS: Record<string, string> = {
-  keyboard: '250-2000 Hz',
-  bass: '20-250 Hz',
-  drums: '60-300 Hz + 2-8 kHz',
-  guitar: '300-3000 Hz',
-  saxophone: '250-2000 Hz',
-  trumpet: '300-3000 Hz',
-  trombone: '250-2000 Hz',
-  vibes: '250-3000 Hz',
 };
 
 const INSTRUMENT_FAMILIES = [
