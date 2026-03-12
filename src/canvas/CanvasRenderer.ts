@@ -185,7 +185,6 @@ export class CanvasRenderer {
         const guitarKbEdge = this.edgeAnimStates['guitar_keyboard'];
         if (guitarKbEdge) {
           guitarKbEdge.callResponseFlashIntensity = 1.0;
-          console.log('[CanvasRenderer] Call-response detected — gap:', callResponse.gapSec.toFixed(2), 's');
         }
       }
       // Forward to external callback (Zustand bridge)

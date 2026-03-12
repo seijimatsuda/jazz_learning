@@ -141,7 +141,6 @@ export function runAnalysisTick(
     if (newRole !== instr.role) {
       instr.role = newRole;
       instr.roleSinceSec = state.audioCtx?.currentTime ?? 0;
-      console.log('[AnalysisTick] role change:', instr.instrument, newRole);
       onRoleChange?.(instr.instrument, newRole);
     }
 
@@ -262,38 +261,47 @@ export function runAnalysisTick(
     const beat = state.beat;
     const audioTimeSec = state.audioCtx?.currentTime ?? 0;
 
-    // Look up frequency bands by name (not hardcoded bin indices)
-    const drumsHighBand = state.bands.find(b => b.name === 'drums_high');
-    const rideBand = state.bands.find(b => b.name === 'ride');
-    const bassBand = state.bands.find(b => b.name === 'bass');
+    // Guard: only run beat/pocket logic when both bass and drums are in the lineup.
+    // FrequencyBands for 'bass', 'drums_high', 'ride' always exist (built from sampleRate),
+    // but onset detection without the corresponding instruments produces spurious results
+    // that cause beat-pulse animations on non-drum nodes via CanvasRenderer.
+    const hasBassInstrument = instrs.some(i => i.instrument === 'bass');
+    const hasDrumsInstrument = instrs.some(i => i.instrument === 'drums');
 
-    if (drumsHighBand && rideBand && bassBand && state.rawFreqData && analysis.prevRawFreqData) {
-      // 1. Drum onset detection (populates OSS buffer, onset timestamps, beat counter)
-      const drumFlux = computeDrumFlux(
-        state.rawFreqData,
-        analysis.prevRawFreqData,
-        drumsHighBand,
-        rideBand,
-      );
-      detectDrumOnset(beat, state.rawFreqData, analysis.prevRawFreqData, drumsHighBand, rideBand, audioTimeSec);
+    if (hasBassInstrument && hasDrumsInstrument) {
+      // Look up frequency bands by name (not hardcoded bin indices)
+      const drumsHighBand = state.bands.find(b => b.name === 'drums_high');
+      const rideBand = state.bands.find(b => b.name === 'ride');
+      const bassBand = state.bands.find(b => b.name === 'bass');
 
-      // 2. Bass onset detection (RMS delta with debounce and kick bleed suppression)
-      detectBassOnset(beat, state.rawFreqData, bassBand, audioTimeSec, drumFlux);
+      if (drumsHighBand && rideBand && bassBand && state.rawFreqData && analysis.prevRawFreqData) {
+        // 1. Drum onset detection (populates OSS buffer, onset timestamps, beat counter)
+        const drumFlux = computeDrumFlux(
+          state.rawFreqData,
+          analysis.prevRawFreqData,
+          drumsHighBand,
+          rideBand,
+        );
+        detectDrumOnset(beat, state.rawFreqData, analysis.prevRawFreqData, drumsHighBand, rideBand, audioTimeSec);
 
-      // 3. BPM update (autocorrelation every 2 seconds)
-      const prevBpm = beat.bpm;
-      const prevPocket = beat.pocketScore;
-      updateBpm(beat);
+        // 2. Bass onset detection (RMS delta with debounce and kick bleed suppression)
+        detectBassOnset(beat, state.rawFreqData, bassBand, audioTimeSec, drumFlux);
 
-      // 4. Rubato gate (IOI CV check — may null out BPM)
-      applyRubatoGate(beat);
+        // 3. BPM update (autocorrelation every 2 seconds)
+        const prevBpm = beat.bpm;
+        const prevPocket = beat.pocketScore;
+        updateBpm(beat);
 
-      // 5. Pocket score (bass-drums sync scoring)
-      updatePocketScore(beat, audioTimeSec);
+        // 4. Rubato gate (IOI CV check — may null out BPM)
+        applyRubatoGate(beat);
 
-      // 6. Push to Zustand when values change
-      if (onBeatUpdate && (beat.bpm !== prevBpm || beat.pocketScore !== prevPocket)) {
-        onBeatUpdate(beat.bpm, beat.pocketScore, beat.timingOffsetMs);
+        // 5. Pocket score (bass-drums sync scoring)
+        updatePocketScore(beat, audioTimeSec);
+
+        // 6. Push to Zustand when values change
+        if (onBeatUpdate && (beat.bpm !== prevBpm || beat.pocketScore !== prevPocket)) {
+          onBeatUpdate(beat.bpm, beat.pocketScore, beat.timingOffsetMs);
+        }
       }
     }
   }
