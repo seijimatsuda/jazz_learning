@@ -7,9 +7,8 @@
  *   EDGE-09: Tension tinting — base color shifts amber/red at high tension
  *   EDGE-10: Resolution flash — cool blue-white glow when tension drops below 0.3
  *
- * Covers all 5 non-pocket instrument pairs:
- *   bass_guitar, bass_keyboard, drums_guitar, drums_keyboard, guitar_keyboard
- *   (bass_drums is handled by drawPocketLine — Plan 01)
+ * Covers all non-pocket instrument pairs for any lineup (2-8 instruments).
+ * bass_drums is handled by drawPocketLine — Plan 01.
  *
  * Visual states driven by smoothed cross-correlation weight:
  *   < 0.3          = hidden        (opacity fades to 0, no stroke)
@@ -20,7 +19,7 @@
  * Performance constraints:
  * - NO per-frame allocations
  * - Always ctx.save()/ctx.restore() for lineDash isolation (iOS Safari)
- * - PAIRS tuple array pre-computed at module load — never recreated
+ * - Pairs are passed as a parameter (computed by CanvasRenderer from lineup)
  * - Endpoint termination at node circumference via normalized direction vector
  */
 
@@ -28,40 +27,7 @@ import { lerpExp } from '../nodes/NodeAnimState';
 import { drawGlow } from '../nodes/drawGlow';
 import type { EdgeAnimState } from './EdgeAnimState';
 import { EDGE_TYPE, EDGE_COLOR, getTintedColor } from './edgeTypes';
-import { INSTRUMENT_ORDER } from '../nodes/NodeLayout';
-
-// ---------------------------------------------------------------------------
-// PAIRS — all 5 non-pocket pairs pre-computed at module load
-// ---------------------------------------------------------------------------
-
-/** Tuple: [indexA, indexB, edgeKey] for each non-pocket instrument pair. */
-type PairTuple = [number, number, string];
-
-/**
- * All 5 non-pocket instrument pairs in canonical alphabetical order.
- * Pre-computed from INSTRUMENT_ORDER at module load — zero allocation per frame.
- *
- * bass_drums is excluded — it's the pocket line handled by drawPocketLine (Plan 01).
- */
-const PAIRS: PairTuple[] = (() => {
-  const n = INSTRUMENT_ORDER.length;
-  const pairs: PairTuple[] = [];
-  for (let i = 0; i < n; i++) {
-    for (let j = i + 1; j < n; j++) {
-      const a = INSTRUMENT_ORDER[i];
-      const b = INSTRUMENT_ORDER[j];
-      // Canonical alphabetical order for key lookup
-      const [nameA, nameB] = a < b ? [a, b] : [b, a];
-      const key = `${nameA}_${nameB}`;
-      // Skip the pocket line pair
-      if (key === 'bass_drums') continue;
-      const idxA = i;
-      const idxB = j;
-      pairs.push([idxA, idxB, key]);
-    }
-  }
-  return pairs;
-})();
+import type { NodePosition, PairTuple } from '../nodes/NodeLayout';
 
 // ---------------------------------------------------------------------------
 // Visual state type
@@ -84,8 +50,9 @@ type VisualState = 'hidden' | 'static_thin' | 'subtle' | 'animated';
  * the node drawing loop.
  *
  * @param ctx             - Main canvas 2D rendering context
- * @param nodePositions   - Fractional [0,1] positions per instrument (indexed by INSTRUMENT_ORDER)
+ * @param nodePositions   - Fractional [0,1] positions per instrument (indexed by lineup)
  * @param nodeRadii       - Current rendered radii per instrument (CSS pixels)
+ * @param pairs           - Non-pocket pair tuples [idxA, idxB, key] from buildPairs()
  * @param edgeAnimStates  - Mutable per-edge animation state keyed by pair string
  * @param edgeWeights     - Cross-correlation weights keyed by 'instrA_instrB' (alphabetical)
  * @param canvasW         - Logical canvas width in CSS pixels
@@ -95,8 +62,9 @@ type VisualState = 'hidden' | 'static_thin' | 'subtle' | 'animated';
  */
 export function drawCommunicationEdges(
   ctx: CanvasRenderingContext2D,
-  nodePositions: { x: number; y: number }[],
+  nodePositions: NodePosition[],
   nodeRadii: number[],
+  pairs: PairTuple[],
   edgeAnimStates: Record<string, EdgeAnimState>,
   edgeWeights: Record<string, number>,
   canvasW: number,
@@ -104,7 +72,7 @@ export function drawCommunicationEdges(
   currentTension: number,
   deltaMs: number,
 ): void {
-  for (const [idxA, idxB, key] of PAIRS) {
+  for (const [idxA, idxB, key] of pairs) {
     const animState = edgeAnimStates[key];
     if (!animState) continue;
 
