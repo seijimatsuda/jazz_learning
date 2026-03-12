@@ -28,19 +28,14 @@
   3. When saxophone and keyboard are both selected, monophonic sax runs show higher sax activity than keyboard activity
   4. When 3+ horns are selected, spectral centroid ordering produces differentiated activity levels rather than identical scores
   5. During tutti passages (all instruments active above 0.6), disambiguation weights reset to equal (no false precision) and confidence indicators reflect uncertainty
-**Plans**: TBD
+**Plans**: 5 plans in 3 waves
 
 Plans:
-- [ ] 12-01: TBD
-- [ ] 12-02: TBD
-- [ ] 12-03: TBD
-
-**Build order constraints (from research):**
-- Wave 1: types.ts raw/display score split + DisambiguationState buffers + instrumentFamilies.ts constants — MUST land before any disambiguator code
-- Wave 2: Hand-rolled spectralFlatness + TromboneBassDisambiguator + SaxKeyboardDisambiguator (chroma entropy with band-limiting)
-- Wave 3: VibesKeyboardDisambiguator (tremolo detection, stateful) + HornSectionDisambiguator (spectral centroid hierarchy)
-
-**Research flags:** Phase 12 needs `/gsd:research-phase` — chroma entropy thresholds, spectralFlatness implementation, tremolo window sizing all need deeper investigation during planning.
+- [ ] 12-01-PLAN.md — Raw/display score split, DisambiguationState, instrumentFamilies.ts (Wave 1)
+- [ ] 12-02-PLAN.md — SpectralFeatures.ts hand-rolled extractors (Wave 1)
+- [ ] 12-03-PLAN.md — TromboneBass + SaxKeyboard disambiguators (Wave 2)
+- [ ] 12-04-PLAN.md — VibesKeyboard + HornSection disambiguators (Wave 2)
+- [ ] 12-05-PLAN.md — DisambiguationEngine orchestrator + AnalysisTick integration (Wave 3)
 
 ### Phase 13: Visual Family Identity
 **Goal**: Users can visually distinguish instrument families and communication types at a glance on the canvas
@@ -84,6 +79,6 @@ Plans:
 | 9. Data Layer and Structural Refactor | v1.1 | 4/4 | Complete | 2026-03-12 |
 | 10. Band Setup UI and Canvas Layout | v1.1 | 3/3 | Complete | 2026-03-12 |
 | 11. Gap Closures | v1.1 | 2/2 | Complete | 2026-03-12 |
-| 12. Disambiguation Engine | v1.2 | 0/? | Not started | - |
+| 12. Disambiguation Engine | v1.2 | 0/5 | Planning complete | - |
 | 13. Visual Family Identity | v1.2 | 0/? | Not started | - |
 | 14. Tech Debt and Polish | v1.2 | 0/? | Not started | - |
