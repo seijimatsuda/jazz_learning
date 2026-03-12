@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 12 of 14 (Disambiguation Engine)
-Plan: 2 of 5 in current phase (12-01 and 12-02 both complete)
+Plan: 4 of 5 in current phase (12-01, 12-02, 12-03, 12-04 complete)
 Status: In progress
-Last activity: 2026-03-12 — Completed 12-01-PLAN.md (disambiguation foundation)
+Last activity: 2026-03-12 — Completed 12-04-PLAN.md (VibesKeyboard + HornSection disambiguators)
 
-Progress: [██░░░░░░░░] ~20% (Phase 12 Plans 1 and 2 of 5 complete)
+Progress: [████░░░░░░] ~40% (Phase 12 Plans 1, 2, 3, 4 of 5 complete)
 
 ## Performance Metrics
 
@@ -38,6 +38,8 @@ Recent decisions affecting current work:
 - 12-02: computeSpectralFlatness skips zero bins (not clamp to epsilon) — more accurate geometric mean over audible signal
 - 12-02: chromaEntropy returns raw entropy [0, log2(12)], not normalized — callers normalize as needed
 - 12-02: computeBandCentroid returns 0 on silence (not NaN) — safe default for threshold comparisons
+- 12-03: 'sub' band (20–80 Hz) not in default bands — TromboneBassDisambiguator falls back to low quarter of 'bass' band bins
+- 12-03: disambiguateSaxKeyboard is stateless (no DisambiguationState param) — caller writes confidence['sax_keyboard'] at integration time in 12-04
 
 ### Pending Todos
 
@@ -51,6 +53,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12T22:54:30Z
-Stopped at: Completed 12-01-PLAN.md (disambiguation foundation — raw/display split, DisambiguationState, instrumentFamilies.ts)
+Last session: 2026-03-12T22:59:02Z
+Stopped at: Completed 12-03-PLAN.md (TromboneBassDisambiguator + SaxKeyboardDisambiguator)
 Resume file: None
