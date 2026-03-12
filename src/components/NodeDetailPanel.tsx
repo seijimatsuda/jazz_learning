@@ -7,7 +7,7 @@
  * - Time-in-role pie chart via mini canvas (UI-06)
  * - Most-active communication partner (UI-07)
  *
- * Polls audioStateRef at 100ms via setInterval — same pattern as InstrumentRoleOverlay.
+ * Polls audioStateRef at 100ms via setInterval — same pattern as FileUpload.
  * Mini-canvases apply HiDPI scaling via devicePixelRatio.
  */
 
@@ -20,7 +20,7 @@ interface NodeDetailPanelProps {
   audioStateRef: MutableRefObject<AudioStateRef>;
 }
 
-// Role colors — match canvas legend and InstrumentRoleOverlay
+// Role colors — match canvas legend
 const ROLE_COLORS: Record<RoleLabel, string> = {
   soloing: '#f59e0b',
   comping: '#3b82f6',
