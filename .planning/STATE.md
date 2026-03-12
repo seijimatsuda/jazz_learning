@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 10 — Band Setup UI and Canvas Layout
+**Current focus:** Phase 11 — Final Polish
 
 ## Current Position
 
 Phase: 10 of 11 in v1.1 (Band Setup UI and Canvas Layout)
-Plan: 2 of 3 in current phase
-Status: In progress
-Last activity: 2026-03-12 — Completed 10-02-PLAN.md (bass-center circular layout)
+Plan: 3 of 3 in current phase
+Status: Phase complete
+Last activity: 2026-03-12 — Completed 10-03-PLAN.md (edge batching and dynamic hide threshold)
 
-Progress: [█████████░] ~89% (v1.0 complete, Phase 9 complete, Phase 10 plan 2/3 complete)
+Progress: [█████████░] ~94% (v1.0 complete, Phase 9 complete, Phase 10 complete, Phase 11 not started)
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [█████████░] ~89% (v1.0 complete, Phase 9 complete
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 9 | 4/4 | Complete |
-| 10 | 2/3 | In progress |
+| 10 | 3/3 | Complete |
 | 11 | 0/2 | Not started |
 
 *Updated after each plan completion*
@@ -46,6 +46,13 @@ Recent decisions affecting v1.1:
 - Phase 9: INST-08 (saxophone/keyboard disambiguation) reclassified as DISC-05 in v1.2 requirements
 - Phase 9: EDGE_TYPE fallback operator removed — all 28 pairs defined, no silent defaults
 - Phase 10: Vibes + keyboard simultaneous selection policy RESOLVED — prevented in UI with tooltip (shared 250-2000 Hz band, acoustically indistinguishable via FFT in v1.2 scope)
+
+Phase 10 plan 03 decisions:
+- D-10-03-1: Non-animated edges use rgba() in strokeStyle instead of globalAlpha — enables single-pass batch without save/restore per edge
+- D-10-03-2: Animated (dashed) edges still isolated with save/restore — iOS Safari requires this for setLineDash correctness
+- D-10-03-3: Dynamic threshold breakpoint at instrumentCount > 5 (threshold 0.45 at 6-8 instruments keeps 28-edge graph readable)
+- D-10-03-4: getTintedColor() replaced with inline lerp in collect pass — eliminates string allocation per visible edge per frame
+- D-10-03-5: Pre-allocated edgeRenderBuf at module level (28 slots) — zero per-frame heap allocations in hot render path
 
 Phase 10 plan 02 decisions:
 - D-10-02-1: position[0] convention — always canvas center regardless of instrument count
@@ -72,12 +79,10 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 10]: iOS canvas performance at 8 instruments (28 edges, quadratic growth) needs empirical device test early in execution — do not defer to end of phase
-- [Phase 10]: Layout geometry validated — elliptical ring (rx=0.34, ry=0.17) confirmed clear of tension meter (right edge) and BPM display (bottom-left) for all counts 2-8
-- [Phase 10]: BandSetupPanel already shows 8 instruments (done in Phase 9) — Phase 10 adds family grouping, count badge, 2-8 validation
+- [Phase 11]: iOS canvas performance at 8 instruments (28 edges) — CANV-03/CANV-04 batch rendering implemented in 10-03; empirical device test on iOS Safari should be done early in Phase 11 to validate improvements
 
 ## Session Continuity
 
-Last session: 2026-03-12T06:10:52Z
-Stopped at: Completed 10-02-PLAN.md (bass-center circular layout)
+Last session: 2026-03-12T00:00:00Z
+Stopped at: Completed 10-03-PLAN.md (edge batching and dynamic hide threshold — Phase 10 complete)
 Resume file: None
