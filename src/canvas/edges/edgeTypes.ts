@@ -100,13 +100,18 @@ export function getTintedColor(
  * Maps instrument pair strings (alphabetical order, underscore separator)
  * to their EdgeType.
  *
- * All 6 pairs in a 4-instrument graph:
+ * All 28 pairs for 8 instruments — C(8,2) = 28 (v1.1, 8-instrument support):
+ *
+ * Original 6 pairs (4-instrument v1.0):
  *   bass_drums      → rhythmic  (pocket line)
  *   guitar_keyboard → melodic   (harmonic conversation)
  *   bass_guitar     → support
  *   bass_keyboard   → support
  *   drums_guitar    → support
  *   drums_keyboard  → support
+ *
+ * New 22 pairs (v1.1 additions):
+ *   bass + new instruments, drums + new instruments, cross-melodic pairs
  */
 export const EDGE_TYPE: Record<string, EdgeType> = {
   bass_drums:      'rhythmic',
@@ -115,4 +120,40 @@ export const EDGE_TYPE: Record<string, EdgeType> = {
   bass_keyboard:   'support',
   drums_guitar:    'support',
   drums_keyboard:  'support',
+
+  // --- New instrument pairs (v1.1 — 8-instrument support) ---
+
+  // Bass + new instruments (support — bass anchors rhythm section)
+  bass_saxophone:   'support',
+  bass_trombone:    'support',
+  bass_trumpet:     'support',
+  bass_vibes:       'support',
+
+  // Drums + new instruments (support — drums + front line)
+  drums_saxophone:  'support',
+  drums_trombone:   'support',
+  drums_trumpet:    'support',
+  drums_vibes:      'support',
+
+  // Keyboard + new instruments
+  keyboard_saxophone:  'melodic',
+  keyboard_trombone:   'support',
+  keyboard_trumpet:    'melodic',
+  keyboard_vibes:      'melodic',
+
+  // Guitar + new instruments
+  guitar_saxophone:    'melodic',
+  guitar_trombone:     'support',
+  guitar_trumpet:      'melodic',
+  guitar_vibes:        'melodic',
+
+  // Front-line horn pairs (melodic — core jazz voicing)
+  saxophone_trombone:  'melodic',
+  saxophone_trumpet:   'melodic',
+  trumpet_trombone:    'melodic',
+
+  // Vibes + front line
+  saxophone_vibes:     'melodic',
+  trombone_vibes:      'support',
+  trumpet_vibes:       'melodic',
 };

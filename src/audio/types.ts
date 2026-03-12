@@ -101,9 +101,13 @@ export interface InstrumentPitchState {
   correlationBuffer: Float32Array; // pre-allocated, length = fftSize
 }
 
+/**
+ * PitchAnalysisState: holds per-instrument pitch detection state for all melodic
+ * instruments in the current lineup. The instruments field is a dynamic Record
+ * keyed by instrument name — not limited to keyboard/guitar (v1.1 generalization).
+ */
 export interface PitchAnalysisState {
-  keyboard: InstrumentPitchState;
-  guitar: InstrumentPitchState;
+  instruments: Record<string, InstrumentPitchState>;
 }
 
 // CallResponseEntry: a single call-and-response event (Phase 8)
