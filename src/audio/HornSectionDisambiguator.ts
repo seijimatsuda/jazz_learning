@@ -32,7 +32,7 @@
  */
 
 import { computeBandCentroid } from './SpectralFeatures';
-import { FrequencyBand } from './types';
+import type { FrequencyBand } from './types';
 
 /**
  * Expected spectral centroid positions (Hz) for each horn instrument.

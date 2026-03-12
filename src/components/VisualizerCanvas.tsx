@@ -71,6 +71,12 @@ export function VisualizerCanvas({ audioStateRef, onCanvasReady }: VisualizerCan
       }
     });
 
+    // Wire disambiguation update callback — pushes confidence values and isTutti to Zustand (Phase 12)
+    // Fires every tick when disambiguation state is initialized and engine runs.
+    renderer.setOnDisambiguationUpdate((confidence, isTutti) => {
+      useAppStore.getState().setDisambiguationInfo(confidence, isTutti);
+    });
+
     // Resize observer keeps HiDPI scaling correct when element resizes
     const observer = new ResizeObserver(() => {
       renderer.resize();

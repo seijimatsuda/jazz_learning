@@ -43,6 +43,45 @@ type ChordChangeCallback = (
 const INITIAL_BASE_RADIUS = 28;
 
 // ---------------------------------------------------------------------------
+// Confidence indicator helpers (Phase 12 — DISC-04)
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps an instrument name to its disambiguation pair key.
+ * Returns null when the instrument is not involved in any pair.
+ *
+ * Used by the node rendering loop to decide whether to dim the node label
+ * when the disambiguator confidence for its pair is below 0.5.
+ */
+function getInstrumentPairKey(instrument: string, instrumentOrder: string[]): string | null {
+  switch (instrument) {
+    case 'trombone':
+    case 'bass':
+      // Only apply trombone/bass pair key when both are present
+      if (instrumentOrder.includes('trombone') && instrumentOrder.includes('bass')) {
+        return 'trombone_bass';
+      }
+      return null;
+    case 'saxophone':
+      // Only apply when keyboard is also present
+      if (instrumentOrder.includes('keyboard')) return 'sax_keyboard';
+      return null;
+    case 'vibes':
+      return instrumentOrder.includes('keyboard') ? 'vibes_keyboard' : null;
+    case 'keyboard':
+      // keyboard may participate in sax/keyboard or vibes/keyboard (pick the most relevant)
+      if (instrumentOrder.includes('saxophone')) return 'sax_keyboard';
+      if (instrumentOrder.includes('vibes')) return 'vibes_keyboard';
+      return null;
+    case 'trumpet':
+      // horn section disambiguation (3+ horns guard is applied by comparing key existence)
+      return 'horn_section';
+    default:
+      return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Drums animation constants (VIZ-06, VIZ-07, VIZ-08, VIZ-09)
 // ---------------------------------------------------------------------------
 
@@ -119,6 +158,12 @@ export class CanvasRenderer {
 
   /** Optional callback fired with keyboard/guitar melodic state and call-response event (Phase 8) */
   private onMelodyUpdate?: (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => void;
+
+  /** Optional callback fired every tick with disambiguation confidence values and isTutti flag (Phase 12) */
+  private onDisambiguationUpdate?: (confidence: Record<string, number>, isTutti: boolean) => void;
+
+  /** Cached disambiguation confidence values — updated every tick, read during node label rendering (Phase 12) */
+  private disambiguationConfidence: Record<string, number> = {};
 
   /** Bound rAF callback — receives DOMHighResTimeStamp for delta-time */
   private readonly boundRender: (ts: DOMHighResTimeStamp) => void;
@@ -252,6 +297,15 @@ export class CanvasRenderer {
   /** Set callback for keyboard/guitar melodic state updates (Phase 8). */
   setOnMelodyUpdate(cb: (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => void): void {
     this.onMelodyUpdate = cb;
+  }
+
+  /** Set callback for disambiguation confidence updates (Phase 12). */
+  setOnDisambiguationUpdate(cb: (confidence: Record<string, number>, isTutti: boolean) => void): void {
+    this.onDisambiguationUpdate = (confidence, isTutti) => {
+      // Cache confidence locally for use during node label rendering
+      this.disambiguationConfidence = confidence;
+      cb(confidence, isTutti);
+    };
   }
 
   /**
@@ -411,7 +465,7 @@ export class CanvasRenderer {
       const now = performance.now();
       if ((now - analysis.lastAnalysisMs) >= 100) {
         analysis.lastAnalysisMs = now;
-        runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate, this.onBeatUpdate, this.boundHandleMelodyUpdate);
+        runAnalysisTick(state, this.onRoleChange, this.onChordChange, this.onTensionUpdate, this.onBeatUpdate, this.boundHandleMelodyUpdate, this.onDisambiguationUpdate);
       }
     }
 
@@ -507,6 +561,19 @@ export class CanvasRenderer {
 
       // Capitalize label: 'guitar' → 'Guitar'
       const label = instrument.charAt(0).toUpperCase() + instrument.slice(1);
+
+      // -----------------------------------------------------------------------
+      // Phase 12: Confidence indicator (DISC-04)
+      // When instrument's pair disambiguator confidence < 0.5, dim node label
+      // by setting ctx.globalAlpha = 0.5 before the draw call.
+      // -----------------------------------------------------------------------
+      const pairKey = getInstrumentPairKey(instrument, this.instrumentOrder);
+      const pairConfidence = pairKey !== undefined && pairKey !== null
+        ? (this.disambiguationConfidence[pairKey] ?? 1)
+        : 1;
+      const confidenceAlpha = pairConfidence < 0.5 ? 0.5 : 1.0;
+      const needsAlpha = confidenceAlpha < 1.0;
+      if (needsAlpha) ctx.globalAlpha = confidenceAlpha;
 
       // -----------------------------------------------------------------------
       // Drums-specific animations (VIZ-06, VIZ-07, VIZ-08, VIZ-09)
@@ -626,6 +693,9 @@ export class CanvasRenderer {
         // All other instruments — draw node circle + label only
         drawNode(ctx, x, y, animState.currentRadius, fillColor, label);
       }
+
+      // Restore globalAlpha after confidence indicator dimming (Phase 12)
+      if (needsAlpha) ctx.globalAlpha = 1.0;
     }
 
     // -- Tension meter -------------------------------------------------------

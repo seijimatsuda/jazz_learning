@@ -23,7 +23,7 @@
  * convention in KbGuitarDisambiguator. Neither instrument is ever fully suppressed.
  */
 
-import { DisambiguationState, FrequencyBand } from './types';
+import type { DisambiguationState, FrequencyBand } from './types';
 
 /** MAX_CONFIDENCE = 0.5 — Nyquist limits tremolo detection at 10fps */
 const MAX_CONFIDENCE = 0.5;

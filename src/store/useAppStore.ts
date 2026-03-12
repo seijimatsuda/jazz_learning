@@ -49,6 +49,10 @@ interface AppState {
   // Phase 8: call-and-response event log (MEL-03)
   callResponseLog: CallResponseEntry[];
 
+  // Phase 12: disambiguation confidence values and tutti flag
+  disambiguationConfidence: Record<string, number>; // key: 'trombone_bass' | 'sax_keyboard' | 'vibes_keyboard' | 'horn_section'
+  isTutti: boolean;
+
   // Actions
   setFile: (name: string, duration: number) => void;
   setCalibrating: (val: boolean) => void;
@@ -61,6 +65,7 @@ interface AppState {
   setSelectedInstrument: (name: string | null) => void;
   setDetectedKey: (key: string | null, mode: 'major' | 'minor' | null) => void;
   setMelodyState: (kbMelodic: boolean, gtMelodic: boolean) => void;
+  setDisambiguationInfo: (confidence: Record<string, number>, isTutti: boolean) => void;
   addAnnotation: (timeSec: number, text: string) => void;
   removeAnnotation: (id: string) => void;
   addCallResponseEntry: (entry: CallResponseEntry) => void;
@@ -99,6 +104,10 @@ export const useAppStore = create<AppState>((set) => ({
   annotations: [],
   callResponseLog: [],
 
+  // Phase 12 initial state
+  disambiguationConfidence: {},
+  isTutti: false,
+
   setFile: (name, duration) => set({ fileName: name, isFileLoaded: true, duration }),
   setCalibrating: (val) => set({ isCalibrating: val }),
   setCurrentTime: (time) => set({ currentTime: time }),
@@ -112,6 +121,7 @@ export const useAppStore = create<AppState>((set) => ({
   setSelectedInstrument: (name) => set({ selectedInstrument: name }),
   setDetectedKey: (key, mode) => set({ detectedKey: key, detectedKeyMode: mode }),
   setMelodyState: (kbMelodic, gtMelodic) => set({ kbIsMelodic: kbMelodic, gtIsMelodic: gtMelodic }),
+  setDisambiguationInfo: (confidence, isTutti) => set({ disambiguationConfidence: confidence, isTutti }),
   addAnnotation: (timeSec, text) => set((state) => ({
     annotations: [...state.annotations, {
       id: crypto.randomUUID(),
@@ -148,5 +158,7 @@ export const useAppStore = create<AppState>((set) => ({
     gtIsMelodic: false,
     annotations: [],
     callResponseLog: [],
+    disambiguationConfidence: {},
+    isTutti: false,
   }),
 }));
