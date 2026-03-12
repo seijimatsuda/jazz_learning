@@ -35,7 +35,7 @@ Plans:
 - [ ] 12-02-PLAN.md — SpectralFeatures.ts hand-rolled extractors (Wave 1)
 - [ ] 12-03-PLAN.md — TromboneBass + SaxKeyboard disambiguators (Wave 2)
 - [ ] 12-04-PLAN.md — VibesKeyboard + HornSection disambiguators (Wave 2)
-- [ ] 12-05-PLAN.md — DisambiguationEngine orchestrator + AnalysisTick integration (Wave 3)
+- [ ] 12-05-PLAN.md — DisambiguationEngine orchestrator + AnalysisTick integration + confidence UI (Wave 3)
 
 ### Phase 13: Visual Family Identity
 **Goal**: Users can visually distinguish instrument families and communication types at a glance on the canvas
