@@ -14,7 +14,7 @@
 - [ ] **INST-05**: Each new instrument has defined frequency band mappings for the FFT splitter
 - [ ] **INST-06**: Calibration pass adapts to whichever instruments are selected (2-8)
 - [ ] **INST-07**: Role classification (soloing/comping/holding/silent) works for all 8 instrument types
-- [ ] **INST-08**: Saxophone and keyboard are disambiguated via chroma entropy when both present
+- [x] **INST-08**: ~~Saxophone and keyboard are disambiguated via chroma entropy when both present~~ → Deferred to v1.2 (DISC-05). Both share mid band (250-2000 Hz); disambiguation requires empirical calibration on real recordings.
 
 ### Band Setup
 
@@ -44,6 +44,7 @@
 - **DISC-02**: Vibraphone vs keyboard disambiguation via tremolo modulation detection
 - **DISC-03**: Horn section disambiguation (sax vs trumpet vs trombone when 3+ horns present)
 - **DISC-04**: Instrument family color coding in node graph
+- **DISC-05**: Saxophone and keyboard disambiguation via chroma entropy when both present (moved from INST-08)
 
 ### Advanced Layout (v1.2+)
 
@@ -64,17 +65,17 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INST-01 | Phase 9 | Pending |
-| INST-02 | Phase 9 | Pending |
-| INST-03 | Phase 9 | Pending |
-| INST-04 | Phase 9 | Pending |
-| INST-05 | Phase 9 | Pending |
-| INST-06 | Phase 9 | Pending |
-| INST-07 | Phase 9 | Pending |
-| INST-08 | Phase 9 | Pending |
+| INST-01 | Phase 9 | Complete |
+| INST-02 | Phase 9 | Complete |
+| INST-03 | Phase 9 | Complete |
+| INST-04 | Phase 9 | Complete |
+| INST-05 | Phase 9 | Complete |
+| INST-06 | Phase 9 | Complete |
+| INST-07 | Phase 9 | Complete |
+| INST-08 | Deferred → v1.2 (DISC-05) | Deferred |
 | BAND-01 | Phase 10 | Pending |
 | BAND-02 | Phase 10 | Pending |
-| BAND-03 | Phase 9 | Pending |
+| BAND-03 | Phase 9 | Complete |
 | CANV-01 | Phase 10 | Pending |
 | CANV-02 | Phase 10 | Pending |
 | CANV-03 | Phase 10 | Pending |

@@ -115,10 +115,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 09-01: Expand InstrumentName union and frequency band definitions (INST-01–05)
-- [ ] 09-02: Generalize InstrumentActivityScorer and calibration for variable lineups (INST-06, INST-07, BAND-03)
-- [ ] 09-03: Replace PAIRS IIFE, fix CanvasRenderer constructor, and add circular layout for 2-8 (INST-08, CANV-01 partial)
-- [ ] 09-04: Guard pocket line and update AnalysisTick/App.tsx pitch wiring
+- [x] 09-01: Expand InstrumentName union and frequency band definitions (INST-01–05)
+- [x] 09-02: Generalize InstrumentActivityScorer and calibration for variable lineups (INST-06, INST-07, BAND-03)
+- [x] 09-03: Replace PAIRS IIFE, fix CanvasRenderer constructor, and add circular layout for 2-8 (CANV-01 partial)
+- [x] 09-04: Guard pocket line and update AnalysisTick/App.tsx pitch wiring
 
 #### Phase 10: Band Setup UI and Canvas Layout
 **Goal**: Users can select any combination of 2-8 instruments in the setup UI and see a readable canvas layout that adapts to the lineup
@@ -163,6 +163,6 @@ Plans:
 | 6. Edge Visualization | v1.0 | 3/3 | Complete | 2026-03-11 |
 | 7. React UI Panels & Key Detection | v1.0 | 6/6 | Complete | 2026-03-11 |
 | 8. Advanced Features | v1.0 | 5/5 | Complete | 2026-03-11 |
-| 9. Data Layer and Structural Refactor | v1.1 | 0/4 | Not started | - |
+| 9. Data Layer and Structural Refactor | v1.1 | 4/4 | Complete | 2026-03-12 |
 | 10. Band Setup UI and Canvas Layout | v1.1 | 0/3 | Not started | - |
 | 11. Gap Closures | v1.1 | 0/2 | Not started | - |
