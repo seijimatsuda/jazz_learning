@@ -71,75 +71,52 @@ export function buildPairs(instrumentOrder: string[]): PairTuple[] {
 }
 
 /**
- * Computes node positions for 2-8 instruments.
+ * Computes node positions for 2-8 instruments with bass-center layout.
  *
- * Cases 2-4 use hand-tuned coordinates optimized for the 2:1 aspect ratio canvas.
- * Cases 5-8 use pre-computed grid/cluster positions filling the canvas area.
+ * Convention: position[0] = canvas center (for bass). Positions[1..n-1] =
+ * elliptical ring around center. CanvasRenderer must reorder its instrumentOrder
+ * to put bass at index 0 before calling this function.
+ *
+ * Ring uses aspect-corrected radii (rx=0.34, ry=0.17) for true visual circularity
+ * on the 2:1 aspect ratio canvas (800x400 logical pixels).
+ *
+ * When bass is absent: CanvasRenderer does NOT reorder, so position[0] just maps
+ * to the first instrument in the lineup. The center position still works visually —
+ * it becomes a non-bass anchor at center.
  *
  * @param count - Number of nodes (2 | 3 | 4 | 5 | 6 | 7 | 8)
  * @returns Array of fractional [0,1] positions, one per node
  */
 export function computeNodePositions(count: 2 | 3 | 4 | 5 | 6 | 7 | 8): NodePosition[] {
-  switch (count) {
-    case 2:
-      // Horizontal pair — side by side
-      return [
-        { x: 0.30, y: 0.50 },
-        { x: 0.70, y: 0.50 },
-      ];
-    case 3:
-      // Triangle — one on top, two on the bottom row
-      return [
-        { x: 0.50, y: 0.25 },
-        { x: 0.28, y: 0.68 },
-        { x: 0.72, y: 0.68 },
-      ];
-    case 4:
-      // Diamond — top, left, right, bottom
-      // Maps to INSTRUMENT_ORDER: guitar(top), drums(left), keyboard(right), bass(bottom)
-      return [
-        { x: 0.50, y: 0.20 }, // top    → guitar
-        { x: 0.22, y: 0.50 }, // left   → drums
-        { x: 0.78, y: 0.50 }, // right  → keyboard
-        { x: 0.50, y: 0.80 }, // bottom → bass
-      ];
-    case 5:
-      return [
-        { x: 0.50, y: 0.18 },
-        { x: 0.22, y: 0.42 },
-        { x: 0.78, y: 0.42 },
-        { x: 0.32, y: 0.78 },
-        { x: 0.68, y: 0.78 },
-      ];
-    case 6:
-      return [
-        { x: 0.20, y: 0.25 },
-        { x: 0.50, y: 0.25 },
-        { x: 0.80, y: 0.25 },
-        { x: 0.20, y: 0.75 },
-        { x: 0.50, y: 0.75 },
-        { x: 0.80, y: 0.75 },
-      ];
-    case 7:
-      return [
-        { x: 0.20, y: 0.22 },
-        { x: 0.50, y: 0.22 },
-        { x: 0.80, y: 0.22 },
-        { x: 0.12, y: 0.72 },
-        { x: 0.37, y: 0.72 },
-        { x: 0.63, y: 0.72 },
-        { x: 0.88, y: 0.72 },
-      ];
-    case 8:
-      return [
-        { x: 0.12, y: 0.25 },
-        { x: 0.37, y: 0.25 },
-        { x: 0.63, y: 0.25 },
-        { x: 0.88, y: 0.25 },
-        { x: 0.12, y: 0.75 },
-        { x: 0.37, y: 0.75 },
-        { x: 0.63, y: 0.75 },
-        { x: 0.88, y: 0.75 },
-      ];
+  // Position 0 = center (bass slot). CanvasRenderer reorders bass to index 0.
+  // Positions 1..count-1 = elliptical ring around center.
+  // Ring uses aspect-corrected radii: rx=0.34, ry=0.17 for true visual circle on 800x400 canvas.
+
+  if (count === 2) {
+    // Special case: center + one peer offset to the right (no ring needed)
+    return [
+      { x: 0.50, y: 0.50 },  // center (bass)
+      { x: 0.75, y: 0.50 },  // peer
+    ];
   }
+
+  // General case: center + (count-1) instruments on elliptical ring
+  const positions: NodePosition[] = [{ x: 0.50, y: 0.50 }]; // center (bass)
+  const ringCount = count - 1;
+
+  // Aspect-corrected radii for true visual circle on 2:1 canvas
+  // rx=0.34 gives 272px on 800px canvas; ry=0.17 gives 68px on 400px canvas (68*2=136px visual)
+  // At 320px iOS width: rx*320=109px, adjacent gap at 7 nodes ≈ 97px center-to-center — readable
+  const rx = 0.34;
+  const ry = 0.17;
+
+  for (let k = 0; k < ringCount; k++) {
+    const angle = (2 * Math.PI * k / ringCount) - Math.PI / 2; // start at top (12 o'clock)
+    positions.push({
+      x: 0.50 + rx * Math.cos(angle),
+      y: 0.50 + ry * Math.sin(angle),
+    });
+  }
+
+  return positions;
 }
