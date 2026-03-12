@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 9 of 11 in v1.1 (Data Layer and Structural Refactor)
-Plan: 1 of 4 in current phase
+Plan: 2 of 4 in current phase
 Status: In progress
-Last activity: 2026-03-11 — Completed 09-01-PLAN.md (type foundation expansion)
+Last activity: 2026-03-12 — Completed 09-02-PLAN.md (scorer generalization audit + BandSetupPanel 8 instruments)
 
-Progress: [████████░░] ~76% (v1.0 complete, 09-01 complete)
+Progress: [████████░░] ~77% (v1.0 complete, 09-01 and 09-02 complete)
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [████████░░] ~76% (v1.0 complete, 09-01 complete)
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 1-8 | 38 | Complete |
-| 9 | 1/4 | In progress |
+| 9 | 2/4 | In progress |
 | 10-11 | 0/5 | Not started |
 
 *Updated after each plan completion*
@@ -49,6 +49,10 @@ Recent decisions affecting v1.1:
 - D-09-01-1: INSTRUMENT_BAND_MAP vibes entry covers both mid and mid_high as default (vibes spans both ranges simultaneously)
 - D-09-01-2: MID_RANGE_INSTRUMENTS exported as named export for calibration code (Plan 02) to use
 
+09-02 decisions:
+- D-09-02-1: All scorer/calibration functions confirmed generic for 2-8 instruments — zero code changes needed in InstrumentActivityScorer.ts, RoleClassifier.ts, or CalibrationPass.ts
+- D-09-02-2: CalibrationPass calibrates per-frequency-band (not per-instrument), inherently lineup-agnostic
+
 ### Pending Todos
 
 None.
@@ -61,6 +65,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-11
-Stopped at: Completed 09-01-PLAN.md — type foundation expanded to 8 instruments
+Last session: 2026-03-12
+Stopped at: Completed 09-02-PLAN.md — scorer generalization confirmed + BandSetupPanel expanded to 8 instruments
 Resume file: None
