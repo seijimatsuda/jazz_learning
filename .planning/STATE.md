@@ -77,6 +77,10 @@ Phase 9 decisions:
 
 None.
 
+Phase 11 plan 01 decisions:
+- D-11-01-1: Synchronous AudioContext block placed before try/catch in loadExample — iOS gesture must happen before any branch or async work
+- D-11-01-2: Explicit Uint8Array<ArrayBuffer> typing required by TypeScript 5.x strict mode with ES2022 lib; Web Audio API getByteFrequencyData expects concrete ArrayBuffer not ArrayBufferLike
+
 Phase 11 plan 02 decisions:
 - D-11-02-1: Guard placed inside if (state.beat) but outside band lookups — preserves outer guard semantics while skipping spurious onset computation entirely when bass or drums absent
 - D-11-02-2: hasBassInstrument / hasDrumsInstrument derived from instrs (already in scope) — zero new state dependencies, Array.some exits early
@@ -87,6 +91,6 @@ None. v1.1 complete.
 
 ## Session Continuity
 
-Last session: 2026-03-12T09:09:02Z
-Stopped at: Completed 11-02-PLAN.md (FIX-03 console.log removal + FIX-04 lineup guard — Phase 11 complete, v1.1 complete)
+Last session: 2026-03-12T00:15:00Z
+Stopped at: Completed 11-01-PLAN.md (FIX-01 iOS AudioContext gesture fix + FIX-02 InstrumentRoleOverlay removal) and 11-02-PLAN.md (FIX-03 console.log removal + FIX-04 lineup guard — Phase 11 complete, v1.1 complete)
 Resume file: None
