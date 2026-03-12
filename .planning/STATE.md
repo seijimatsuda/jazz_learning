@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 12 of 14 (Disambiguation Engine)
-Plan: 0 of ? in current phase (not yet planned)
-Status: Ready to plan
-Last activity: 2026-03-12 — Roadmap created for v1.2 milestone
+Plan: 2 of 5 in current phase
+Status: In progress
+Last activity: 2026-03-12 — Completed 12-02-PLAN.md (SpectralFeatures.ts)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] ~10% (Phase 12 Plan 2 of 5 complete)
 
 ## Performance Metrics
 
@@ -31,6 +31,9 @@ Full decision logs archived in milestones/v1.0-ROADMAP.md and milestones/v1.1-RO
 Recent decisions affecting current work:
 - v1.2 roadmap: Phase 13 (visual) is independent of Phase 12 (disambiguation) — could run in parallel
 - v1.2 roadmap: Raw/display score split must land in Wave 1 before any disambiguator code
+- 12-02: computeSpectralFlatness skips zero bins (not clamp to epsilon) — more accurate geometric mean over audible signal
+- 12-02: chromaEntropy returns raw entropy [0, log2(12)], not normalized — callers normalize as needed
+- 12-02: computeBandCentroid returns 0 on silence (not NaN) — safe default for threshold comparisons
 
 ### Pending Todos
 
@@ -44,6 +47,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12
-Stopped at: v1.2 roadmap created, ready to plan Phase 12
+Last session: 2026-03-12T22:53:45Z
+Stopped at: Completed 12-02-PLAN.md (SpectralFeatures.ts)
 Resume file: None
