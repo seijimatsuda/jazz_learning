@@ -18,16 +18,16 @@
 
 ### Band Setup
 
-- [ ] **BAND-01**: User can select any combination of 2-8 instruments before playback
-- [ ] **BAND-02**: Band setup panel shows all 8 available instruments as toggles
+- [x] **BAND-01**: User can select any combination of 2-8 instruments before playback
+- [x] **BAND-02**: Band setup panel shows all 8 available instruments as toggles
 - [ ] **BAND-03**: Analysis pipeline initializes with only the selected instruments
 
 ### Canvas Layout
 
-- [ ] **CANV-01**: Node graph uses circular layout algorithm adapting to 2-8 instruments
-- [ ] **CANV-02**: Bass node remains gravitational center regardless of instrument count
-- [ ] **CANV-03**: Non-animated edges are batch-rendered for iOS performance at high counts
-- [ ] **CANV-04**: Weak communication edges auto-hide when instrument count exceeds 5
+- [x] **CANV-01**: Node graph uses circular layout algorithm adapting to 2-8 instruments
+- [x] **CANV-02**: Bass node remains gravitational center regardless of instrument count
+- [x] **CANV-03**: Non-animated edges are batch-rendered for iOS performance at high counts
+- [x] **CANV-04**: Weak communication edges auto-hide when instrument count exceeds 5
 
 ### Gap Closures
 
@@ -73,13 +73,13 @@
 | INST-06 | Phase 9 | Complete |
 | INST-07 | Phase 9 | Complete |
 | INST-08 | Deferred → v1.2 (DISC-05) | Deferred |
-| BAND-01 | Phase 10 | Pending |
-| BAND-02 | Phase 10 | Pending |
+| BAND-01 | Phase 10 | Complete |
+| BAND-02 | Phase 10 | Complete |
 | BAND-03 | Phase 9 | Complete |
-| CANV-01 | Phase 10 | Pending |
-| CANV-02 | Phase 10 | Pending |
-| CANV-03 | Phase 10 | Pending |
-| CANV-04 | Phase 10 | Pending |
+| CANV-01 | Phase 10 | Complete |
+| CANV-02 | Phase 10 | Complete |
+| CANV-03 | Phase 10 | Complete |
+| CANV-04 | Phase 10 | Complete |
 | FIX-01 | Phase 11 | Pending |
 | FIX-02 | Phase 11 | Pending |
 | FIX-03 | Phase 11 | Pending |

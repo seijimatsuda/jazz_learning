@@ -129,12 +129,12 @@ Plans:
   2. The node graph arranges instruments in a circular layout that remains readable at both 2 and 8 instruments on a 320px-wide iOS screen
   3. Bass always occupies the gravitational center position regardless of how many instruments are selected
   4. At 6-8 instruments, weak communication edges auto-hide and non-animated edges are batch-rendered without canvas stuttering
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 10-01: BandSetupPanel — add 4 instruments, family grouping, count badge, 2-8 validation (BAND-01, BAND-02)
-- [ ] 10-02: Circular layout engine and VisualizerCanvas wiring (CANV-01, CANV-02)
-- [ ] 10-03: Edge batching, dynamic threshold, and node scaling (CANV-03, CANV-04)
+- [x] 10-01: BandSetupPanel — add 4 instruments, family grouping, count badge, 2-8 validation (BAND-01, BAND-02)
+- [x] 10-02: Circular layout engine and VisualizerCanvas wiring (CANV-01, CANV-02)
+- [x] 10-03: Edge batching, dynamic threshold, and node scaling (CANV-03, CANV-04)
 
 #### Phase 11: Gap Closures
 **Goal**: The four v1.0 known gaps are resolved and the codebase is production-clean
@@ -164,5 +164,5 @@ Plans:
 | 7. React UI Panels & Key Detection | v1.0 | 6/6 | Complete | 2026-03-11 |
 | 8. Advanced Features | v1.0 | 5/5 | Complete | 2026-03-11 |
 | 9. Data Layer and Structural Refactor | v1.1 | 4/4 | Complete | 2026-03-12 |
-| 10. Band Setup UI and Canvas Layout | v1.1 | 0/3 | Not started | - |
+| 10. Band Setup UI and Canvas Layout | v1.1 | 3/3 | Complete | 2026-03-12 |
 | 11. Gap Closures | v1.1 | 0/2 | Not started | - |
