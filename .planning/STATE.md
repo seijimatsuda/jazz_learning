@@ -5,21 +5,44 @@
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Milestone v1.1 — Flexible Lineup
+**Current focus:** Phase 9 — Data Layer and Structural Refactor (v1.1 start)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-11 — Milestone v1.1 started
+Phase: 9 of 11 in v1.1 (Data Layer and Structural Refactor)
+Plan: 0 of 4 in current phase
+Status: Ready to plan
+Last activity: 2026-03-11 — v1.1 roadmap created, phases 9-11 defined
+
+Progress: [████████░░] ~74% (v1.0 complete, v1.1 not started)
+
+## Performance Metrics
+
+**Velocity (v1.0):**
+- Total plans completed: 38
+- Total phases: 8
+- Total execution time: 2 days
+
+**By Phase (v1.0):**
+
+| Phase | Plans | Status |
+|-------|-------|--------|
+| 1-8 | 38 | Complete |
+| 9-11 | 0/9 | Not started |
+
+*Updated after each plan completion*
 
 ## Accumulated Context
 
 ### Decisions
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Full v1.0 decision log archived in milestones/v1.0-ROADMAP.md.
+Full v1.0 decision log: milestones/v1.0-ROADMAP.md and PROJECT.md.
+
+Recent decisions affecting v1.1:
+- Phase 9: Circular layout chosen over d3-force (deterministic, O(n), same visual result for uniform-weight graphs)
+- Phase 9: InstrumentName kept as strict TypeScript union (not loosened to string) — preserves compile-time safety
+- Phase 9: Disambiguation logic (sax/keyboard, vibes/keyboard, multi-horn) deferred to v1.2 — requires empirical calibration on real recordings
+- Phase 10: Vibes + keyboard simultaneous selection policy must be decided before Phase 10 ships (product decision: allow with transparency, or prevent in UI)
 
 ### Pending Todos
 
@@ -27,13 +50,12 @@ None.
 
 ### Blockers/Concerns
 
-- loadExample iOS AudioContext gesture broken (v1.1 scope)
-- INSTRUMENT_ORDER hardcoded to 4-node diamond (v1.1 scope)
-- iOS real-device 60fps testing still needed
-- New instrument frequency bands overlap significantly (sax ↔ keyboard, trumpet ↔ guitar upper harmonics)
+- [Phase 9]: Four zero-tolerance crash sites must be fixed before any feature work: PAIRS IIFE in drawCommunicationEdges.ts, computeNodePositions count: 2|3|4 switch, CanvasRenderer hardcoded 4-node constructor, pocket line indexOf(-1) throw
+- [Phase 10]: iOS canvas performance at 8 instruments (28 edges, quadratic growth) needs empirical device test early in execution — do not defer to end of phase
+- [Phase 10]: Layout geometry for 5-8 nodes must be validated against 800x400 canvas constraints (tension meter right edge, BPM display bottom-left)
 
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: v1.1 milestone definition in progress
+Stopped at: v1.1 roadmap created, ready to plan Phase 9
 Resume file: None

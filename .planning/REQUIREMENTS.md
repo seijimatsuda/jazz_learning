@@ -64,31 +64,31 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INST-01 | — | Pending |
-| INST-02 | — | Pending |
-| INST-03 | — | Pending |
-| INST-04 | — | Pending |
-| INST-05 | — | Pending |
-| INST-06 | — | Pending |
-| INST-07 | — | Pending |
-| INST-08 | — | Pending |
-| BAND-01 | — | Pending |
-| BAND-02 | — | Pending |
-| BAND-03 | — | Pending |
-| CANV-01 | — | Pending |
-| CANV-02 | — | Pending |
-| CANV-03 | — | Pending |
-| CANV-04 | — | Pending |
-| FIX-01 | — | Pending |
-| FIX-02 | — | Pending |
-| FIX-03 | — | Pending |
-| FIX-04 | — | Pending |
+| INST-01 | Phase 9 | Pending |
+| INST-02 | Phase 9 | Pending |
+| INST-03 | Phase 9 | Pending |
+| INST-04 | Phase 9 | Pending |
+| INST-05 | Phase 9 | Pending |
+| INST-06 | Phase 9 | Pending |
+| INST-07 | Phase 9 | Pending |
+| INST-08 | Phase 9 | Pending |
+| BAND-01 | Phase 10 | Pending |
+| BAND-02 | Phase 10 | Pending |
+| BAND-03 | Phase 9 | Pending |
+| CANV-01 | Phase 10 | Pending |
+| CANV-02 | Phase 10 | Pending |
+| CANV-03 | Phase 10 | Pending |
+| CANV-04 | Phase 10 | Pending |
+| FIX-01 | Phase 11 | Pending |
+| FIX-02 | Phase 11 | Pending |
+| FIX-03 | Phase 11 | Pending |
+| FIX-04 | Phase 11 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 19 total
-- Mapped to phases: 0
-- Unmapped: 19 ⚠️
+- Mapped to phases: 19
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-11*
-*Last updated: 2026-03-11 after initial definition*
+*Last updated: 2026-03-11 — phase assignments added for v1.1 roadmap*
