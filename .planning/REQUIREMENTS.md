@@ -7,20 +7,20 @@
 
 ### Instrument Data Layer
 
-- [ ] **INST-01**: User can select saxophone as an instrument in the band lineup
-- [ ] **INST-02**: User can select trumpet as an instrument in the band lineup
-- [ ] **INST-03**: User can select trombone as an instrument in the band lineup
-- [ ] **INST-04**: User can select vibraphone as an instrument in the band lineup
-- [ ] **INST-05**: Each new instrument has defined frequency band mappings for the FFT splitter
-- [ ] **INST-06**: Calibration pass adapts to whichever instruments are selected (2-8)
-- [ ] **INST-07**: Role classification (soloing/comping/holding/silent) works for all 8 instrument types
+- [x] **INST-01**: User can select saxophone as an instrument in the band lineup
+- [x] **INST-02**: User can select trumpet as an instrument in the band lineup
+- [x] **INST-03**: User can select trombone as an instrument in the band lineup
+- [x] **INST-04**: User can select vibraphone as an instrument in the band lineup
+- [x] **INST-05**: Each new instrument has defined frequency band mappings for the FFT splitter
+- [x] **INST-06**: Calibration pass adapts to whichever instruments are selected (2-8)
+- [x] **INST-07**: Role classification (soloing/comping/holding/silent) works for all 8 instrument types
 - [x] **INST-08**: ~~Saxophone and keyboard are disambiguated via chroma entropy when both present~~ → Deferred to v1.2 (DISC-05). Both share mid band (250-2000 Hz); disambiguation requires empirical calibration on real recordings.
 
 ### Band Setup
 
 - [x] **BAND-01**: User can select any combination of 2-8 instruments before playback
 - [x] **BAND-02**: Band setup panel shows all 8 available instruments as toggles
-- [ ] **BAND-03**: Analysis pipeline initializes with only the selected instruments
+- [x] **BAND-03**: Analysis pipeline initializes with only the selected instruments
 
 ### Canvas Layout
 
@@ -31,10 +31,10 @@
 
 ### Gap Closures
 
-- [ ] **FIX-01**: loadExample works on iOS Safari (AudioContext gesture fix)
-- [ ] **FIX-02**: Dead code removed (InstrumentRoleOverlay)
-- [ ] **FIX-03**: console.logs removed from hot paths
-- [ ] **FIX-04**: Pocket line gracefully handles lineups without bass or drums
+- [x] **FIX-01**: loadExample works on iOS Safari (AudioContext gesture fix)
+- [x] **FIX-02**: Dead code removed (InstrumentRoleOverlay)
+- [x] **FIX-03**: console.logs removed from hot paths
+- [x] **FIX-04**: Pocket line gracefully handles lineups without bass or drums
 
 ## Future Requirements
 
@@ -80,10 +80,10 @@
 | CANV-02 | Phase 10 | Complete |
 | CANV-03 | Phase 10 | Complete |
 | CANV-04 | Phase 10 | Complete |
-| FIX-01 | Phase 11 | Pending |
-| FIX-02 | Phase 11 | Pending |
-| FIX-03 | Phase 11 | Pending |
-| FIX-04 | Phase 11 | Pending |
+| FIX-01 | Phase 11 | Complete |
+| FIX-02 | Phase 11 | Complete |
+| FIX-03 | Phase 11 | Complete |
+| FIX-04 | Phase 11 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 19 total

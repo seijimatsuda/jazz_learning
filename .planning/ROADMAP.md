@@ -148,8 +148,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 11-01: iOS AudioContext gesture fix for loadExample and dead code removal (FIX-01, FIX-02)
-- [ ] 11-02: console.log audit and pocket line guard (FIX-03, FIX-04)
+- [x] 11-01: iOS AudioContext gesture fix for loadExample and dead code removal (FIX-01, FIX-02)
+- [x] 11-02: console.log audit and pocket line guard (FIX-03, FIX-04)
 
 ## Progress
 
@@ -165,4 +165,4 @@ Plans:
 | 8. Advanced Features | v1.0 | 5/5 | Complete | 2026-03-11 |
 | 9. Data Layer and Structural Refactor | v1.1 | 4/4 | Complete | 2026-03-12 |
 | 10. Band Setup UI and Canvas Layout | v1.1 | 3/3 | Complete | 2026-03-12 |
-| 11. Gap Closures | v1.1 | 0/2 | Not started | - |
+| 11. Gap Closures | v1.1 | 2/2 | Complete | 2026-03-12 |
