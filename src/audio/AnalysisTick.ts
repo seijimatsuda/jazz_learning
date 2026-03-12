@@ -130,6 +130,7 @@ export function runAnalysisTick(
       instr.activityScore
     );
     instr.activityScore = newScore;
+    instr.rawActivityScore = newScore; // preserve raw score BEFORE disambiguation
 
     // 2. Push score into circular ring buffer history
     pushHistory(instr, newScore);
@@ -179,6 +180,12 @@ export function runAnalysisTick(
     for (let i = 0; i < state.fftSize; i++) {
       analysis.rawTimeDataFloat[i] = (state.rawTimeData[i] - 128) / 128;
     }
+  }
+
+  // Default: displayActivityScore = activityScore (post-kb/guitar-disambiguation)
+  // Will be overridden by the full disambiguation engine in Wave 2/3 plans.
+  for (const instr of instrs) {
+    instr.displayActivityScore = instr.activityScore;
   }
 
   // Cross-correlation edge weights for all instrument pairs
@@ -319,7 +326,7 @@ export function runAnalysisTick(
     for (const [instrName, pitchState] of Object.entries(state.pitch.instruments)) {
       const instrAnalysis = instrs.find(i => i.instrument === instrName);
 
-      if (instrAnalysis && instrAnalysis.activityScore > 0.15) {
+      if (instrAnalysis && instrAnalysis.rawActivityScore > 0.15) {
         updatePitchState(pitchState, analysis.rawTimeDataFloat, state.sampleRate);
       } else {
         // Reset melodic state when instrument is quiet — no pitch detection on silence

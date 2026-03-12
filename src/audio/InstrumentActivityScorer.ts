@@ -166,6 +166,8 @@ export function initAnalysisState(
     instrument: name,
     bandNames: resolveBandsForInstrument(name, lineup),
     activityScore: 0,
+    rawActivityScore: 0,
+    displayActivityScore: 0,
     role: 'silent' as RoleLabel,
     roleSinceSec: 0,
     historyBuffer: new Float32Array(HISTORY_LENGTH), // pre-allocated, never re-allocated
