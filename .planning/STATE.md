@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-12)
 ## Current Position
 
 Phase: 12 of 14 (Disambiguation Engine)
-Plan: 2 of 5 in current phase
+Plan: 2 of 5 in current phase (12-01 and 12-02 both complete)
 Status: In progress
-Last activity: 2026-03-12 — Completed 12-02-PLAN.md (SpectralFeatures.ts)
+Last activity: 2026-03-12 — Completed 12-01-PLAN.md (disambiguation foundation)
 
-Progress: [█░░░░░░░░░] ~10% (Phase 12 Plan 2 of 5 complete)
+Progress: [██░░░░░░░░] ~20% (Phase 12 Plans 1 and 2 of 5 complete)
 
 ## Performance Metrics
 
@@ -31,6 +31,10 @@ Full decision logs archived in milestones/v1.0-ROADMAP.md and milestones/v1.1-RO
 Recent decisions affecting current work:
 - v1.2 roadmap: Phase 13 (visual) is independent of Phase 12 (disambiguation) — could run in parallel
 - v1.2 roadmap: Raw/display score split must land in Wave 1 before any disambiguator code
+- 12-01: activityScore kept on InstrumentAnalysis (not removed) — phase out incrementally to avoid breaking canvas/Zustand
+- 12-01: displayActivityScore defaults to activityScore post-kb/guitar-disambiguation — preserves existing behavior until Wave 2/3
+- 12-01: pitch detection gates on rawActivityScore — not suppressed by disambiguation weights
+- 12-01: history buffer stores newScore (raw, pre-disambiguation) — cross-correlator needs raw correlation patterns
 - 12-02: computeSpectralFlatness skips zero bins (not clamp to epsilon) — more accurate geometric mean over audible signal
 - 12-02: chromaEntropy returns raw entropy [0, log2(12)], not normalized — callers normalize as needed
 - 12-02: computeBandCentroid returns 0 on silence (not NaN) — safe default for threshold comparisons
@@ -47,6 +51,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12T22:53:45Z
-Stopped at: Completed 12-02-PLAN.md (SpectralFeatures.ts)
+Last session: 2026-03-12T22:54:30Z
+Stopped at: Completed 12-01-PLAN.md (disambiguation foundation — raw/display split, DisambiguationState, instrumentFamilies.ts)
 Resume file: None
