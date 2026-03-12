@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Planning next milestone (v1.1)
+**Current focus:** Milestone v1.1 — Flexible Lineup
 
 ## Current Position
 
-Phase: v1.0 complete — awaiting v1.1 milestone definition
-Plan: Not started
-Status: Ready for /gsd:new-milestone
-Last activity: 2026-03-11 — v1.0 milestone archived
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-11 — Milestone v1.1 started
 
 ## Accumulated Context
 
@@ -27,12 +27,13 @@ None.
 
 ### Blockers/Concerns
 
-- loadExample iOS AudioContext gesture broken (carry to v1.1)
-- INSTRUMENT_ORDER hardcoded to 4-node diamond (carry to v1.1)
+- loadExample iOS AudioContext gesture broken (v1.1 scope)
+- INSTRUMENT_ORDER hardcoded to 4-node diamond (v1.1 scope)
 - iOS real-device 60fps testing still needed
+- New instrument frequency bands overlap significantly (sax ↔ keyboard, trumpet ↔ guitar upper harmonics)
 
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: v1.0 milestone completed and archived
+Stopped at: v1.1 milestone definition in progress
 Resume file: None

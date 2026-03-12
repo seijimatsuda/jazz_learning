@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A browser-based React application that analyzes uploaded jazz audio recordings and visualizes real-time instrument communication as an animated node graph, alongside a live harmonic tension meter, chord detection system, and rhythmic pocket visualization. Users specify the band lineup (keyboard, bass, drums, guitar) and the tool maps instrument activity, roles, interactions, harmonic tension, and rhythmic relationships dynamically as the audio plays. Built for jazz students, musicians, and educators who want to SEE what they're hearing in ensemble communication.
+A browser-based React application that analyzes uploaded jazz audio recordings and visualizes real-time instrument communication as an animated node graph, alongside a live harmonic tension meter, chord detection system, and rhythmic pocket visualization. Users specify any combination of jazz instruments (piano, bass, drums, guitar, saxophone, trumpet, trombone, vibes) and the tool maps instrument activity, roles, interactions, harmonic tension, and rhythmic relationships dynamically as the audio plays. Built for jazz students, musicians, and educators who want to SEE what they're hearing in ensemble communication.
 
 ## Core Value
 
@@ -56,7 +56,22 @@ All core features implemented: audio pipeline, instrument analysis, chord detect
 
 ### Active
 
-(Defined by next milestone — run `/gsd:new-milestone`)
+#### Flexible Instrument Lineup
+- [ ] Support common jazz combo instruments: saxophone, trumpet, trombone, vibes (in addition to existing keyboard, bass, drums, guitar)
+- [ ] Frequency band definitions and spectral feature profiles for each new instrument type
+- [ ] Band setup panel allows selecting any combination of 2-8 instruments before playback
+- [ ] Calibration pass adapts to selected instrument set
+- [ ] Role classification works with variable instrument counts
+
+#### Dynamic Node Layout
+- [ ] Canvas node layout adapts to 2-8 instruments (not hardcoded diamond)
+- [ ] Layout algorithm produces readable graph for any instrument count
+- [ ] Edge visualization scales to variable number of instrument pairs
+
+#### v1.0 Gap Closures
+- [ ] Fix loadExample iOS AudioContext gesture issue
+- [ ] Remove dead code (InstrumentRoleOverlay)
+- [ ] Remove console.logs from hot paths
 
 ### Out of Scope
 
@@ -93,5 +108,14 @@ All core features implemented: audio pipeline, instrument analysis, chord detect
 | HTMLCanvasElement for glow (not OffscreenCanvas) | iOS 16 OffscreenCanvas support incomplete | ✓ Good — works across all targets |
 | audioStateRef pattern (not Zustand for hot path) | Web Audio objects non-serializable, rAF reads at 60fps | ✓ Good — clean separation of 60fps canvas vs React re-renders |
 
+## Current Milestone: v1.1 Flexible Lineup
+
+**Goal:** Support any jazz combo instrument combination (2-8 instruments) with dynamic canvas layout, replacing the hardcoded 4-instrument limitation, plus v1.0 gap closures.
+
+**Target features:**
+- Flexible instrument selection (sax, trumpet, trombone, vibes + existing 4)
+- Dynamic node layout adapting to 2-8 instruments
+- v1.0 bug fixes and cleanup (iOS loadExample, dead code, console.logs)
+
 ---
-*Last updated: 2026-03-11 after v1.0 milestone*
+*Last updated: 2026-03-11 after v1.1 milestone started*
