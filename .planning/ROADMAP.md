@@ -112,7 +112,7 @@ Plans:
   3. The pocket line does not throw when bass or drums is absent from the lineup
   4. The analysis pipeline initializes only the instruments in the active lineup — no phantom scoring for unselected instruments
   5. All 28 possible instrument pairs have defined edge type entries (no silent fallback to a default)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
 - [ ] 09-01: Expand InstrumentName union and frequency band definitions (INST-01–05)
