@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** v1.2 Instrument Disambiguation — Phase 12 complete, ready for Phase 13 (Visual)
+**Current focus:** v1.2 Instrument Disambiguation — Phase 12 gap closure complete, ready for Phase 13 (Visual)
 
 ## Current Position
 
-Phase: 12 of 14 (Disambiguation Engine) — COMPLETE
-Plan: 5 of 5 in current phase (12-01, 12-02, 12-03, 12-04, 12-05 complete)
+Phase: 12 of 14 (Disambiguation Engine) — COMPLETE (including gap closure)
+Plan: 6 of 6 in current phase (12-01, 12-02, 12-03, 12-04, 12-05, 12-06 complete)
 Status: Phase complete
-Last activity: 2026-03-12 — Completed 12-05-PLAN.md (DisambiguationEngine integration, Zustand, canvas confidence indicator)
+Last activity: 2026-03-12 — Completed 12-06-PLAN.md (gap closure: second-pass role classification wired to displayActivityScore)
 
-Progress: [█████░░░░░] ~45% (Phase 12 all 5 plans complete — next: Phase 13 Visual)
+Progress: [█████░░░░░] ~46% (Phase 12 all 6 plans complete — next: Phase 13 Visual)
 
 ## Performance Metrics
 
@@ -46,6 +46,9 @@ Recent decisions affecting current work:
 - 12-05: Confidence indicator uses ctx.globalAlpha on entire drawNode call (circle + label), not label-only — drawNode does not expose separate label rendering path
 - 12-05: onDisambiguationUpdate fires every tick (not change-gated) — confidence values are continuous
 - 12-05: SaxKeyboard disambiguation skips ticks when chroma is null (no chord state) — graceful degradation
+- 12-06: Second-pass classifyRole guards on displayActivityScore !== activityScore — avoids redundant calls when disambiguation had no effect
+- 12-06: Second pass passes instr.role (from first pass) as currentRole — hysteresis preserved across both passes
+- 12-06: onRoleChange fires only when disambiguated role differs from first-pass role — Zustand not over-triggered
 
 ### Pending Todos
 
@@ -58,6 +61,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12T23:07:10Z
-Stopped at: Completed 12-05-PLAN.md (DisambiguationEngine integration)
+Last session: 2026-03-12T23:15:00Z
+Stopped at: Completed 12-06-PLAN.md (gap closure: second-pass role classification)
 Resume file: None
