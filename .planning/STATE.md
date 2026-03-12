@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 10 of 11 in v1.1 (Band Setup UI and Canvas Layout)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-03-12 — Phase 9 complete, verified, EDGE_TYPE fallback removed, INST-08 deferred to v1.2
+Plan: 1 of 3 in current phase
+Status: In progress
+Last activity: 2026-03-12 — Completed 10-01-PLAN.md (toggle UI for BandSetupPanel)
 
-Progress: [█████████░] ~85% (v1.0 complete, Phase 9 complete)
+Progress: [█████████░] ~87% (v1.0 complete, Phase 9 complete, Phase 10 plan 1/3 complete)
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [█████████░] ~85% (v1.0 complete, Phase 9 complete
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 9 | 4/4 | Complete |
-| 10 | 0/3 | Not started |
+| 10 | 1/3 | In progress |
 | 11 | 0/2 | Not started |
 
 *Updated after each plan completion*
@@ -45,7 +45,7 @@ Recent decisions affecting v1.1:
 - Phase 9: Disambiguation logic (sax/keyboard, vibes/keyboard, multi-horn) deferred to v1.2 — requires empirical calibration on real recordings
 - Phase 9: INST-08 (saxophone/keyboard disambiguation) reclassified as DISC-05 in v1.2 requirements
 - Phase 9: EDGE_TYPE fallback operator removed — all 28 pairs defined, no silent defaults
-- Phase 10: Vibes + keyboard simultaneous selection policy must be decided before Phase 10 ships (product decision: allow with transparency, or prevent in UI)
+- Phase 10: Vibes + keyboard simultaneous selection policy RESOLVED — prevented in UI with tooltip (shared 250-2000 Hz band, acoustically indistinguishable via FFT in v1.2 scope)
 
 Phase 9 decisions:
 - D-09-01-1: INSTRUMENT_BAND_MAP vibes entry covers both mid and mid_high as default
@@ -72,5 +72,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-12
-Stopped at: Phase 9 complete, ready to plan Phase 10
+Stopped at: Completed 10-01-PLAN.md (BandSetupPanel toggle UI)
 Resume file: None
