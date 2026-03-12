@@ -32,6 +32,40 @@ export interface TensionState {
   tensionHistorySamples: number;    // how many valid samples written
 }
 
+// DisambiguationState: stateful buffers for instrument disambiguation (Phase 12)
+// All Float32Array buffers are pre-allocated in initDisambiguationState — zero allocations after init.
+export interface DisambiguationState {
+  tremoloRmsBuffer: Float32Array;   // length 20 (2s at 10fps)
+  tremoloRmsHead: number;
+  tremoloRmsSamples: number;
+  flatnessBuffer: Float32Array;     // length 10 (1s at 10fps)
+  flatnessHead: number;
+  flatnessSamples: number;
+  onsetBuffer: Float32Array;        // length 20 (onset detection for trombone/bass)
+  onsetBufferHead: number;
+  onsetBufferSamples: number;
+  tuttiFrameCount: number;
+  isTutti: boolean;
+  confidence: Record<string, number>; // key: 'trombone_bass', etc.
+}
+
+export function initDisambiguationState(): DisambiguationState {
+  return {
+    tremoloRmsBuffer: new Float32Array(20),
+    tremoloRmsHead: 0,
+    tremoloRmsSamples: 0,
+    flatnessBuffer: new Float32Array(10),
+    flatnessHead: 0,
+    flatnessSamples: 0,
+    onsetBuffer: new Float32Array(20),
+    onsetBufferHead: 0,
+    onsetBufferSamples: 0,
+    tuttiFrameCount: 0,
+    isTutti: false,
+    confidence: {},
+  };
+}
+
 // BeatState: beat detection and pocket scoring state (Phase 4)
 // All Float32Array buffers are pre-allocated in initBeatState — zero allocations after init.
 export interface BeatState {
@@ -127,7 +161,9 @@ export interface CallResponseState {
 export interface InstrumentAnalysis {
   instrument: string;           // 'bass' | 'drums' | 'keyboard' | 'guitar'
   bandNames: string[];          // which FrequencyBand names this instrument owns
-  activityScore: number;        // 0.0–1.0, updated at 10fps
+  activityScore: number;        // 0.0–1.0, updated at 10fps (legacy — will be phased out after disambiguation integration)
+  rawActivityScore: number;     // pre-disambiguation score — used by correlator and role classifier
+  displayActivityScore: number; // post-disambiguation score — used by canvas and Zustand
   role: RoleLabel;              // current role label
   roleSinceSec: number;         // audioCtx.currentTime when this role started
   historyBuffer: Float32Array;  // length 100, circular ring buffer (10s * 10fps)
@@ -196,6 +232,7 @@ export interface AudioStateRef {
   beat: BeatState | null;              // Phase 4: beat detection and pocket scoring state
   pitch: PitchAnalysisState | null;    // Phase 8: pitch detection for keyboard and guitar
   callResponse: CallResponseState | null; // Phase 8: call-and-response detection state
+  disambiguation: DisambiguationState | null; // Phase 12: disambiguation engine state
 }
 
 // Factory function for initial AudioStateRef
@@ -227,5 +264,6 @@ export function createInitialAudioState(): AudioStateRef {
     beat: null,
     pitch: null,
     callResponse: null,
+    disambiguation: null,
   };
 }
