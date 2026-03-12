@@ -1,5 +1,33 @@
 # Project Milestones: Jazz Communication Visualizer
 
+## v1.1 Flexible Lineup (Shipped: 2026-03-12)
+
+**Delivered:** Expanded jazz combo support from 4 fixed instruments to any combination of 2-8 instruments (adding saxophone, trumpet, trombone, vibes) with adaptive circular canvas layout, toggle-based band setup UI, edge batching for iOS performance, and v1.0 gap closures (iOS loadExample fix, dead code removal, hot-path cleanup).
+
+**Phases completed:** 9-11 (9 plans total)
+
+**Key accomplishments:**
+
+- Expanded type system and frequency band definitions to 8 instruments with 28 edge pair classifications
+- Generic scorer/calibration pipeline handles any 2-8 instrument lineup without instrument-specific code
+- Bass-center circular layout with aspect-corrected ellipse adapting to 2-8 instruments
+- Toggle-based band setup UI with family grouping, count validation, and vibes/keyboard conflict prevention
+- Edge batching with zero per-frame heap allocations and dynamic hide threshold for large ensembles
+- iOS AudioContext gesture fix, InstrumentRoleOverlay dead code removal, hot-path console.log cleanup
+
+**Stats:**
+
+- 43 files modified
+- 8,532 lines of TypeScript
+- 3 phases, 9 plans
+- 1 day from start to ship
+
+**Git range:** `285306a` → `88f38c8`
+
+**What's next:** v1.2 — instrument disambiguation (sax/keyboard, vibes/keyboard, trombone/bass, multi-horn), instrument family color coding and spatial grouping
+
+---
+
 ## v1.0 MVP (Shipped: 2026-03-11)
 
 **Delivered:** Browser-based jazz recording analyzer with real-time animated node graph visualization showing instrument roles, chord detection, harmonic tension, beat tracking, pocket scoring, and melodic call-and-response — all running client-side with iOS Safari compatibility.
