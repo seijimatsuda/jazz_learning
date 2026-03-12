@@ -7,19 +7,19 @@
 
 ### Disambiguation Foundation
 
-- [ ] **DISC-FND-01**: Raw activity scores are preserved separately from disambiguated display scores (prevents cascade suppression)
-- [ ] **DISC-FND-02**: Hand-rolled spectralFlatness extractor replaces broken Meyda implementation (Math.log(0) bug)
-- [ ] **DISC-FND-03**: Disambiguation state uses pre-allocated Float32Array ring buffers initialized per lineup composition
-- [ ] **DISC-FND-04**: Tutti detection guard sets all disambiguators to equal weight when all instruments active >0.6
-- [ ] **DISC-FND-05**: Each disambiguator only runs when its relevant instrument pair is present in the lineup
+- [x] **DISC-FND-01**: Raw activity scores are preserved separately from disambiguated display scores (prevents cascade suppression)
+- [x] **DISC-FND-02**: Hand-rolled spectralFlatness extractor replaces broken Meyda implementation (Math.log(0) bug)
+- [x] **DISC-FND-03**: Disambiguation state uses pre-allocated Float32Array ring buffers initialized per lineup composition
+- [x] **DISC-FND-04**: Tutti detection guard sets all disambiguators to equal weight when all instruments active >0.6
+- [x] **DISC-FND-05**: Each disambiguator only runs when its relevant instrument pair is present in the lineup
 
 ### Instrument Pair Disambiguation
 
-- [ ] **DISC-01**: Trombone vs bass disambiguation via onset timing and spectral flatness
-- [ ] **DISC-02**: Vibraphone vs keyboard disambiguation via tremolo modulation detection (3-7 Hz amplitude modulation)
-- [ ] **DISC-03**: Horn section disambiguation via spectral centroid hierarchy (trombone < sax < trumpet) when 3+ horns present
-- [ ] **DISC-04**: Disambiguation confidence indicator visible per instrument when analysis is uncertain
-- [ ] **DISC-05**: Saxophone and keyboard disambiguation via band-limited chroma entropy when both present
+- [x] **DISC-01**: Trombone vs bass disambiguation via onset timing and spectral flatness
+- [x] **DISC-02**: Vibraphone vs keyboard disambiguation via tremolo modulation detection (3-7 Hz amplitude modulation)
+- [x] **DISC-03**: Horn section disambiguation via spectral centroid hierarchy (trombone < sax < trumpet) when 3+ horns present
+- [x] **DISC-04**: Disambiguation confidence indicator visible per instrument when analysis is uncertain
+- [x] **DISC-05**: Saxophone and keyboard disambiguation via band-limited chroma entropy when both present
 
 ### Visual Family Identity
 
@@ -54,16 +54,16 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DISC-FND-01 | Phase 12 | Pending |
-| DISC-FND-02 | Phase 12 | Pending |
-| DISC-FND-03 | Phase 12 | Pending |
-| DISC-FND-04 | Phase 12 | Pending |
-| DISC-FND-05 | Phase 12 | Pending |
-| DISC-01 | Phase 12 | Pending |
-| DISC-02 | Phase 12 | Pending |
-| DISC-03 | Phase 12 | Pending |
-| DISC-04 | Phase 12 | Pending |
-| DISC-05 | Phase 12 | Pending |
+| DISC-FND-01 | Phase 12 | Complete |
+| DISC-FND-02 | Phase 12 | Complete |
+| DISC-FND-03 | Phase 12 | Complete |
+| DISC-FND-04 | Phase 12 | Complete |
+| DISC-FND-05 | Phase 12 | Complete |
+| DISC-01 | Phase 12 | Complete |
+| DISC-02 | Phase 12 | Complete |
+| DISC-03 | Phase 12 | Complete |
+| DISC-04 | Phase 12 | Complete |
+| DISC-05 | Phase 12 | Complete |
 | VIS-01 | Phase 13 | Pending |
 | VIS-02 | Phase 13 | Pending |
 | VIS-03 | Phase 13 | Pending |

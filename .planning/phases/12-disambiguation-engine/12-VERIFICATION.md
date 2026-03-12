@@ -1,50 +1,34 @@
 ---
 phase: 12-disambiguation-engine
-verified: 2026-03-12T23:13:01Z
-status: gaps_found
-score: 3/5 must-haves verified
-gaps:
-  - truth: "When trombone and bass are both in the lineup, their activity scores diverge during passages where one is clearly louder or more active than the other (not locked together)"
-    status: failed
-    reason: "TromboneBassDisambiguator runs and writes displayActivityScore correctly, but the canvas node size/color is driven by role (classifyRole), which reads activityScore — the pre-disambiguation value. displayActivityScore is computed but not consumed by any rendering or role-classification path, so zero visual divergence reaches the user."
-    artifacts:
-      - path: "src/audio/AnalysisTick.ts"
-        issue: "classifyRole is called with activityScore (line 143) BEFORE disambiguation runs. displayActivityScore is written after but never fed back to role classifier or any canvas read path."
-      - path: "src/canvas/CanvasRenderer.ts"
-        issue: "Node rendering loop reads instrAnalysis.role only. Neither displayActivityScore nor the disambiguated weight is read for node radius, fill color, or any visual property."
-    missing:
-      - "Either classifyRole must be called with displayActivityScore after the disambiguation engine runs, OR the canvas must read displayActivityScore directly for node sizing and label"
-      - "One source of truth for the display-facing score — currently activityScore and displayActivityScore diverge but only activityScore drives visuals"
-
-  - truth: "When vibraphone and keyboard are both selected, tremolo passages produce higher vibes activity and lower keyboard activity"
-    status: failed
-    reason: "VibesKeyboardDisambiguator correctly writes vibesWeight and keyboardWeight to displayActivityScore, but displayActivityScore is orphaned — not used by role classifier or canvas. Vibes and keyboard node sizes/colors are still driven by pre-disambiguation activityScore."
-    artifacts:
-      - path: "src/audio/VibesKeyboardDisambiguator.ts"
-        issue: "Algorithm is correct and wired into DisambiguationEngine, but output has no consumer in the rendering pipeline."
-    missing:
-      - "Same fix as DISC-01 gap: displayActivityScore must drive role classification or direct canvas rendering"
-
-  - truth: "When saxophone and keyboard are both selected, monophonic sax runs show higher sax activity than keyboard activity"
-    status: failed
-    reason: "SaxKeyboardDisambiguator correctly maps chroma entropy to sax/keyboard weights via displayActivityScore, but displayActivityScore is not read by any rendering path. The monophonic vs chordal distinction is computed but invisible."
-    artifacts:
-      - path: "src/audio/SaxKeyboardDisambiguator.ts"
-        issue: "Correct algorithm, output written to displayActivityScore, but displayActivityScore has no downstream consumer for rendering."
-      - path: "src/audio/AnalysisTick.ts"
-        issue: "SaxKeyboard disambiguator only runs when chroma is non-null. If chord state is not yet initialized, the keyboard gets no disambiguation this tick (graceful degradation, but adds latency)."
-    missing:
-      - "Same fix as DISC-01 gap: displayActivityScore must feed into visual output"
-
+verified: 2026-03-12T23:30:00Z
+status: passed
+score: 5/5 must-haves verified
+re_verification:
+  previous_status: gaps_found
+  previous_score: 3/5
+  gaps_closed:
+    - "Trombone and bass activity scores diverge when playing simultaneously — classifyRole now called with displayActivityScore after disambiguation engine runs"
+    - "Vibes tremolo passages produce higher vibes activity and lower keyboard activity — same root fix"
+    - "Monophonic sax runs show higher sax activity than keyboard activity — same root fix"
+  gaps_remaining: []
+  regressions: []
 human_verification: []
 ---
 
 # Phase 12: Disambiguation Engine Verification Report
 
 **Phase Goal:** Overlapping instrument pairs produce meaningfully different activity scores when playing simultaneously
-**Verified:** 2026-03-12T23:13:01Z
-**Status:** gaps_found
-**Re-verification:** No — initial verification
+**Verified:** 2026-03-12T23:30:00Z
+**Status:** passed
+**Re-verification:** Yes — after gap closure plan 12-06
+
+## Re-verification Context
+
+Previous verification (2026-03-12T23:13:01Z) found one root cause blocking three of five truths: `displayActivityScore` was written by all disambiguators but never consumed by any rendering path. The `classifyRole` call at AnalysisTick.ts line 145 used the pre-disambiguation `activityScore`, so canvas node size and color were unaffected by disambiguation output.
+
+Gap closure plan 12-06 added a second-pass `classifyRole` loop at AnalysisTick.ts lines 218-231, immediately after `runDisambiguationEngine` returns. The re-verification below checks that loop exists, is structurally correct, and that `displayActivityScore` now reaches the rendering pipeline.
+
+---
 
 ## Goal Achievement
 
@@ -52,15 +36,71 @@ human_verification: []
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | Trombone and bass activity scores diverge when playing simultaneously | FAILED | TromboneBassDisambiguator computes weights and writes displayActivityScore, but canvas reads role from pre-disambiguation activityScore. Zero visual effect. |
-| 2 | Vibes tremolo passages produce higher vibes activity and lower keyboard activity | FAILED | VibesKeyboardDisambiguator computes RMS variance correctly and writes displayActivityScore, but displayActivityScore has no rendering consumer. |
-| 3 | Monophonic sax runs show higher sax activity than keyboard activity | FAILED | SaxKeyboardDisambiguator maps chroma entropy to weights, writes displayActivityScore, but displayActivityScore is orphaned from the render pipeline. |
-| 4 | 3+ horns produce differentiated activity levels via spectral centroid ordering | VERIFIED | HornSectionDisambiguator exists, is substantive (193 lines), wired into DisambiguationEngine with countHorns >= 3 guard. Shares the displayActivityScore wiring gap but the algorithm is complete. Marked verified for algorithm correctness; visual effect blocked by same gap as 1-3. |
-| 5 | Tutti passages reset disambiguation weights to equal and confidence indicators reflect uncertainty | VERIFIED | isTuttiActive checks all rawActivityScore > 0.6, zeroes confidence, returns early. Confidence flows to Zustand via onDisambiguationUpdate callback. Canvas dims nodes with globalAlpha=0.5 when pair confidence < 0.5. This works independently of the displayActivityScore gap. |
+| 1 | Trombone and bass activity scores diverge when playing simultaneously | VERIFIED | `classifyRole(instr.displayActivityScore, instr.role)` called at AnalysisTick.ts line 224. Guard `displayActivityScore !== activityScore` (line 223) ensures second pass runs only when TromboneBassDisambiguator changed the score. Role is then written back to `instr.role` (line 226), which CanvasRenderer reads at line 546 for `getRoleRadius` and `getRoleFillColor`. |
+| 2 | Vibes tremolo passages produce higher vibes activity and lower keyboard activity | VERIFIED | Same second-pass loop at lines 218-231 applies to all instruments, including vibes and keyboard. VibesKeyboardDisambiguator writes divergent `displayActivityScore` to vibes and keyboard; second pass reclassifies their roles. Canvas reads the updated `instr.role`. |
+| 3 | Monophonic sax runs show higher sax activity than keyboard activity | VERIFIED | SaxKeyboardDisambiguator writes `sax.displayActivityScore *= saxWeight` and `keyboard.displayActivityScore *= keyboardWeight` before second-pass loop runs. Loop reclassifies roles. Chroma guard still present (DisambiguationEngine.ts line 95 checks `chroma !== null`), which is expected graceful degradation. |
+| 4 | 3+ horns produce differentiated activity levels via spectral centroid ordering | VERIFIED | HornSectionDisambiguator algorithm verified in previous pass (193 lines, confidence penalty guards, inverse-distance weighting). Second-pass loop at AnalysisTick.ts lines 218-231 now consumes horn `displayActivityScore` values. Canvas node roles diverge across horn instruments. |
+| 5 | Tutti passages reset disambiguation weights to equal and confidence indicators reflect uncertainty | VERIFIED | `isTuttiActive` guard in DisambiguationEngine.ts lines 62-70 returns early, leaving all `displayActivityScore` equal to `activityScore`. Confidence zeroed. Second-pass loop guard `displayActivityScore !== activityScore` (line 223) therefore skips all instruments during tutti — first-pass roles are unchanged, which is correct (no false precision). Confidence flows to CanvasRenderer via `disambiguationConfidence` cache (line 306), globalAlpha=0.5 applied when `pairConfidence < 0.5` (CanvasRenderer.ts line 576). |
 
-**Score:** 2/5 truths produce verified observable behavior (truths 4 and 5 have correct implementations; truth 4's visual is blocked by the same wiring gap as 1-3, but marking 5 as verified since its confidence path is complete and independent)
+**Score:** 5/5 truths verified
 
-**Revised Score:** 3/5 — Truth 4 algorithm is complete and will function when Truth 1 gap is fixed. Truth 5 is fully functional now.
+---
+
+## Gap Closure Verification (Primary Check)
+
+### Does `classifyRole` get called with `displayActivityScore` after disambiguation runs?
+
+**YES — verified at AnalysisTick.ts lines 218-231:**
+
+```
+218:  // Phase 12 gap closure: Re-classify roles using displayActivityScore.
+219:  // The first pass used pre-disambiguation activityScore. Now that
+220:  // runDisambiguationEngine has written displayActivityScore, re-run classifyRole
+221:  // so that canvas node visuals (size, color) reflect disambiguated scores.
+222:  for (const instr of instrs) {
+223:    if (instr.displayActivityScore !== instr.activityScore) {
+224:      const newRole = classifyRole(instr.displayActivityScore, instr.role);
+225:      if (newRole !== instr.role) {
+226:        instr.role = newRole;
+227:        instr.roleSinceSec = state.audioCtx?.currentTime ?? 0;
+228:        onRoleChange?.(instr.instrument, newRole);
+229:      }
+230:    }
+231:  }
+```
+
+### Is the second-pass loop correctly positioned?
+
+**YES.** Execution order in AnalysisTick.ts:
+
+1. First-pass loop (lines 129-156): `activityScore` → `classifyRole` → `instr.role`
+2. KbGuitarDisambiguator block (lines 158-189): may modify `activityScore` for kb/guitar
+3. `runDisambiguationEngine` block (lines 191-216): writes `displayActivityScore` for all instruments using Phase 12 disambiguators
+4. **Second-pass loop (lines 218-231):** reads `displayActivityScore`, calls `classifyRole`, overwrites `instr.role` when role changed
+5. Cross-correlation (lines 233-247): reads `historyBuffer` — not affected by role
+6. Chord/tension/beat/pitch (lines 249-407): all use separate state, not affected
+
+The second pass is correctly placed: after `runDisambiguationEngine` has written `displayActivityScore` and before `prevRawFreqData` is saved (line 407). It cannot run too early.
+
+### Does `instr.role` reach the canvas?
+
+**YES.** CanvasRenderer.ts line 546:
+```
+const role = instrAnalysis?.role ?? 'silent';
+```
+This `role` is used at line 550 (`getRoleRadius(role)`) and line 560 (`getRoleFillColor(role)`). Both drive node visual state.
+
+### Is `classifyRole` called with the correct signature?
+
+**YES.** `classifyRole(instr.displayActivityScore, instr.role)` matches the function signature at RoleClassifier.ts line 36:
+```
+classifyRole(activityScore: number, currentRole: RoleLabel, hysteresis = 0.05): RoleLabel
+```
+The second pass passes `instr.role` (set by first pass) as `currentRole` — hysteresis from the first pass is preserved, not bypassed. This is architecturally correct: an instrument that is `comping` after the first pass will not immediately jump to `soloing` on a 0.001 disambiguation weight nudge.
+
+### Is `onRoleChange` correctly fired from the second pass?
+
+**YES.** Line 228 fires `onRoleChange?.(instr.instrument, newRole)` — same callback that the first pass uses (line 151). The guard on line 225 (`newRole !== instr.role`) prevents duplicate fires for instruments whose disambiguated role matches the first-pass role.
 
 ---
 
@@ -68,19 +108,10 @@ human_verification: []
 
 | Artifact | Expected | Status | Details |
 |----------|----------|--------|---------|
-| `src/audio/DisambiguationEngine.ts` | Orchestrator with tutti guard + 4 disambiguators | VERIFIED | 148 lines, substantive. Imports all 4 disambiguators. Tutti guard, pair-presence guards, and confidence tracking all present. |
-| `src/audio/SpectralFeatures.ts` | Hand-rolled spectral extractors (DISC-FND-02) | VERIFIED | 114 lines. computeSpectralFlatness, computeBandCentroid, chromaEntropy — all pure, no allocations, correctly avoid Math.log(0) bug. |
-| `src/audio/TromboneBassDisambiguator.ts` | Onset + spectral flatness disambiguation | VERIFIED | 163 lines. Mid-band flatness via computeSpectralFlatness + sub-bass onset ring buffer. Weights clamped [0.15, 0.85]. |
-| `src/audio/SaxKeyboardDisambiguator.ts` | Chroma entropy disambiguation | VERIFIED | 82 lines. Normalized chroma entropy with linear ramp in ambiguous zone [0.3, 0.5]. Weights clamped [0.15, 0.85]. |
-| `src/audio/VibesKeyboardDisambiguator.ts` | RMS variance tremolo detection | VERIFIED | 154 lines. 20-frame ring buffer, unbiased variance, MAX_CONFIDENCE cap at 0.5 (Nyquist bound documented). |
-| `src/audio/HornSectionDisambiguator.ts` | Spectral centroid ordering for 3+ horns | VERIFIED | 192 lines. Inverse-distance weighting from EXPECTED_CENTROID_HZ, confidence penalties for proximity and high activity. |
-| `src/audio/instrumentFamilies.ts` | INSTRUMENT_FAMILIES, helpers | VERIFIED | 78 lines. HORN_INSTRUMENTS, hasInstrumentPair, countHorns, isTuttiActive all exported. |
-| `src/audio/types.ts` (DisambiguationState) | Interface + factory + AudioStateRef field | VERIFIED | DisambiguationState interface with Float32Array ring buffers. initDisambiguationState factory. AudioStateRef.disambiguation field. |
-| `src/audio/AnalysisTick.ts` (wiring) | Engine called after activity scoring, before cross-correlation | VERIFIED | runDisambiguationEngine called at line 194. onDisambiguationUpdate callback added as 7th parameter. rawActivityScore set before disambiguation. |
-| `src/App.tsx` (init) | DisambiguationState initialized at lineup change | VERIFIED | Line 59: `audioStateRef.current.disambiguation = initDisambiguationState()` in calibration callback alongside analysis state. |
-| `src/store/useAppStore.ts` | disambiguationConfidence + isTutti + setDisambiguationInfo | VERIFIED | All 3 present. Initialized in initial state and reset(). |
-| `src/canvas/CanvasRenderer.ts` (confidence UI) | globalAlpha dimming when confidence < 0.5 | VERIFIED | getInstrumentPairKey helper maps instruments to pair keys. Node loop applies ctx.globalAlpha = 0.5 before drawNode when pairConfidence < 0.5. Restored after. |
-| `src/components/VisualizerCanvas.tsx` | setOnDisambiguationUpdate wired to Zustand | VERIFIED | Line 76: renderer.setOnDisambiguationUpdate fires setDisambiguationInfo every tick. |
+| `src/audio/AnalysisTick.ts` | Second-pass classifyRole loop after disambiguation engine | VERIFIED | Lines 218-231. 13-line loop. Guard on displayActivityScore !== activityScore. Calls classifyRole with displayActivityScore. Fires onRoleChange. Positioned after runDisambiguationEngine block. |
+| `src/audio/DisambiguationEngine.ts` | Writes displayActivityScore for all pairs | VERIFIED | Confirmed unchanged from previous verification. 148 lines. All 4 disambiguators wired. displayActivityScore written via weight multiplication. |
+| `src/audio/RoleClassifier.ts` | classifyRole(activityScore, currentRole) signature | VERIFIED | Line 36. Pure function, no side effects. Takes normalized score and current role. Returns new role. |
+| `src/canvas/CanvasRenderer.ts` | Reads instr.role for node visual state | VERIFIED | Line 546. role → getRoleRadius (line 550) → targetRadius → currentRadius (line 553). role → getRoleFillColor (line 560) → fillColor → drawNode. |
 
 ---
 
@@ -88,69 +119,58 @@ human_verification: []
 
 | From | To | Via | Status | Details |
 |------|----|-----|--------|---------|
-| DisambiguationEngine.ts | TromboneBassDisambiguator.ts | disambiguateTromboneBass import | WIRED | Line 27 |
-| DisambiguationEngine.ts | SaxKeyboardDisambiguator.ts | disambiguateSaxKeyboard import | WIRED | Line 28 |
-| DisambiguationEngine.ts | VibesKeyboardDisambiguator.ts | disambiguateVibesKeyboard import | WIRED | Line 29 |
-| DisambiguationEngine.ts | HornSectionDisambiguator.ts | disambiguateHornSection import | WIRED | Line 30 |
-| AnalysisTick.ts | DisambiguationEngine.ts | runDisambiguationEngine call | WIRED | Line 194, after kb/guitar block, before cross-correlation |
-| AnalysisTick.ts | Zustand | onDisambiguationUpdate callback | WIRED | Lines 205-208, fires every tick with confidence + isTutti |
-| CanvasRenderer.ts | AnalysisTick.ts | onDisambiguationUpdate param | WIRED | Line 468, passed as 7th arg to runAnalysisTick |
-| VisualizerCanvas.tsx | Zustand | setDisambiguationInfo | WIRED | Line 76-78 |
-| DisambiguationEngine.ts | displayActivityScore | weight multiplication | ORPHANED | Weights are applied to displayActivityScore on InstrumentAnalysis, but displayActivityScore is never read by CanvasRenderer, role classifier, or Zustand for any display-affecting purpose |
-| classifyRole | activityScore (pre-disambiguation) | direct parameter | WRONG SOURCE | AnalysisTick line 143: classifyRole(newScore, instr.role) uses pre-disambiguation score. Role drives all canvas node visual state. |
+| DisambiguationEngine | instr.displayActivityScore | weight multiplication | WIRED | Lines 89-90, 102-103, 117-119, 141-144 in DisambiguationEngine.ts |
+| AnalysisTick second-pass | classifyRole | displayActivityScore parameter | WIRED | Line 224 — confirmed |
+| classifyRole return | instr.role | assignment on line 226 | WIRED | Confirmed |
+| instr.role | CanvasRenderer node visual | instrAnalysis.role at line 546 | WIRED | Confirmed. Role drives both radius and fill color. |
+| DisambiguationEngine confidence | CanvasRenderer globalAlpha | disambiguationConfidence cache | WIRED | setOnDisambiguationUpdate (line 304) caches confidence. getInstrumentPairKey + globalAlpha = 0.5 at line 576. |
 
 ---
 
 ## Requirements Coverage
 
-| Requirement | Status | Blocking Issue |
-|-------------|--------|----------------|
-| DISC-FND-01: Raw/display score split | PARTIAL | Split exists in data structure; raw score is preserved. But displayActivityScore is computed and immediately orphaned — never read for rendering. |
-| DISC-FND-02: Hand-rolled spectralFlatness | SATISFIED | computeSpectralFlatness skips zero bins, fixes Math.log(0) bug. Used by TromboneBassDisambiguator. |
-| DISC-FND-03: Float32Array ring buffers | SATISFIED | All 3 ring buffers (tremoloRms, flatness, onset) pre-allocated in initDisambiguationState. |
-| DISC-FND-04: Tutti guard | SATISFIED | isTuttiActive checks rawActivityScore > 0.6 for all instruments. Confidence zeroed on tutti. |
-| DISC-FND-05: Pair presence guards | SATISFIED | hasInstrumentPair + countHorns >= 3 guard each disambiguator. |
-| DISC-01: Trombone/bass via onset + flatness | BLOCKED | Algorithm correct. Output blocked by displayActivityScore not feeding visual pipeline. |
-| DISC-02: Vibes/keyboard via tremolo detection | BLOCKED | Algorithm correct (with documented Nyquist cap at 0.5). Output blocked by same wiring gap. |
-| DISC-03: Horn section via centroid hierarchy | BLOCKED | Algorithm correct. Output blocked by same wiring gap. |
-| DISC-04: Confidence indicator per instrument | SATISFIED | globalAlpha dimming on canvas nodes when pair confidence < 0.5. Zustand store updated per tick. |
-| DISC-05: Sax/keyboard via chroma entropy | BLOCKED | Algorithm correct. Output blocked by same wiring gap. |
+| Requirement | Status | Notes |
+|-------------|--------|-------|
+| DISC-FND-01: Raw/display score split | SATISFIED | rawActivityScore preserved. displayActivityScore now consumed by second-pass role classifier. One source of truth. |
+| DISC-FND-02: Hand-rolled spectralFlatness | SATISFIED | Unchanged from previous verification. |
+| DISC-FND-03: Float32Array ring buffers | SATISFIED | Unchanged. |
+| DISC-FND-04: Tutti guard | SATISFIED | Confirmed. Early return leaves displayActivityScore equal to activityScore; second-pass guard skips all instruments. |
+| DISC-FND-05: Pair presence guards | SATISFIED | Unchanged. |
+| DISC-01: Trombone/bass via onset + flatness | SATISFIED | Algorithm correct + second pass now feeds role → canvas. |
+| DISC-02: Vibes/keyboard via tremolo detection | SATISFIED | Algorithm correct + second pass feeds role → canvas. |
+| DISC-03: Horn section via centroid hierarchy | SATISFIED | Algorithm correct + second pass feeds role → canvas. |
+| DISC-04: Confidence indicator per instrument | SATISFIED | globalAlpha dimming confirmed working in CanvasRenderer lines 570-576. Unchanged. |
+| DISC-05: Sax/keyboard via chroma entropy | SATISFIED | Algorithm correct + second pass feeds role → canvas. Chroma null-guard is expected behavior. |
 
 ---
 
-## Anti-Patterns Found
+## Anti-Patterns Scan (Re-verification Focus)
 
-| File | Line | Pattern | Severity | Impact |
+| File | Line | Pattern | Severity | Status |
 |------|------|---------|----------|--------|
-| src/audio/TromboneBassDisambiguator.ts | 33, 36, 144 | CALIBRATION_NEEDED markers | Warning | Thresholds require tuning against real recordings. Algorithm will function but may not produce meaningful divergence until calibrated. Known and documented. |
-| src/audio/HornSectionDisambiguator.ts | 43-45 | CALIBRATION_NEEDED on expected centroid Hz | Warning | Same as above. Literature-derived values, not empirically validated. |
-| src/audio/SaxKeyboardDisambiguator.ts | 55-56 | CALIBRATION_NEEDED on entropy thresholds | Warning | Same pattern. |
-| src/audio/AnalysisTick.ts | 143 | classifyRole called with pre-disambiguation score | Blocker | Role drives all canvas visuals. Disambiguation output is invisible. |
-| src/audio/types.ts | 164 | activityScore comment says "legacy — will be phased out" | Info | Score debt acknowledged in code comment but not yet resolved. |
+| `src/audio/AnalysisTick.ts` | 223 | Guard `displayActivityScore !== activityScore` | Info | Intentional optimization — skips second pass when disambiguation had no effect. Not a stub. |
+| `src/audio/TromboneBassDisambiguator.ts` | 33, 36, 144 | CALIBRATION_NEEDED markers | Warning | Unchanged from previous verification. Thresholds require tuning against real recordings. Does not block algorithmic function. |
+| `src/audio/HornSectionDisambiguator.ts` | 43-45 | CALIBRATION_NEEDED | Warning | Unchanged. |
+| `src/audio/SaxKeyboardDisambiguator.ts` | 55-56 | CALIBRATION_NEEDED | Warning | Unchanged. |
+
+No blockers found. The previously-identified blocker (classifyRole using pre-disambiguation score) is resolved.
 
 ---
 
-## Root Cause Analysis
+## Regression Check (Previously Passing Items)
 
-The entire phase built a correct, substantive disambiguation pipeline that computes `displayActivityScore` on every tick. The pipeline is internally consistent: raw scores are preserved, ring buffers are pre-allocated, tutti guard works, pair guards work, confidence flows to Zustand, and the canvas dims nodes on low confidence.
-
-The single architectural gap is that **displayActivityScore is written but never read for any display-affecting purpose**. The canvas renders node state from `role`, and `role` is classified from `activityScore` (the pre-disambiguation value) in the same per-instrument loop that runs before the disambiguation engine.
-
-The fix requires one of two approaches:
-1. **Move role classification after disambiguation**: Call `classifyRole` with `displayActivityScore` after `runDisambiguationEngine` returns. This requires a second pass over instruments in AnalysisTick or restructuring the tick loop order.
-2. **Use displayActivityScore directly in CanvasRenderer for node sizing**: Read `instrAnalysis.displayActivityScore` to drive node visual properties (radius, or a new "activity glow") instead of/in addition to role.
-
-The confidence indicator (DISC-04) works correctly because it uses a separate side-channel (the `disambiguationConfidence` cache on CanvasRenderer, populated by the callback) rather than reading from `InstrumentAnalysis.displayActivityScore`.
+- Truth 4 (Horn section differentiation): Algorithm unchanged. Second-pass loop now also applies to horn instruments — no regression, improvement only.
+- Truth 5 (Tutti confidence reset): Tutti guard logic unchanged. Second-pass guard `displayActivityScore !== activityScore` correctly skips all instruments when tutti is active (displayActivityScore was set to activityScore by DisambiguationEngine early return). No regression.
+- CanvasRenderer confidence dimming (DISC-04): `setOnDisambiguationUpdate` implementation and `disambiguationConfidence` cache unchanged. globalAlpha logic unchanged. No regression.
 
 ---
 
 ## Gaps Summary
 
-**One root cause, four blocked success criteria.** The disambiguation engine is algorithmically complete and correctly wired into the tick loop. All 4 disambiguators produce weighted `displayActivityScore` values per tick. The gap is that `displayActivityScore` has no consumer in the rendering pipeline. The canvas node visuals (size and color) derive from `role`, which is classified from the pre-disambiguation `activityScore` before the disambiguation engine runs. Until `displayActivityScore` feeds back into role classification or direct canvas rendering, the success criteria — "activity scores diverge" — cannot be observed by a user of the app.
-
-DISC-04 (confidence indicator) and DISC-FND-02 through DISC-FND-05 are fully satisfied and working. The CALIBRATION_NEEDED markers are expected and do not block functionality.
+No gaps. The single root cause identified in the initial verification — `displayActivityScore` written but never consumed — is resolved by the second-pass `classifyRole` loop at AnalysisTick.ts lines 218-231. All five observable truths now have verified end-to-end paths from disambiguation computation through role classification to canvas node visual state.
 
 ---
 
-_Verified: 2026-03-12T23:13:01Z_
+_Verified: 2026-03-12T23:30:00Z_
 _Verifier: Claude (gsd-verifier)_
+_Re-verification: Yes — after gap closure plan 12-06_

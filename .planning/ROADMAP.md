@@ -12,7 +12,7 @@
 
 **Milestone Goal:** Improve analysis accuracy by disambiguating overlapping instrument pairs (sax/keyboard, vibes/keyboard, trombone/bass, multi-horn), add instrument family visual identity (color coding, spatial grouping, typed edge animations), and close v1.1 tech debt.
 
-- [ ] **Phase 12: Disambiguation Engine** — Raw/display score split, spectral extractors, and all 4 instrument pair disambiguators
+- [x] **Phase 12: Disambiguation Engine** — Raw/display score split, spectral extractors, and all 4 instrument pair disambiguators
 - [ ] **Phase 13: Visual Family Identity** — Instrument family color coding, spatial clustering, and typed edge animations
 - [ ] **Phase 14: Tech Debt and Polish** — Remove dead code, add crash guards, fix lineup pattern brittleness
 
@@ -28,14 +28,15 @@
   3. When saxophone and keyboard are both selected, monophonic sax runs show higher sax activity than keyboard activity
   4. When 3+ horns are selected, spectral centroid ordering produces differentiated activity levels rather than identical scores
   5. During tutti passages (all instruments active above 0.6), disambiguation weights reset to equal (no false precision) and confidence indicators reflect uncertainty
-**Plans**: 5 plans in 3 waves
+**Plans**: 6 plans in 4 waves (including gap closure)
 
 Plans:
-- [ ] 12-01-PLAN.md — Raw/display score split, DisambiguationState, instrumentFamilies.ts (Wave 1)
-- [ ] 12-02-PLAN.md — SpectralFeatures.ts hand-rolled extractors (Wave 1)
-- [ ] 12-03-PLAN.md — TromboneBass + SaxKeyboard disambiguators (Wave 2)
-- [ ] 12-04-PLAN.md — VibesKeyboard + HornSection disambiguators (Wave 2)
-- [ ] 12-05-PLAN.md — DisambiguationEngine orchestrator + AnalysisTick integration + confidence UI (Wave 3)
+- [x] 12-01-PLAN.md — Raw/display score split, DisambiguationState, instrumentFamilies.ts (Wave 1)
+- [x] 12-02-PLAN.md — SpectralFeatures.ts hand-rolled extractors (Wave 1)
+- [x] 12-03-PLAN.md — TromboneBass + SaxKeyboard disambiguators (Wave 2)
+- [x] 12-04-PLAN.md — VibesKeyboard + HornSection disambiguators (Wave 2)
+- [x] 12-05-PLAN.md — DisambiguationEngine orchestrator + AnalysisTick integration + confidence UI (Wave 3)
+- [x] 12-06-PLAN.md — Gap closure: wire displayActivityScore into role classification (Wave 4)
 
 ### Phase 13: Visual Family Identity
 **Goal**: Users can visually distinguish instrument families and communication types at a glance on the canvas
@@ -79,6 +80,6 @@ Plans:
 | 9. Data Layer and Structural Refactor | v1.1 | 4/4 | Complete | 2026-03-12 |
 | 10. Band Setup UI and Canvas Layout | v1.1 | 3/3 | Complete | 2026-03-12 |
 | 11. Gap Closures | v1.1 | 2/2 | Complete | 2026-03-12 |
-| 12. Disambiguation Engine | v1.2 | 0/5 | Planning complete | - |
+| 12. Disambiguation Engine | v1.2 | 6/6 | Complete | 2026-03-12 |
 | 13. Visual Family Identity | v1.2 | 0/? | Not started | - |
 | 14. Tech Debt and Polish | v1.2 | 0/? | Not started | - |
