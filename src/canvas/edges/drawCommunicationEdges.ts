@@ -147,7 +147,7 @@ export function drawCommunicationEdges(
     // -----------------------------------------------------------------------
     // Step 6: Determine base color from edge type
     // -----------------------------------------------------------------------
-    const edgeType = EDGE_TYPE[key] ?? 'support';
+    const edgeType = EDGE_TYPE[key];
     const baseColor = EDGE_COLOR[edgeType];
 
     // -----------------------------------------------------------------------
