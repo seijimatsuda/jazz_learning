@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 9 of 11 in v1.1 (Data Layer and Structural Refactor)
-Plan: 3 of 4 in current phase
-Status: In progress
-Last activity: 2026-03-12 — Completed 09-03-PLAN.md (dynamic lineup-driven canvas renderer)
+Plan: 4 of 4 in current phase
+Status: Phase complete
+Last activity: 2026-03-12 — Completed 09-04-PLAN.md (dynamic pitch wiring, zero TS errors)
 
-Progress: [████████░░] ~78% (v1.0 complete, 09-01, 09-02, 09-03 complete)
+Progress: [█████████░] ~88% (v1.0 complete, Phase 9 fully complete)
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [████████░░] ~78% (v1.0 complete, 09-01, 09-02, 09
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 1-8 | 38 | Complete |
-| 9 | 3/4 | In progress |
+| 9 | 4/4 | Complete |
 | 10-11 | 0/5 | Not started |
 
 *Updated after each plan completion*
@@ -58,18 +58,22 @@ Recent decisions affecting v1.1:
 - D-09-03-2: PairTuple type exported from NodeLayout.ts (describes graph structure, not edge animation behavior)
 - D-09-03-3: INSTRUMENT_ORDER kept in NodeLayout.ts with deprecation note — removing requires larger sweep outside this plan's scope
 
+09-04 decisions:
+- D-09-04-1: Drums excluded from pitch detection at init time in App.tsx (ACF2+ on transients is spurious) — not at tick time
+- D-09-04-2: Call-response detection scope stays keyboard+guitar only; guarded silently when either absent
+- D-09-04-3: Bass included in pitch detection — bass pitch tracking via ACF2+ is valid and musically meaningful
+
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
 
-- [Phase 9]: ONE zero-tolerance crash site remains: AnalysisTick.ts and App.tsx TypeScript errors from 09-01 (Plan 04 scope). Three of four crash sites now fixed.
 - [Phase 10]: iOS canvas performance at 8 instruments (28 edges, quadratic growth) needs empirical device test early in execution — do not defer to end of phase
 - [Phase 10]: Layout geometry for 5-8 nodes must be validated against 800x400 canvas constraints (tension meter right edge, BPM display bottom-left) — pre-computed positions in NodeLayout.ts are starting point
 
 ## Session Continuity
 
 Last session: 2026-03-12
-Stopped at: Completed 09-03-PLAN.md — CanvasRenderer accepts lineup, PAIRS IIFE removed, computeNodePositions 2-8, pocket line guarded
+Stopped at: Completed 09-04-PLAN.md — dynamic pitch wiring, zero TypeScript errors, Phase 9 fully complete
 Resume file: None
