@@ -475,6 +475,7 @@ export class CanvasRenderer {
         w, h,
         currentTension,
         deltaMs,
+        this.instrumentOrder.length,
       );
     }
 
