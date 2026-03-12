@@ -11,22 +11,33 @@
  * bass_drums is handled by drawPocketLine — Plan 01.
  *
  * Visual states driven by smoothed cross-correlation weight:
- *   < 0.3          = hidden        (opacity fades to 0, no stroke)
- *   0.3 - 0.4      = static_thin   (lineWidth 1.5, opacity 0.4)
- *   0.4 - 0.7      = subtle        (lineWidth 3,   opacity 0.65)
- *   >= 0.7         = animated      (lineWidth 5,   opacity 0.9, flowing dashes)
+ *   < threshold       = hidden        (opacity fades to 0, no stroke)
+ *   threshold - 0.4   = static_thin   (lineWidth 1.5, opacity 0.4)
+ *   0.4 - 0.7         = subtle        (lineWidth 3,   opacity 0.65)
+ *   >= 0.7            = animated      (lineWidth 5,   opacity 0.9, flowing dashes)
+ *
+ * CANV-03: Non-animated edges batch-rendered without per-edge save/restore.
+ *   All static_thin + subtle edges share a single ctx pass — opacity encoded
+ *   directly in rgba() strokeStyle, avoiding per-edge globalAlpha changes.
+ *   Animated (dashed) edges still use ctx.save()/ctx.restore() for setLineDash
+ *   isolation (required on iOS Safari).
+ *
+ * CANV-04: Dynamic hide threshold — 0.30 for 2-5 instruments, 0.45 for 6-8.
+ *   At 8 instruments there are 28 edges (C(8,2)). Raising the threshold above
+ *   5 instruments keeps the graph readable by hiding weak connections.
  *
  * Performance constraints:
- * - NO per-frame allocations
- * - Always ctx.save()/ctx.restore() for lineDash isolation (iOS Safari)
+ * - Module-level pre-allocated buffer — zero per-frame allocations
+ * - Non-animated edges: single pass, no save/restore per edge
+ * - Animated edges: isolated with save/restore for setLineDash (iOS Safari)
  * - Pairs are passed as a parameter (computed by CanvasRenderer from lineup)
  * - Endpoint termination at node circumference via normalized direction vector
  */
 
-import { lerpExp } from '../nodes/NodeAnimState';
+import { lerp, lerpExp } from '../nodes/NodeAnimState';
 import { drawGlow } from '../nodes/drawGlow';
 import type { EdgeAnimState } from './EdgeAnimState';
-import { EDGE_TYPE, EDGE_COLOR, getTintedColor } from './edgeTypes';
+import { EDGE_TYPE, EDGE_COLOR, TENSION_RED_RGB, TENSION_AMBER_RGB } from './edgeTypes';
 import type { NodePosition, PairTuple } from '../nodes/NodeLayout';
 
 // ---------------------------------------------------------------------------
@@ -34,6 +45,37 @@ import type { NodePosition, PairTuple } from '../nodes/NodeLayout';
 // ---------------------------------------------------------------------------
 
 type VisualState = 'hidden' | 'static_thin' | 'subtle' | 'animated';
+
+// ---------------------------------------------------------------------------
+// Module-level pre-allocated render buffer — avoids per-frame allocation
+// Max 28 edges for C(8,2) — full 8-instrument lineup
+// ---------------------------------------------------------------------------
+
+interface EdgeRenderData {
+  startX: number; startY: number;
+  endX: number; endY: number;
+  colorR: number; colorG: number; colorB: number;
+  opacity: number;
+  lineWidth: number;
+  visualState: VisualState;
+  dashOffset: number;
+  animState: EdgeAnimState;
+  midX: number; midY: number;
+}
+
+const edgeRenderBuf: EdgeRenderData[] = [];
+for (let i = 0; i < 28; i++) {
+  edgeRenderBuf.push({
+    startX: 0, startY: 0, endX: 0, endY: 0,
+    colorR: 0, colorG: 0, colorB: 0,
+    opacity: 0, lineWidth: 0,
+    visualState: 'hidden' as VisualState,
+    dashOffset: 0,
+    animState: null!,
+    midX: 0, midY: 0,
+  });
+}
+let edgeRenderCount = 0;
 
 // ---------------------------------------------------------------------------
 // drawCommunicationEdges — EDGE-07, EDGE-08
@@ -49,6 +91,11 @@ type VisualState = 'hidden' | 'static_thin' | 'subtle' | 'animated';
  * All edges render behind instrument nodes — caller must invoke this before
  * the node drawing loop.
  *
+ * CANV-03: Non-animated edges (static_thin + subtle) rendered in a single pass
+ * without per-edge ctx.save()/ctx.restore(). Opacity encoded in rgba() color string.
+ *
+ * CANV-04: Dynamic hide threshold — 0.30 for ≤5 instruments, 0.45 for >5.
+ *
  * @param ctx             - Main canvas 2D rendering context
  * @param nodePositions   - Fractional [0,1] positions per instrument (indexed by lineup)
  * @param nodeRadii       - Current rendered radii per instrument (CSS pixels)
@@ -59,6 +106,7 @@ type VisualState = 'hidden' | 'static_thin' | 'subtle' | 'animated';
  * @param canvasH         - Logical canvas height in CSS pixels
  * @param currentTension  - Current harmonic tension [0,1] for EDGE-09/10
  * @param deltaMs         - Elapsed ms since last frame (capped at 100ms by caller)
+ * @param instrumentCount - Number of instruments in lineup (used for CANV-04 threshold)
  */
 export function drawCommunicationEdges(
   ctx: CanvasRenderingContext2D,
@@ -71,7 +119,16 @@ export function drawCommunicationEdges(
   canvasH: number,
   currentTension: number,
   deltaMs: number,
+  instrumentCount: number,   // NEW — lineup.length from CanvasRenderer
 ): void {
+  // CANV-04: raise hide threshold when instrument count > 5 to keep graph readable
+  const hideThreshold = instrumentCount > 5 ? 0.45 : 0.30;
+
+  // ---------------------------------------------------------------------------
+  // Pass 1 — Collect: compute state for all pairs, write into edgeRenderBuf
+  // ---------------------------------------------------------------------------
+  edgeRenderCount = 0;
+
   for (const [idxA, idxB, key] of pairs) {
     const animState = edgeAnimStates[key];
     if (!animState) continue;
@@ -90,7 +147,7 @@ export function drawCommunicationEdges(
     let targetOpacity: number;
     let lineWidth: number;
 
-    if (w < 0.3) {
+    if (w < hideThreshold) {
       visualState = 'hidden';
       targetOpacity = 0;
       lineWidth = 1.5; // unused but avoids uninitialized variable
@@ -143,6 +200,8 @@ export function drawCommunicationEdges(
     const startY = yA + ny * nodeRadii[idxA];
     const endX   = xB - nx * nodeRadii[idxB];
     const endY   = yB - ny * nodeRadii[idxB];
+    const midX   = (startX + endX) / 2;
+    const midY   = (startY + endY) / 2;
 
     // -----------------------------------------------------------------------
     // Step 6: Determine base color from edge type
@@ -156,64 +215,95 @@ export function drawCommunicationEdges(
     const targetTint = currentTension > 0.6 ? (currentTension - 0.6) / 0.4 : 0;
     animState.tintFactor = lerpExp(animState.tintFactor, targetTint, 0.1, deltaMs);
 
-    const colorString = animState.tintFactor > 0.01
-      ? getTintedColor(baseColor.r, baseColor.g, baseColor.b, animState.tintFactor, currentTension)
-      : `rgb(${baseColor.r},${baseColor.g},${baseColor.b})`;
-
-    // -----------------------------------------------------------------------
-    // Step 7: Draw with ctx.save()/ctx.restore() for lineDash isolation
-    // -----------------------------------------------------------------------
-    ctx.save();
-    ctx.globalAlpha = animState.currentOpacity;
-    ctx.strokeStyle = colorString;
-    ctx.lineWidth = lineWidth;
-
-    if (visualState === 'animated') {
-      // Flowing dashes — slightly slower than pocket line (0.04 vs 0.06)
-      ctx.setLineDash([12, 8]);
-      ctx.lineDashOffset = -animState.dashOffset;
-
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
-
-      // Advance dash offset for flowing animation
-      animState.dashOffset = (animState.dashOffset + deltaMs * 0.04) % 20;
-    } else {
-      // Static or subtle — plain solid line
-      ctx.setLineDash([]);
-
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
+    let r = baseColor.r, g = baseColor.g, b = baseColor.b;
+    if (animState.tintFactor > 0.01) {
+      const target = currentTension > 0.8 ? TENSION_RED_RGB : TENSION_AMBER_RGB;
+      r = Math.round(lerp(r, target.r, animState.tintFactor));
+      g = Math.round(lerp(g, target.g, animState.tintFactor));
+      b = Math.round(lerp(b, target.b, animState.tintFactor));
     }
 
-    ctx.restore();
+    // -----------------------------------------------------------------------
+    // Step 7: Write into pre-allocated render buffer
+    // -----------------------------------------------------------------------
+    const slot = edgeRenderBuf[edgeRenderCount];
+    slot.startX = startX;
+    slot.startY = startY;
+    slot.endX = endX;
+    slot.endY = endY;
+    slot.midX = midX;
+    slot.midY = midY;
+    slot.colorR = r;
+    slot.colorG = g;
+    slot.colorB = b;
+    slot.opacity = animState.currentOpacity;
+    slot.lineWidth = lineWidth;
+    slot.visualState = visualState;
+    slot.dashOffset = animState.dashOffset;
+    slot.animState = animState;
+    edgeRenderCount++;
+  }
 
-    // -----------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+  // Pass 2 — Draw non-animated edges (no save/restore per edge)
+  // CANV-03: single ctx.setLineDash([]) for entire batch
+  // Opacity encoded in rgba() — no per-edge globalAlpha changes
+  // ---------------------------------------------------------------------------
+  ctx.setLineDash([]);  // clear once for entire non-animated pass
+  for (let i = 0; i < edgeRenderCount; i++) {
+    const e = edgeRenderBuf[i];
+    if (e.visualState === 'animated' || e.visualState === 'hidden') continue;
+    // Encode opacity directly in rgba — no globalAlpha needed
+    ctx.strokeStyle = `rgba(${e.colorR},${e.colorG},${e.colorB},${e.opacity})`;
+    ctx.lineWidth = e.lineWidth;
+    ctx.beginPath();
+    ctx.moveTo(e.startX, e.startY);
+    ctx.lineTo(e.endX, e.endY);
+    ctx.stroke();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pass 3 — Draw animated edges (save/restore for setLineDash isolation on iOS Safari)
+  // ---------------------------------------------------------------------------
+  for (let i = 0; i < edgeRenderCount; i++) {
+    const e = edgeRenderBuf[i];
+    if (e.visualState !== 'animated') continue;
+    ctx.save();
+    ctx.globalAlpha = e.opacity;
+    ctx.strokeStyle = `rgb(${e.colorR},${e.colorG},${e.colorB})`;
+    ctx.lineWidth = e.lineWidth;
+    ctx.setLineDash([12, 8]);
+    ctx.lineDashOffset = -e.dashOffset;
+    ctx.beginPath();
+    ctx.moveTo(e.startX, e.startY);
+    ctx.lineTo(e.endX, e.endY);
+    ctx.stroke();
+    ctx.restore();
+    // Advance dash offset for flowing animation (slightly slower than pocket line)
+    e.animState.dashOffset = (e.animState.dashOffset + deltaMs * 0.04) % 20;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pass 4 — Flash / glow effects (EDGE-10, MEL-04)
+  // Resolution flash and call-response flash drawn at edge midpoints
+  // ---------------------------------------------------------------------------
+  for (let i = 0; i < edgeRenderCount; i++) {
+    const e = edgeRenderBuf[i];
+    const animState = e.animState;
+
     // Step 8: Resolution flash (EDGE-10) — cool blue-white glow at midpoint
-    // -----------------------------------------------------------------------
     if (animState.resolutionFlashIntensity > 0.01) {
-      const midX = (startX + endX) / 2;
-      const midY = (startY + endY) / 2;
-      drawGlow(ctx, animState.resolutionGlowCanvas, midX, midY, animState.resolutionFlashIntensity);
+      drawGlow(ctx, animState.resolutionGlowCanvas, e.midX, e.midY, animState.resolutionFlashIntensity);
       animState.resolutionFlashIntensity = lerpExp(animState.resolutionFlashIntensity, 0, 0.08, deltaMs);
       if (animState.resolutionFlashIntensity < 0.02) animState.resolutionFlashIntensity = 0;
     }
 
-    // -----------------------------------------------------------------------
     // Step 9: Call-response purple flash (MEL-04) — purple glow at midpoint
     //         Only active on guitar_keyboard edge; decayed by CanvasRenderer
-    // -----------------------------------------------------------------------
     if (animState.callResponseFlashIntensity > 0.01) {
-      const midX = (startX + endX) / 2;
-      const midY = (startY + endY) / 2;
-      // Draw purple glow with scaled alpha — full intensity at 0.8 globalAlpha
       const savedAlpha = ctx.globalAlpha;
       ctx.globalAlpha = animState.callResponseFlashIntensity * 0.8;
-      drawGlow(ctx, animState.callResponseGlowCanvas, midX, midY, 1.0);
+      drawGlow(ctx, animState.callResponseGlowCanvas, e.midX, e.midY, 1.0);
       ctx.globalAlpha = savedAlpha;
     }
   }
