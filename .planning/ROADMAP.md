@@ -145,7 +145,7 @@ Plans:
   2. The InstrumentRoleOverlay component and all its imports are gone from the codebase
   3. No console.log calls appear in any hot-path file (AnalysisTick.ts, CanvasRenderer.ts, drawCommunicationEdges.ts)
   4. Loading a recording with a lineup that omits bass or drums does not produce a console error or visual glitch on the pocket line
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
 - [ ] 11-01: iOS AudioContext gesture fix for loadExample and dead code removal (FIX-01, FIX-02)
