@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 10 of 11 in v1.1 (Band Setup UI and Canvas Layout)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-12 — Completed 10-01-PLAN.md (toggle UI for BandSetupPanel)
+Last activity: 2026-03-12 — Completed 10-02-PLAN.md (bass-center circular layout)
 
-Progress: [█████████░] ~87% (v1.0 complete, Phase 9 complete, Phase 10 plan 1/3 complete)
+Progress: [█████████░] ~89% (v1.0 complete, Phase 9 complete, Phase 10 plan 2/3 complete)
 
 ## Performance Metrics
 
@@ -28,7 +28,7 @@ Progress: [█████████░] ~87% (v1.0 complete, Phase 9 complete
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 9 | 4/4 | Complete |
-| 10 | 1/3 | In progress |
+| 10 | 2/3 | In progress |
 | 11 | 0/2 | Not started |
 
 *Updated after each plan completion*
@@ -46,6 +46,13 @@ Recent decisions affecting v1.1:
 - Phase 9: INST-08 (saxophone/keyboard disambiguation) reclassified as DISC-05 in v1.2 requirements
 - Phase 9: EDGE_TYPE fallback operator removed — all 28 pairs defined, no silent defaults
 - Phase 10: Vibes + keyboard simultaneous selection policy RESOLVED — prevented in UI with tooltip (shared 250-2000 Hz band, acoustically indistinguishable via FFT in v1.2 scope)
+
+Phase 10 plan 02 decisions:
+- D-10-02-1: position[0] convention — always canvas center regardless of instrument count
+- D-10-02-2: count=2 special case — center + one peer offset right (no ring semantics)
+- D-10-02-3: rx=0.34, ry=0.17 for visual circularity on 2:1 canvas (272px horizontal, 136px visual vertical)
+- D-10-02-4: Ring starts at -PI/2 (12 o'clock) so first non-bass instrument is at top
+- D-10-02-5: When bass absent, no reordering — position[0] becomes non-bass center anchor
 
 Phase 9 decisions:
 - D-09-01-1: INSTRUMENT_BAND_MAP vibes entry covers both mid and mid_high as default
@@ -66,11 +73,11 @@ None.
 ### Blockers/Concerns
 
 - [Phase 10]: iOS canvas performance at 8 instruments (28 edges, quadratic growth) needs empirical device test early in execution — do not defer to end of phase
-- [Phase 10]: Layout geometry for 5-8 nodes must be validated against 800x400 canvas constraints (tension meter right edge, BPM display bottom-left) — pre-computed positions in NodeLayout.ts are starting point
+- [Phase 10]: Layout geometry validated — elliptical ring (rx=0.34, ry=0.17) confirmed clear of tension meter (right edge) and BPM display (bottom-left) for all counts 2-8
 - [Phase 10]: BandSetupPanel already shows 8 instruments (done in Phase 9) — Phase 10 adds family grouping, count badge, 2-8 validation
 
 ## Session Continuity
 
-Last session: 2026-03-12
-Stopped at: Completed 10-01-PLAN.md (BandSetupPanel toggle UI)
+Last session: 2026-03-12T06:10:52Z
+Stopped at: Completed 10-02-PLAN.md (bass-center circular layout)
 Resume file: None
