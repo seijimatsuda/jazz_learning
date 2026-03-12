@@ -67,21 +67,32 @@ function App() {
         audioStateRef.current.beat = initBeatState();
         console.log('[App] Phase 4 beat state initialized.');
 
-        // Initialize Phase 8: pitch detection state (only when keyboard and guitar are in lineup)
-        const hasKeyboard = lineup.includes('keyboard' as InstrumentName);
-        const hasGuitar   = lineup.includes('guitar' as InstrumentName);
-        if (hasKeyboard && hasGuitar) {
-          const pitchFftSize = audioStateRef.current.fftSize;
-          audioStateRef.current.pitch = {
-            keyboard: initInstrumentPitchState(pitchFftSize),
-            guitar:   initInstrumentPitchState(pitchFftSize),
-          };
-          audioStateRef.current.callResponse = initCallResponseState();
-          console.log('[App] Phase 8 pitch + call-response state initialized for keyboard + guitar.');
+        // Initialize Phase 8: pitch detection for all melodic instruments (exclude drums — ACF2+ on transients is spurious)
+        const pitchFftSize = audioStateRef.current.fftSize;
+        const melodicInstruments = lineup.filter((inst: string) => inst !== 'drums');
+
+        if (melodicInstruments.length > 0) {
+          const instruments: Record<string, ReturnType<typeof initInstrumentPitchState>> = {};
+          for (const inst of melodicInstruments) {
+            instruments[inst] = initInstrumentPitchState(pitchFftSize);
+          }
+          audioStateRef.current.pitch = { instruments };
+
+          // Call-response detection still requires both keyboard and guitar
+          const hasKeyboard = lineup.includes('keyboard' as InstrumentName);
+          const hasGuitar   = lineup.includes('guitar' as InstrumentName);
+          if (hasKeyboard && hasGuitar) {
+            audioStateRef.current.callResponse = initCallResponseState();
+            console.log('[App] Call-response state initialized for keyboard + guitar.');
+          } else {
+            audioStateRef.current.callResponse = null;
+          }
+
+          console.log('[App] Pitch state initialized for:', melodicInstruments.join(', '));
         } else {
           audioStateRef.current.pitch = null;
           audioStateRef.current.callResponse = null;
-          console.log('[App] Phase 8 pitch state skipped (keyboard+guitar not both in lineup).');
+          console.log('[App] Pitch state skipped (no melodic instruments in lineup).');
         }
 
         return computeTensionHeatmap(buffer, sampleRate);
