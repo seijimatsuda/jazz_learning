@@ -15,6 +15,7 @@ import { runCalibrationPass } from './audio/CalibrationPass';
 import { computeTensionHeatmap } from './audio/TensionHeatmap';
 import { initAnalysisState } from './audio/InstrumentActivityScorer';
 import type { InstrumentName } from './audio/InstrumentActivityScorer';
+import { initDisambiguationState } from './audio/types';
 import { initChordDetector, initChordState } from './audio/ChordDetector';
 import { initTensionState } from './audio/TensionScorer';
 import { initBeatState } from './audio/DrumTransientDetector';
@@ -54,6 +55,8 @@ function App() {
         const lineup: InstrumentName[] = useAppStore.getState().lineup as InstrumentName[];
         audioStateRef.current.analysis = initAnalysisState(lineup, audioStateRef.current.fftSize);
         audioStateRef.current.analysis.isAnalysisActive = true;
+        // Initialize Phase 12 disambiguation state alongside analysis state
+        audioStateRef.current.disambiguation = initDisambiguationState();
         console.log('[App] Analysis state initialized for lineup:', lineup);
 
         // Initialize Phase 3: chord detector, chord state, tension state

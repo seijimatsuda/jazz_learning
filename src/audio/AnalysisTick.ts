@@ -16,6 +16,7 @@
  *   9. BPM derivation — updateBpm via autocorrelation (Phase 4)
  *  10. Rubato gate — applyRubatoGate via IOI CV (Phase 4)
  *  11. Pocket score — updatePocketScore via bass↔drums sync (Phase 4)
+ *   3b. DisambiguationEngine — runDisambiguationEngine after kb/guitar and before cross-correlation (Phase 12)
  *  12. Pitch detection — updatePitchState for all melodic instruments in lineup (Phase 8)
  *  13. Call-response detection — updateCallResponse keyboard→guitar exchange (Phase 8, guarded)
  *
@@ -32,6 +33,7 @@ import type { ChordFunction } from './types';
 import { computeActivityScore, pushHistory } from './InstrumentActivityScorer';
 import { classifyRole, updateTimeInRole } from './RoleClassifier';
 import { disambiguate } from './KbGuitarDisambiguator';
+import { runDisambiguationEngine } from './DisambiguationEngine';
 import { pearsonR, computeEdgeWeight } from './CrossCorrelationTracker';
 import { extractAndMatchChord, CHORD_TEMPLATES } from './ChordDetector';
 import { updateTension } from './TensionScorer';
@@ -87,7 +89,8 @@ const FAMILY_LABELS: Record<ChordFunction, string> = {
  * @param onChordChange   - Optional callback fired when displayed chord changes
  * @param onTensionUpdate - Optional callback fired every tick with current tension
  * @param onBeatUpdate    - Optional callback fired when BPM or pocket score changes (Phase 4)
- * @param onMelodyUpdate  - Optional callback fired with keyboard/guitar melodic state and call-response event (Phase 8)
+ * @param onMelodyUpdate         - Optional callback fired with keyboard/guitar melodic state and call-response event (Phase 8)
+ * @param onDisambiguationUpdate - Optional callback fired every tick with confidence values and isTutti flag (Phase 12)
  */
 export function runAnalysisTick(
   state: AudioStateRef,
@@ -95,7 +98,8 @@ export function runAnalysisTick(
   onChordChange?: (chord: string, confidence: 'low' | 'medium' | 'high', fn: string, tension: number, chordIdx: number) => void,
   onTensionUpdate?: (tension: number) => void,
   onBeatUpdate?: (bpm: number | null, pocketScore: number, timingOffsetMs: number) => void,
-  onMelodyUpdate?: (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => void
+  onMelodyUpdate?: (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => void,
+  onDisambiguationUpdate?: (confidence: Record<string, number>, isTutti: boolean) => void,
 ): void {
   // Guard: must be calibrated and have all required state before analysis can run
   if (
@@ -182,10 +186,31 @@ export function runAnalysisTick(
     }
   }
 
-  // Default: displayActivityScore = activityScore (post-kb/guitar-disambiguation)
-  // Will be overridden by the full disambiguation engine in Wave 2/3 plans.
-  for (const instr of instrs) {
-    instr.displayActivityScore = instr.activityScore;
+  // Phase 12: Full disambiguation engine — runs all applicable disambiguators.
+  // Sets displayActivityScore on all instruments. If state.disambiguation is not yet
+  // initialized (pre-calibration), fall back to activityScore.
+  if (state.disambiguation) {
+    const chroma = state.chord ? Array.from(state.chord.chromaBuffer) : null;
+    runDisambiguationEngine(
+      instrs,
+      state.rawFreqData,
+      analysis.prevRawFreqData,
+      state.bands,
+      state.sampleRate,
+      state.fftSize,
+      state.disambiguation,
+      chroma,
+    );
+    // Push confidence data to Zustand every tick
+    onDisambiguationUpdate?.(
+      state.disambiguation.confidence,
+      state.disambiguation.isTutti,
+    );
+  } else {
+    // Fallback: no disambiguation state yet — pass scores through unchanged
+    for (const instr of instrs) {
+      instr.displayActivityScore = instr.activityScore;
+    }
   }
 
   // Cross-correlation edge weights for all instrument pairs
