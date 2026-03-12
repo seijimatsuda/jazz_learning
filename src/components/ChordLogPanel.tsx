@@ -20,10 +20,10 @@
  * Clicking an entry seeks playback to that timestamp.
  */
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import type { MutableRefObject } from 'react';
 import type { AudioStateRef } from '../audio/types';
-import { CHORD_TEMPLATES, NOTE_NAMES } from '../audio/ChordDetector';
+import { CHORD_TEMPLATES } from '../audio/ChordDetector';
 import { detectKey, chordFunctionInKey } from '../audio/KeyDetector';
 import { useSeek } from '../hooks/useSeek';
 import { useAppStore } from '../store/useAppStore';

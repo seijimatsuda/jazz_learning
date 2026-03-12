@@ -142,7 +142,7 @@ export interface AnalysisState {
   edgeWeights: Record<string, number>;  // key: 'instrA_instrB' (alphabetical), value: Pearson r
   isAnalysisActive: boolean;
   lastAnalysisMs: number;               // performance.now() of last 10fps tick
-  prevRawFreqData: Uint8Array;          // pre-allocated for spectral flux (fftSize/2)
+  prevRawFreqData: Uint8Array<ArrayBuffer>;          // pre-allocated for spectral flux (fftSize/2)
   rawTimeDataFloat: Float32Array;       // pre-allocated for Meyda ZCR (fftSize)
 }
 
@@ -183,9 +183,9 @@ export interface AudioStateRef {
   transport: TransportState;
   smoothedAnalyser: AnalyserNode | null;
   rawAnalyser: AnalyserNode | null;
-  smoothedFreqData: Uint8Array | null;   // pre-allocated typed array
-  rawFreqData: Uint8Array | null;        // pre-allocated typed array
-  rawTimeData: Uint8Array | null;        // pre-allocated typed array
+  smoothedFreqData: Uint8Array<ArrayBuffer> | null;   // pre-allocated typed array
+  rawFreqData: Uint8Array<ArrayBuffer> | null;        // pre-allocated typed array
+  rawTimeData: Uint8Array<ArrayBuffer> | null;        // pre-allocated typed array
   bands: FrequencyBand[];
   calibration: CalibrationThresholds[];
   isCalibrated: boolean;

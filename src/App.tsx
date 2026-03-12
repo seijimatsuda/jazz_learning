@@ -118,6 +118,18 @@ function App() {
    * iOS user-gesture click); this function runs in an async handler.
    */
   async function loadExample() {
+    // iOS: create AudioContext synchronously within user gesture (before any await).
+    // Same pattern as FileUpload.handleButtonClick.
+    const AudioContextClass =
+      window.AudioContext ??
+      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+
+    if (AudioContextClass && !audioStateRef.current.audioCtx) {
+      const ctx = new AudioContextClass({ sampleRate: 44100 });
+      audioStateRef.current.audioCtx = ctx;
+      audioStateRef.current.sampleRate = ctx.sampleRate;
+    }
+
     try {
       const infoRes = await fetch('/examples/example-info.json');
       if (!infoRes.ok) throw new Error('Failed to fetch example-info.json');

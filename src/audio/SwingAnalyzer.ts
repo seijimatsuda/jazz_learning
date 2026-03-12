@@ -31,7 +31,6 @@ import type { BeatState } from './types';
 export const RUBATO_CV_THRESHOLD = 0.3;
 
 const ONSET_CAP = 20;   // matches drumOnsetTimes length in BeatState
-const IOI_CAP = 19;     // max IOIs from 20 onsets (n-1)
 
 // ---------------------------------------------------------------------------
 // computeIoiCV — BEAT-05

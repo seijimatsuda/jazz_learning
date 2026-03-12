@@ -33,9 +33,6 @@ export class TensionMeter {
   private readonly gradientCanvas: HTMLCanvasElement;
   private readonly gradientCtx: CanvasRenderingContext2D;
 
-  /** Cached gradient — recreated in resize(), never in render() */
-  private gradient: CanvasGradient;
-
   /** Last known height, used to detect resize need */
   private cachedHeight: number;
 
@@ -52,7 +49,7 @@ export class TensionMeter {
     this.cachedHeight = this.gradientCanvas.height;
 
     // Build gradient once on construction
-    this.gradient = this.buildGradient(this.cachedHeight);
+    this.buildGradient(this.cachedHeight);
   }
 
   // -------------------------------------------------------------------------
@@ -66,7 +63,7 @@ export class TensionMeter {
 
     this.gradientCanvas.height = h;
     this.cachedHeight = h;
-    this.gradient = this.buildGradient(h);
+    this.buildGradient(h);
   }
 
   // -------------------------------------------------------------------------

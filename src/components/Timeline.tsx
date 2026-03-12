@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import type { MutableRefObject } from 'react';
+import type { MutableRefObject, JSX } from 'react';
 import type { AudioStateRef } from '../audio/types';
 import { getCurrentPosition } from '../audio/AudioEngine';
 import { useAppStore } from '../store/useAppStore';

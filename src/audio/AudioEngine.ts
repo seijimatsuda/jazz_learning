@@ -198,9 +198,9 @@ export function getCurrentPosition(
  * @returns Object with three pre-allocated Uint8Arrays
  */
 export function allocateTypedArrays(fftSize: number): {
-  smoothedFreqData: Uint8Array;
-  rawFreqData: Uint8Array;
-  rawTimeData: Uint8Array;
+  smoothedFreqData: Uint8Array<ArrayBuffer>;
+  rawFreqData: Uint8Array<ArrayBuffer>;
+  rawTimeData: Uint8Array<ArrayBuffer>;
 } {
   const binCount = fftSize / 2;
   return {
