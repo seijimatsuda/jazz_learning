@@ -19,8 +19,8 @@ import type {
 } from './types';
 import { getBandEnergy } from './FrequencyBandSplitter';
 
-// InstrumentName: the four instruments supported in Phase 2
-export type InstrumentName = 'bass' | 'drums' | 'keyboard' | 'guitar';
+// InstrumentName: all eight instruments supported in v1.1
+export type InstrumentName = 'bass' | 'drums' | 'keyboard' | 'guitar' | 'saxophone' | 'trumpet' | 'trombone' | 'vibes';
 
 /**
  * Maps instrument name to the FrequencyBand names it owns by default.
@@ -38,14 +38,27 @@ export const INSTRUMENT_BAND_MAP: Record<InstrumentName, string[]> = {
   drums:    ['drums_low', 'drums_high', 'ride'],
   keyboard: ['mid'],
   guitar:   ['mid_high'],
+  saxophone: ['mid'],
+  trumpet:   ['mid_high'],
+  trombone:  ['mid'],
+  vibes:     ['mid', 'mid_high'],
 };
+
+/**
+ * The set of instruments that occupy the mid-frequency range.
+ * Bass and drums have fixed, non-overlapping bands; all others share mid/mid_high space.
+ * Exported for use by calibration code (Plan 02).
+ */
+export const MID_RANGE_INSTRUMENTS = new Set<InstrumentName>([
+  'keyboard', 'guitar', 'saxophone', 'trumpet', 'trombone', 'vibes',
+]);
 
 /**
  * Resolves the FrequencyBand names an instrument owns given the current lineup.
  *
- * Implements INST-05: if only one mid-range instrument (keyboard or guitar, but not both)
- * is in the lineup, that instrument claims both 'mid' and 'mid_high' bands so the full
- * mid-frequency range is covered.
+ * Implements INST-05 (generalized for v1.1): if only one mid-range instrument
+ * (any member of MID_RANGE_INSTRUMENTS) is present in the lineup, that instrument
+ * claims both 'mid' and 'mid_high' bands so the full mid-frequency range is covered.
  *
  * @param name - The instrument to resolve bands for
  * @param lineup - All instruments currently in the lineup
@@ -55,17 +68,20 @@ export function resolveBandsForInstrument(
   name: InstrumentName,
   lineup: InstrumentName[]
 ): string[] {
-  // If both keyboard AND guitar are present, each claims only its default band
-  const hasKeyboard = lineup.includes('keyboard');
-  const hasGuitar = lineup.includes('guitar');
-  const hasBoth = hasKeyboard && hasGuitar;
+  // Bass and drums always use their fixed bands — no fallback
+  if (!MID_RANGE_INSTRUMENTS.has(name)) {
+    return INSTRUMENT_BAND_MAP[name];
+  }
 
-  if (!hasBoth && (name === 'keyboard' || name === 'guitar')) {
-    // Single mid-range instrument: claim full mid-range (INST-05 fallback)
+  // Count how many mid-range instruments are in the lineup
+  const midRangeCount = lineup.filter(i => MID_RANGE_INSTRUMENTS.has(i)).length;
+
+  // Single mid-range instrument claims full mid spectrum (INST-05 fallback)
+  if (midRangeCount === 1) {
     return ['mid', 'mid_high'];
   }
 
-  // Bass and drums always use their default band mapping
+  // Multiple mid-range instruments: each claims only its default band
   return INSTRUMENT_BAND_MAP[name];
 }
 
