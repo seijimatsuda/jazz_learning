@@ -12,7 +12,6 @@ import { useEffect, useRef } from 'react';
 import type { MutableRefObject } from 'react';
 import type { AudioStateRef } from '../audio/types';
 import { CanvasRenderer } from '../canvas/CanvasRenderer';
-import { INSTRUMENT_ORDER } from '../canvas/nodes/NodeLayout';
 import { useAppStore } from '../store/useAppStore';
 
 interface VisualizerCanvasProps {
@@ -32,8 +31,11 @@ export function VisualizerCanvas({ audioStateRef, onCanvasReady }: VisualizerCan
     // Notify parent that the canvas element is available (e.g. for PNG export)
     onCanvasReady?.(canvas);
 
-    // Create renderer — starts rAF loop immediately
-    const renderer = new CanvasRenderer(canvas, audioStateRef);
+    // Read lineup from Zustand store at mount time
+    const lineup = useAppStore.getState().lineup;
+
+    // Create renderer — starts rAF loop immediately, passing lineup for dynamic layout
+    const renderer = new CanvasRenderer(canvas, audioStateRef, lineup);
     rendererRef.current = renderer;
 
     // Wire role change callback — pushes role label updates to Zustand for UI consumption.
@@ -80,7 +82,7 @@ export function VisualizerCanvas({ audioStateRef, onCanvasReady }: VisualizerCan
       const r = rendererRef.current;
       if (!r) return;
 
-      const { positions } = r.getNodeLayout();
+      const { positions, instruments } = r.getNodeLayout();
       const rect = canvas.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
@@ -93,7 +95,7 @@ export function VisualizerCanvas({ audioStateRef, onCanvasReady }: VisualizerCan
         const dx = fx - positions[i].x;
         const dy = fy - positions[i].y;
         if (Math.sqrt(dx * dx + dy * dy) < hitRadius) {
-          useAppStore.getState().setSelectedInstrument(INSTRUMENT_ORDER[i]);
+          useAppStore.getState().setSelectedInstrument(instruments[i]);
           return;
         }
       }

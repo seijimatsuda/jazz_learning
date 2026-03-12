@@ -15,8 +15,8 @@ import type { AudioStateRef, RoleLabel, CallResponseEntry } from '../audio/types
 import { runAnalysisTick } from '../audio/AnalysisTick';
 import { TensionMeter } from './TensionMeter';
 import { getGhostTension } from '../audio/TensionScorer';
-import { computeNodePositions, INSTRUMENT_ORDER } from './nodes/NodeLayout';
-import type { NodePosition } from './nodes/NodeLayout';
+import { computeNodePositions, buildPairs } from './nodes/NodeLayout';
+import type { NodePosition, PairTuple } from './nodes/NodeLayout';
 import { createNodeAnimState, lerpExp, updateRipples } from './nodes/NodeAnimState';
 import type { NodeAnimState } from './nodes/NodeAnimState';
 import { createEdgeAnimState } from './edges/EdgeAnimState';
@@ -78,11 +78,17 @@ export class CanvasRenderer {
   /** Cached fractional node positions — recomputed on resize */
   private nodePositions: NodePosition[] = [];
 
-  /** Per-instrument animation state objects — one per INSTRUMENT_ORDER entry */
+  /** Per-instrument animation state objects — one per instrument in lineup */
   private nodeAnimStates: NodeAnimState[] = [];
 
-  /** Per-edge animation state objects — one per instrument pair (6 for a quartet) */
+  /** Per-edge animation state objects — one per instrument pair */
   private edgeAnimStates: Record<string, EdgeAnimState> = {};
+
+  /** Instrument order derived from lineup passed at construction */
+  private instrumentOrder: string[];
+
+  /** Pre-computed non-pocket pair tuples from buildPairs() */
+  private pairs: PairTuple[];
 
   /** Background beat pulse progress [0,1] — for VIZ-11 (background breath on beat) */
   private bgPulseProgress = 0;
@@ -120,7 +126,11 @@ export class CanvasRenderer {
   /** Bound melody update handler — intercepts call-response events to trigger purple flash */
   private readonly boundHandleMelodyUpdate: (kbMelodic: boolean, gtMelodic: boolean, callResponse: CallResponseEntry | null) => void;
 
-  constructor(canvas: HTMLCanvasElement, audioStateRef: MutableRefObject<AudioStateRef>) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    audioStateRef: MutableRefObject<AudioStateRef>,
+    lineup: string[],
+  ) {
     this.canvas = canvas;
     this.audioStateRef = audioStateRef;
 
@@ -130,17 +140,28 @@ export class CanvasRenderer {
     }
     this.ctx = ctx;
 
-    // Compute diamond layout for 4 instruments (hardcoded jazz quartet)
-    this.nodePositions = computeNodePositions(4);
+    // Store instrument order from lineup
+    this.instrumentOrder = lineup;
 
-    // Create per-instrument animation state objects — initial glow color uses holding state color
-    this.nodeAnimStates = INSTRUMENT_ORDER.map((_instrument) =>
+    // Dynamic layout based on instrument count
+    this.nodePositions = computeNodePositions(lineup.length as 2 | 3 | 4 | 5 | 6 | 7 | 8);
+
+    // Create per-instrument animation state objects — one per instrument in lineup
+    this.nodeAnimStates = lineup.map(() =>
       createNodeAnimState(getRoleFillColor('holding'), INITIAL_BASE_RADIUS)
     );
 
-    // Create per-edge animation state objects for all 6 pairs in a quartet
-    const pairs = ['bass_drums', 'bass_guitar', 'bass_keyboard', 'drums_guitar', 'drums_keyboard', 'guitar_keyboard'];
-    for (const key of pairs) {
+    // Build pair tuples for non-pocket edges
+    this.pairs = buildPairs(lineup);
+
+    // Create per-edge animation state for all pairs + pocket line
+    this.edgeAnimStates = {} as Record<string, EdgeAnimState>;
+    const bassIdx = lineup.indexOf('bass');
+    const drumsIdx = lineup.indexOf('drums');
+    if (bassIdx >= 0 && drumsIdx >= 0) {
+      this.edgeAnimStates['bass_drums'] = createEdgeAnimState();
+    }
+    for (const [, , key] of this.pairs) {
       this.edgeAnimStates[key] = createEdgeAnimState();
     }
 
@@ -181,7 +202,7 @@ export class CanvasRenderer {
   resize(): void {
     this.setupHiDPI();
     // Recompute fractional positions (same values but explicit for future layout changes)
-    this.nodePositions = computeNodePositions(4);
+    this.nodePositions = computeNodePositions(this.instrumentOrder.length as 2 | 3 | 4 | 5 | 6 | 7 | 8);
     // Rebuild tension meter gradient at the new canvas height
     this.tensionMeter.resize(this.logicalHeight - 40);
   }
@@ -229,13 +250,19 @@ export class CanvasRenderer {
   }
 
   /**
-   * Returns the current fractional node positions and logical canvas dimensions
-   * for click hit detection in VisualizerCanvas.
+   * Returns the current fractional node positions, instrument names, and logical
+   * canvas dimensions for click hit detection in VisualizerCanvas.
    *
    * Positions are fractional [0,1] — multiply by logical width/height to get px coords.
+   * instruments array is parallel to positions — index i maps to instrumentOrder[i].
    */
-  getNodeLayout(): { positions: NodePosition[]; width: number; height: number } {
-    return { positions: this.nodePositions, width: this.logicalWidth, height: this.logicalHeight };
+  getNodeLayout(): { positions: NodePosition[]; instruments: string[]; width: number; height: number } {
+    return {
+      positions: this.nodePositions,
+      instruments: this.instrumentOrder,
+      width: this.logicalWidth,
+      height: this.logicalHeight,
+    };
   }
 
   /** Stop the animation loop and release resources. */
@@ -407,22 +434,25 @@ export class CanvasRenderer {
       if (guitarKbAnim.callResponseFlashIntensity < 0.01) guitarKbAnim.callResponseFlashIntensity = 0;
     }
 
+    // -- Pocket line — only drawn when both bass and drums are present --------
     const beat = state.beat;
     if (beat !== null) {
-      const bassIdx  = INSTRUMENT_ORDER.indexOf('bass');   // index 3
-      const drumsIdx = INSTRUMENT_ORDER.indexOf('drums');  // index 1
-      const bassPos  = this.nodePositions[bassIdx];
-      const drumsPos = this.nodePositions[drumsIdx];
-      drawPocketLine(
-        ctx,
-        bassPos.x * w,  bassPos.y * h,  this.nodeAnimStates[bassIdx].currentRadius,
-        drumsPos.x * w, drumsPos.y * h, this.nodeAnimStates[drumsIdx].currentRadius,
-        this.edgeAnimStates['bass_drums'],
-        beat.pocketScore,
-        beat.lastSyncEventSec,
-        currentTension,
-        deltaMs,
-      );
+      const bassIdx  = this.instrumentOrder.indexOf('bass');
+      const drumsIdx = this.instrumentOrder.indexOf('drums');
+      if (bassIdx >= 0 && drumsIdx >= 0) {
+        const bassPos  = this.nodePositions[bassIdx];
+        const drumsPos = this.nodePositions[drumsIdx];
+        drawPocketLine(
+          ctx,
+          bassPos.x * w,  bassPos.y * h,  this.nodeAnimStates[bassIdx].currentRadius,
+          drumsPos.x * w, drumsPos.y * h, this.nodeAnimStates[drumsIdx].currentRadius,
+          this.edgeAnimStates['bass_drums'],
+          beat.pocketScore,
+          beat.lastSyncEventSec,
+          currentTension,
+          deltaMs,
+        );
+      }
     }
 
     // -- Communication edges (EDGE-07, EDGE-08, EDGE-09, EDGE-10) — behind nodes
@@ -433,6 +463,7 @@ export class CanvasRenderer {
         ctx,
         this.nodePositions,
         nodeRadii,
+        this.pairs,
         this.edgeAnimStates,
         commAnalysis.edgeWeights,
         w, h,
@@ -443,8 +474,8 @@ export class CanvasRenderer {
 
     // -- Draw instrument nodes -----------------------------------------------
     const instruments = state.analysis?.instruments ?? null;
-    for (let i = 0; i < INSTRUMENT_ORDER.length; i++) {
-      const instrument = INSTRUMENT_ORDER[i];
+    for (let i = 0; i < this.instrumentOrder.length; i++) {
+      const instrument = this.instrumentOrder[i];
       const pos = this.nodePositions[i];
       const animState = this.nodeAnimStates[i];
       const x = pos.x * w;
@@ -586,7 +617,7 @@ export class CanvasRenderer {
         // Draw ripples AFTER node circle so rings appear on top
         updateRipples(ctx, animState.ripples, nowMs);
       } else {
-        // Guitar and keyboard — draw node circle + label only (glow added in later plans)
+        // All other instruments — draw node circle + label only
         drawNode(ctx, x, y, animState.currentRadius, fillColor, label);
       }
     }
