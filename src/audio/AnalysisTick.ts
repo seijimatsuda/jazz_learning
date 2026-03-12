@@ -17,6 +17,8 @@
  *  10. Rubato gate — applyRubatoGate via IOI CV (Phase 4)
  *  11. Pocket score — updatePocketScore via bass↔drums sync (Phase 4)
  *   3b. DisambiguationEngine — runDisambiguationEngine after kb/guitar and before cross-correlation (Phase 12)
+ *   3c. Second-pass role reclassification — classifyRole re-run using displayActivityScore so canvas
+ *       node visuals reflect disambiguated scores (Phase 12 gap closure)
  *  12. Pitch detection — updatePitchState for all melodic instruments in lineup (Phase 8)
  *  13. Call-response detection — updateCallResponse keyboard→guitar exchange (Phase 8, guarded)
  *
@@ -210,6 +212,21 @@ export function runAnalysisTick(
     // Fallback: no disambiguation state yet — pass scores through unchanged
     for (const instr of instrs) {
       instr.displayActivityScore = instr.activityScore;
+    }
+  }
+
+  // Phase 12 gap closure: Re-classify roles using displayActivityScore.
+  // The first pass used pre-disambiguation activityScore. Now that
+  // runDisambiguationEngine has written displayActivityScore, re-run classifyRole
+  // so that canvas node visuals (size, color) reflect disambiguated scores.
+  for (const instr of instrs) {
+    if (instr.displayActivityScore !== instr.activityScore) {
+      const newRole = classifyRole(instr.displayActivityScore, instr.role);
+      if (newRole !== instr.role) {
+        instr.role = newRole;
+        instr.roleSinceSec = state.audioCtx?.currentTime ?? 0;
+        onRoleChange?.(instr.instrument, newRole);
+      }
     }
   }
 
