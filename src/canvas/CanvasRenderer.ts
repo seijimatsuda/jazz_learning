@@ -140,24 +140,30 @@ export class CanvasRenderer {
     }
     this.ctx = ctx;
 
-    // Store instrument order from lineup
-    this.instrumentOrder = lineup;
+    // Reorder lineup so bass is at index 0 (center position in computeNodePositions).
+    // If bass is absent, keep original order — position[0] will still be center,
+    // just assigned to whatever instrument is first.
+    const bassIdx = lineup.indexOf('bass');
+    if (bassIdx > 0) {
+      this.instrumentOrder = ['bass', ...lineup.filter(i => i !== 'bass')];
+    } else {
+      this.instrumentOrder = [...lineup];
+    }
 
     // Dynamic layout based on instrument count
-    this.nodePositions = computeNodePositions(lineup.length as 2 | 3 | 4 | 5 | 6 | 7 | 8);
+    this.nodePositions = computeNodePositions(this.instrumentOrder.length as 2 | 3 | 4 | 5 | 6 | 7 | 8);
 
     // Create per-instrument animation state objects — one per instrument in lineup
-    this.nodeAnimStates = lineup.map(() =>
+    this.nodeAnimStates = this.instrumentOrder.map(() =>
       createNodeAnimState(getRoleFillColor('holding'), INITIAL_BASE_RADIUS)
     );
 
     // Build pair tuples for non-pocket edges
-    this.pairs = buildPairs(lineup);
+    this.pairs = buildPairs(this.instrumentOrder);
 
     // Create per-edge animation state for all pairs + pocket line
     this.edgeAnimStates = {} as Record<string, EdgeAnimState>;
-    const bassIdx = lineup.indexOf('bass');
-    const drumsIdx = lineup.indexOf('drums');
+    const drumsIdx = this.instrumentOrder.indexOf('drums');
     if (bassIdx >= 0 && drumsIdx >= 0) {
       this.edgeAnimStates['bass_drums'] = createEdgeAnimState();
     }
