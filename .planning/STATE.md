@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-03-11)
 ## Current Position
 
 Phase: 9 of 11 in v1.1 (Data Layer and Structural Refactor)
-Plan: 0 of 4 in current phase
-Status: Ready to plan
-Last activity: 2026-03-11 — v1.1 roadmap created, phases 9-11 defined
+Plan: 1 of 4 in current phase
+Status: In progress
+Last activity: 2026-03-11 — Completed 09-01-PLAN.md (type foundation expansion)
 
-Progress: [████████░░] ~74% (v1.0 complete, v1.1 not started)
+Progress: [████████░░] ~76% (v1.0 complete, 09-01 complete)
 
 ## Performance Metrics
 
@@ -28,7 +28,8 @@ Progress: [████████░░] ~74% (v1.0 complete, v1.1 not started
 | Phase | Plans | Status |
 |-------|-------|--------|
 | 1-8 | 38 | Complete |
-| 9-11 | 0/9 | Not started |
+| 9 | 1/4 | In progress |
+| 10-11 | 0/5 | Not started |
 
 *Updated after each plan completion*
 
@@ -44,6 +45,10 @@ Recent decisions affecting v1.1:
 - Phase 9: Disambiguation logic (sax/keyboard, vibes/keyboard, multi-horn) deferred to v1.2 — requires empirical calibration on real recordings
 - Phase 10: Vibes + keyboard simultaneous selection policy must be decided before Phase 10 ships (product decision: allow with transparency, or prevent in UI)
 
+09-01 decisions:
+- D-09-01-1: INSTRUMENT_BAND_MAP vibes entry covers both mid and mid_high as default (vibes spans both ranges simultaneously)
+- D-09-01-2: MID_RANGE_INSTRUMENTS exported as named export for calibration code (Plan 02) to use
+
 ### Pending Todos
 
 None.
@@ -57,5 +62,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-11
-Stopped at: v1.1 roadmap created, ready to plan Phase 9
+Stopped at: Completed 09-01-PLAN.md — type foundation expanded to 8 instruments
 Resume file: None
