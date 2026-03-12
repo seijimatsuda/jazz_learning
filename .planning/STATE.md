@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** v1.2 Instrument Disambiguation — defining requirements
+**Current focus:** v1.2 Instrument Disambiguation — Phase 12 (Disambiguation Engine)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-12 — Milestone v1.2 started
+Phase: 12 of 14 (Disambiguation Engine)
+Plan: 0 of ? in current phase (not yet planned)
+Status: Ready to plan
+Last activity: 2026-03-12 — Roadmap created for v1.2 milestone
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -28,17 +28,22 @@ Progress: [░░░░░░░░░░] 0%
 
 Full decision logs archived in milestones/v1.0-ROADMAP.md and milestones/v1.1-ROADMAP.md.
 
+Recent decisions affecting current work:
+- v1.2 roadmap: Phase 13 (visual) is independent of Phase 12 (disambiguation) — could run in parallel
+- v1.2 roadmap: Raw/display score split must land in Wave 1 before any disambiguator code
+
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
 
-- Disambiguation thresholds (chroma entropy 0.3/0.5, spectral flatness cutoffs) are estimates from acoustics literature — require empirical calibration on real jazz recordings
-- Vibes/keyboard is the hardest pair — inharmonic partial detection has no implementation precedent in this codebase
+- Disambiguation thresholds (chroma entropy 0.3/0.5, spectral flatness cutoffs) are estimates — require empirical calibration on real jazz recordings
+- Vibes/keyboard is the hardest pair — tremolo detection at 10fps is marginal, motor-off vibes are indistinguishable
+- Phase 12 needs `/gsd:research-phase` during planning for threshold and window sizing investigation
 
 ## Session Continuity
 
 Last session: 2026-03-12
-Stopped at: v1.2 milestone started, defining requirements
+Stopped at: v1.2 roadmap created, ready to plan Phase 12
 Resume file: None

@@ -54,28 +54,28 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DISC-FND-01 | | Pending |
-| DISC-FND-02 | | Pending |
-| DISC-FND-03 | | Pending |
-| DISC-FND-04 | | Pending |
-| DISC-FND-05 | | Pending |
-| DISC-01 | | Pending |
-| DISC-02 | | Pending |
-| DISC-03 | | Pending |
-| DISC-04 | | Pending |
-| DISC-05 | | Pending |
-| VIS-01 | | Pending |
-| VIS-02 | | Pending |
-| VIS-03 | | Pending |
-| DEBT-01 | | Pending |
-| DEBT-02 | | Pending |
-| DEBT-03 | | Pending |
+| DISC-FND-01 | Phase 12 | Pending |
+| DISC-FND-02 | Phase 12 | Pending |
+| DISC-FND-03 | Phase 12 | Pending |
+| DISC-FND-04 | Phase 12 | Pending |
+| DISC-FND-05 | Phase 12 | Pending |
+| DISC-01 | Phase 12 | Pending |
+| DISC-02 | Phase 12 | Pending |
+| DISC-03 | Phase 12 | Pending |
+| DISC-04 | Phase 12 | Pending |
+| DISC-05 | Phase 12 | Pending |
+| VIS-01 | Phase 13 | Pending |
+| VIS-02 | Phase 13 | Pending |
+| VIS-03 | Phase 13 | Pending |
+| DEBT-01 | Phase 14 | Pending |
+| DEBT-02 | Phase 14 | Pending |
+| DEBT-03 | Phase 14 | Pending |
 
 **Coverage:**
 - v1.2 requirements: 16 total
-- Mapped to phases: 0 (pending roadmap)
-- Unmapped: 16
+- Mapped to phases: 16
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-12*
-*Last updated: 2026-03-12 after initial definition*
+*Last updated: 2026-03-12 after roadmap creation*
