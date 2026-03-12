@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Planning next milestone
+**Current focus:** v1.2 Instrument Disambiguation — defining requirements
 
 ## Current Position
 
-Phase: —
+Phase: Not started (defining requirements)
 Plan: —
-Status: v1.1 complete, ready for next milestone
-Last activity: 2026-03-12 — v1.1 milestone archived
+Status: Defining requirements
+Last activity: 2026-03-12 — Milestone v1.2 started
 
-Progress: [██████████] 100% (v1.0 complete, v1.1 complete)
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -34,10 +34,11 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- Disambiguation thresholds (chroma entropy 0.3/0.5, spectral flatness cutoffs) are estimates from acoustics literature — require empirical calibration on real jazz recordings
+- Vibes/keyboard is the hardest pair — inharmonic partial detection has no implementation precedent in this codebase
 
 ## Session Continuity
 
 Last session: 2026-03-12
-Stopped at: v1.1 milestone completed and archived
+Stopped at: v1.2 milestone started, defining requirements
 Resume file: None

@@ -59,7 +59,21 @@ All core features implemented plus flexible 2-8 instrument support with adaptive
 
 ### Active
 
-(Requirements for next milestone defined via `/gsd:new-milestone`)
+#### Instrument Disambiguation
+- [ ] Trombone vs bass disambiguation via onset timing and spectral flatness
+- [ ] Vibraphone vs keyboard disambiguation via tremolo modulation detection
+- [ ] Horn section disambiguation (sax vs trumpet vs trombone when 3+ horns present)
+- [ ] Saxophone and keyboard disambiguation via chroma entropy when both present
+
+#### Visual Polish
+- [ ] Instrument family color coding in node graph
+- [ ] Instrument family spatial grouping (horns cluster, rhythm section clusters)
+- [ ] Edge animation style varies by communication type (rhythmic, harmonic, melodic)
+
+#### Tech Debt
+- [ ] Remove edge fallback operator that never triggers
+- [ ] Add crash guard for malformed pair keys
+- [ ] Address single-read lineup pattern brittleness
 
 ### Out of Scope
 
@@ -104,5 +118,15 @@ All core features implemented plus flexible 2-8 instrument support with adaptive
 | Pre-allocated edge render buffer | Zero per-frame heap allocations in 60fps render path | ✓ Good — v1.1 |
 | Disambiguation deferred to v1.2 | Requires empirical calibration on real recordings, not safe to ship untested | ✓ Good — v1.1 |
 
+## Current Milestone: v1.2 Instrument Disambiguation
+
+**Goal:** Improve analysis accuracy by disambiguating overlapping instrument pairs (sax/keyboard, vibes/keyboard, trombone/bass, multi-horn), add instrument family visual identity (color coding, spatial grouping, typed edge animations), and close v1.1 tech debt.
+
+**Target features:**
+- Instrument pair disambiguation using spectral features (chroma entropy, spectral flatness, tremolo detection, spectral centroid hierarchy)
+- Instrument family color coding and spatial clustering on canvas
+- Edge animation types (rhythmic, harmonic, melodic)
+- Tech debt cleanup from v1.1 audit
+
 ---
-*Last updated: 2026-03-12 after v1.1 milestone completed*
+*Last updated: 2026-03-12 after v1.2 milestone started*
