@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** v1.2 Instrument Disambiguation — Phase 12 (Disambiguation Engine)
+**Current focus:** v1.2 Instrument Disambiguation — Phase 12 complete, ready for Phase 13 (Visual)
 
 ## Current Position
 
-Phase: 12 of 14 (Disambiguation Engine)
-Plan: 4 of 5 in current phase (12-01, 12-02, 12-03, 12-04 complete)
-Status: In progress
-Last activity: 2026-03-12 — Completed 12-04-PLAN.md (VibesKeyboard + HornSection disambiguators)
+Phase: 12 of 14 (Disambiguation Engine) — COMPLETE
+Plan: 5 of 5 in current phase (12-01, 12-02, 12-03, 12-04, 12-05 complete)
+Status: Phase complete
+Last activity: 2026-03-12 — Completed 12-05-PLAN.md (DisambiguationEngine integration, Zustand, canvas confidence indicator)
 
-Progress: [████░░░░░░] ~40% (Phase 12 Plans 1, 2, 3, 4 of 5 complete)
+Progress: [█████░░░░░] ~45% (Phase 12 all 5 plans complete — next: Phase 13 Visual)
 
 ## Performance Metrics
 
@@ -43,6 +43,9 @@ Recent decisions affecting current work:
 - 12-04: VibesKeyboardDisambiguator confidence capped at 0.5 (MAX_CONFIDENCE) — principled Nyquist honesty bound, not a bug
 - 12-04: HornSectionDisambiguator returns empty weights (not equal) at confidence 0 when < 3 horns — caller skips weight application in that case
 - 12-04: All empirical thresholds annotated CALIBRATION_NEEDED — future calibration pass should grep for this marker
+- 12-05: Confidence indicator uses ctx.globalAlpha on entire drawNode call (circle + label), not label-only — drawNode does not expose separate label rendering path
+- 12-05: onDisambiguationUpdate fires every tick (not change-gated) — confidence values are continuous
+- 12-05: SaxKeyboard disambiguation skips ticks when chroma is null (no chord state) — graceful degradation
 
 ### Pending Todos
 
@@ -52,10 +55,9 @@ None.
 
 - Disambiguation thresholds (chroma entropy 0.3/0.5, spectral flatness cutoffs) are estimates — require empirical calibration on real jazz recordings
 - Calibration pass needed: grep CALIBRATION_NEEDED across all four disambiguators before production use
-- Phase 12 needs `/gsd:research-phase` during planning for threshold and window sizing investigation
 
 ## Session Continuity
 
-Last session: 2026-03-12T23:08:00Z
-Stopped at: Completed 12-04-PLAN.md (VibesKeyboardDisambiguator + HornSectionDisambiguator)
+Last session: 2026-03-12T23:07:10Z
+Stopped at: Completed 12-05-PLAN.md (DisambiguationEngine integration)
 Resume file: None
