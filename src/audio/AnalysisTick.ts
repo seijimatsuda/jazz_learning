@@ -16,8 +16,8 @@
  *   9. BPM derivation — updateBpm via autocorrelation (Phase 4)
  *  10. Rubato gate — applyRubatoGate via IOI CV (Phase 4)
  *  11. Pocket score — updatePocketScore via bass↔drums sync (Phase 4)
- *  12. Pitch detection — updatePitchState for keyboard and guitar (Phase 8)
- *  13. Call-response detection — updateCallResponse keyboard→guitar exchange (Phase 8)
+ *  12. Pitch detection — updatePitchState for all melodic instruments in lineup (Phase 8)
+ *  13. Call-response detection — updateCallResponse keyboard→guitar exchange (Phase 8, guarded)
  *
  * CRITICAL: This function must NOT allocate any new typed arrays. All buffers
  * (historyBuffer, prevRawFreqData, rawTimeDataFloat) are pre-allocated in
@@ -299,7 +299,7 @@ export function runAnalysisTick(
   }
 
   // ---------------------------------------------------------------------------
-  // Phase 8: Pitch detection on keyboard and guitar
+  // Phase 8: Pitch detection — iterate all melodic instruments in the pitch record
   // ---------------------------------------------------------------------------
 
   if (state.pitch) {
@@ -308,47 +308,42 @@ export function runAnalysisTick(
     // ACF2+ will detect the dominant pitch in the mix; the 3-frame stability window
     // distinguishes real melodic notes from transient energy (drum bleed, etc.).
 
-    const kbInstr = instrs.find(i => i.instrument === 'keyboard');
-    const gtInstr = instrs.find(i => i.instrument === 'guitar');
+    for (const [instrName, pitchState] of Object.entries(state.pitch.instruments)) {
+      const instrAnalysis = instrs.find(i => i.instrument === instrName);
 
-    if (kbInstr && kbInstr.activityScore > 0.15) {
-      updatePitchState(state.pitch.keyboard, analysis.rawTimeDataFloat, state.sampleRate);
-    } else {
-      // Reset melodic state when keyboard is quiet — no pitch detection on silence
-      state.pitch.keyboard.isMelodic = false;
-      state.pitch.keyboard.pitchFrameCount = 0;
-      state.pitch.keyboard.pitchHz = -1;
-      state.pitch.keyboard.stablePitchHz = -1;
-    }
-
-    if (gtInstr && gtInstr.activityScore > 0.15) {
-      updatePitchState(state.pitch.guitar, analysis.rawTimeDataFloat, state.sampleRate);
-    } else {
-      // Reset melodic state when guitar is quiet — no pitch detection on silence
-      state.pitch.guitar.isMelodic = false;
-      state.pitch.guitar.pitchFrameCount = 0;
-      state.pitch.guitar.pitchHz = -1;
-      state.pitch.guitar.stablePitchHz = -1;
+      if (instrAnalysis && instrAnalysis.activityScore > 0.15) {
+        updatePitchState(pitchState, analysis.rawTimeDataFloat, state.sampleRate);
+      } else {
+        // Reset melodic state when instrument is quiet — no pitch detection on silence
+        pitchState.isMelodic = false;
+        pitchState.pitchFrameCount = 0;
+        pitchState.pitchHz = -1;
+        pitchState.stablePitchHz = -1;
+      }
     }
 
     // ---------------------------------------------------------------------------
     // Step 13: Call-response detection (Phase 8 — MEL-03)
+    // Still limited to keyboard + guitar pair; guarded by presence check.
     // ---------------------------------------------------------------------------
-    // Initialize callResponse state on first tick if not yet set (lazy init alongside pitch)
-    if (!state.callResponse) {
-      state.callResponse = initCallResponseState();
+    const kbPitch = state.pitch.instruments['keyboard'];
+    const gtPitch = state.pitch.instruments['guitar'];
+    if (kbPitch && gtPitch) {
+      if (!state.callResponse) {
+        state.callResponse = initCallResponseState();
+      }
+
+      const audioTimeSec = state.audioCtx?.currentTime ?? 0;
+      const crEvent = updateCallResponse(
+        state.callResponse,
+        kbPitch.isMelodic,
+        gtPitch.isMelodic,
+        audioTimeSec,
+      );
+
+      // Push melodic state + call-response event to callback
+      onMelodyUpdate?.(kbPitch.isMelodic, gtPitch.isMelodic, crEvent);
     }
-
-    const audioTimeSec = state.audioCtx?.currentTime ?? 0;
-    const crEvent = updateCallResponse(
-      state.callResponse,
-      state.pitch.keyboard.isMelodic,
-      state.pitch.guitar.isMelodic,
-      audioTimeSec,
-    );
-
-    // Push melodic state + call-response event to callback (fires every tick when pitch is initialized)
-    onMelodyUpdate?.(state.pitch.keyboard.isMelodic, state.pitch.guitar.isMelodic, crEvent);
   }
 
   // Save current rawFreqData as previous for next tick's spectral flux computation
