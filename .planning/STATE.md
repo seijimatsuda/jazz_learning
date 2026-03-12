@@ -40,6 +40,9 @@ Recent decisions affecting current work:
 - 12-02: computeBandCentroid returns 0 on silence (not NaN) — safe default for threshold comparisons
 - 12-03: 'sub' band (20–80 Hz) not in default bands — TromboneBassDisambiguator falls back to low quarter of 'bass' band bins
 - 12-03: disambiguateSaxKeyboard is stateless (no DisambiguationState param) — caller writes confidence['sax_keyboard'] at integration time in 12-04
+- 12-04: VibesKeyboardDisambiguator confidence capped at 0.5 (MAX_CONFIDENCE) — principled Nyquist honesty bound, not a bug
+- 12-04: HornSectionDisambiguator returns empty weights (not equal) at confidence 0 when < 3 horns — caller skips weight application in that case
+- 12-04: All empirical thresholds annotated CALIBRATION_NEEDED — future calibration pass should grep for this marker
 
 ### Pending Todos
 
@@ -48,11 +51,11 @@ None.
 ### Blockers/Concerns
 
 - Disambiguation thresholds (chroma entropy 0.3/0.5, spectral flatness cutoffs) are estimates — require empirical calibration on real jazz recordings
-- Vibes/keyboard is the hardest pair — tremolo detection at 10fps is marginal, motor-off vibes are indistinguishable
+- Calibration pass needed: grep CALIBRATION_NEEDED across all four disambiguators before production use
 - Phase 12 needs `/gsd:research-phase` during planning for threshold and window sizing investigation
 
 ## Session Continuity
 
-Last session: 2026-03-12T22:59:02Z
-Stopped at: Completed 12-03-PLAN.md (TromboneBassDisambiguator + SaxKeyboardDisambiguator)
+Last session: 2026-03-12T23:08:00Z
+Stopped at: Completed 12-04-PLAN.md (VibesKeyboardDisambiguator + HornSectionDisambiguator)
 Resume file: None
