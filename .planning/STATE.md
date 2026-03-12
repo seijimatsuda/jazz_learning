@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-11)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** Phase 11 — Gap Closures
+**Current focus:** Phase 11 — Gap Closures (COMPLETE)
 
 ## Current Position
 
 Phase: 11 of 11 in v1.1 (Gap Closures)
-Plan: 0 of 2 in current phase
-Status: Ready to plan
-Last activity: 2026-03-12 — Phase 10 complete and verified
+Plan: 2 of 2 in current phase
+Status: Phase complete — v1.1 complete
+Last activity: 2026-03-12 — Completed 11-02-PLAN.md (FIX-03 console.log removal + FIX-04 lineup guard)
 
-Progress: [█████████░] ~94% (v1.0 complete, Phase 9 complete, Phase 10 complete, Phase 11 not started)
+Progress: [██████████] 100% (v1.0 complete, Phase 9 complete, Phase 10 complete, Phase 11 complete)
 
 ## Performance Metrics
 
@@ -29,7 +29,7 @@ Progress: [█████████░] ~94% (v1.0 complete, Phase 9 complete
 |-------|-------|--------|
 | 9 | 4/4 | Complete |
 | 10 | 3/3 | Complete |
-| 11 | 0/2 | Not started |
+| 11 | 2/2 | Complete |
 
 *Updated after each plan completion*
 
@@ -77,12 +77,16 @@ Phase 9 decisions:
 
 None.
 
+Phase 11 plan 02 decisions:
+- D-11-02-1: Guard placed inside if (state.beat) but outside band lookups — preserves outer guard semantics while skipping spurious onset computation entirely when bass or drums absent
+- D-11-02-2: hasBassInstrument / hasDrumsInstrument derived from instrs (already in scope) — zero new state dependencies, Array.some exits early
+
 ### Blockers/Concerns
 
-- [Phase 11]: iOS canvas performance at 8 instruments (28 edges) — CANV-03/CANV-04 batch rendering implemented in 10-03; empirical device test on iOS Safari should be done early in Phase 11 to validate improvements
+None. v1.1 complete.
 
 ## Session Continuity
 
-Last session: 2026-03-12T00:00:00Z
-Stopped at: Completed 10-03-PLAN.md (edge batching and dynamic hide threshold — Phase 10 complete)
+Last session: 2026-03-12T09:09:02Z
+Stopped at: Completed 11-02-PLAN.md (FIX-03 console.log removal + FIX-04 lineup guard — Phase 11 complete, v1.1 complete)
 Resume file: None
