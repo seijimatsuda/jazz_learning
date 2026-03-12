@@ -1,19 +1,19 @@
 # Project Research Summary
 
-**Project:** Jazz Learning — Browser-based jazz audio analysis and visualization
-**Domain:** Browser-native music information retrieval + real-time Canvas visualization
-**Researched:** 2026-03-10
-**Confidence:** HIGH (stack and architecture verified against installed packages and MDN docs; features and pitfalls from MIR literature with high domain confidence)
+**Project:** Jazz Communication Visualizer — v1.1 Milestone (Flexible Instrument Lineup + Dynamic Canvas Layout)
+**Domain:** Browser-based jazz audio analysis + Canvas node-graph visualization
+**Researched:** 2026-03-11 (v1.1 update; v1.0 research 2026-03-10)
+**Confidence:** HIGH for structural changes (direct source audit); MEDIUM for acoustic accuracy
 
 ---
 
 ## Executive Summary
 
-This is a browser-native audio analysis and visualization tool for jazz ensemble recordings — a novel product with no direct competitor. The closest existing tools are Sonic Visualiser (desktop, research-grade) and iReal Pro (chord charts, no analysis). The right approach is: file upload via FileReader, Web Audio API for playback and FFT extraction, Meyda.js for feature extraction (chroma, RMS, ZCR, spectral flux), raw Canvas 2D for the animated node graph, and Zustand to share state between the 10fps analysis loop and the 60fps render loop without triggering React re-renders. The stack is well-chosen for the use case and all version choices have been verified against installed packages.
+v1.1 is a structural milestone, not an accuracy milestone. The core task is replacing the hardcoded 4-instrument assumption throughout the codebase with a data-driven approach that supports any 2–8 instrument lineup. Research across all four domains converges on a single organizing principle: everything that currently uses `INSTRUMENT_ORDER` as a module-level constant must instead receive the active lineup as a constructor parameter or function argument. This is not a large surface area, but it is a precise one — there are 13 confirmed hardcoded change sites, and four of them (the `PAIRS` IIFE in `drawCommunicationEdges.ts`, the `computeNodePositions` type signature, the `CanvasRenderer` constructor, and the pocket line index lookup) are zero-tolerance: any one left unfixed causes a crash or completely silent failure with no console error.
 
-The central architectural decision is the two-loop pattern with a shared mutable ref. The analysis loop runs at ~10fps via `setInterval`, writes to `audioStateRef.current`. The render loop runs at 60fps via `requestAnimationFrame`, reads from `audioStateRef.current`. React only touches coarse UI state (chord label display, BPM text, tension meter number). This pattern keeps React out of the hot path entirely and is the correct architecture for audio-driven Canvas animation. Everything else in the architecture follows from this decision.
+The recommended stack remains unchanged from v1.0 — no new npm dependencies are needed. The circular layout algorithm replaces the `d3-force` alternative that was evaluated and explicitly rejected: for a fully-connected uniform-weight graph of 2–8 nodes, circular layout is O(n), deterministic, and produces the same result that force simulation converges to anyway — without runtime ticks or simulation state. New frequency band definitions for saxophone, trumpet, trombone, and vibraphone use physics-verified ranges from UNSW acoustics resources, but the analysis accuracy story is deliberately limited in v1.1. All four new instruments overlap heavily in the `mid` (250–2000 Hz) and `mid_high` (300–3000 Hz) bands — this is an inherent constraint of single-analyser stereo analysis. The correct approach is to ship correct band definitions first, validate on real recordings, and move disambiguation logic to v1.2.
 
-The highest risks for this project are not engineering unknowns — they are iOS Safari platform constraints that silently break audio if not addressed from day one. AudioContext must be created inside a user gesture handler (not on mount), iOS defaults to 48kHz sample rate (invalidating hardcoded FFT bin math), and `ctx.shadowBlur` on animated Canvas elements collapses framerate on iPhone hardware. All three are zero-tolerance items that belong in Phase 1 of the build. A fifth risk is specific to the domain: jazz recordings use swing rhythm and rootless voicings, both of which defeat standard BPM detection and chord template matching. The mitigation is graceful degradation — confidence scores, rubato suppression, and honest "Unknown" states — not attempts to solve MIR problems that remain open in the research literature.
+The primary risk for v1.1 is sequencing: the architectural refactor must be complete before any feature code is layered on top. The 8-step build order in ARCHITECTURE.md (data types → UI → analysis loop → App init → layout engine → renderer → edges → wiring) reflects true TypeScript compilation dependencies and must be followed. Attempting to build the BandSetupPanel UI before fixing the `PAIRS` IIFE or the renderer constructor produces a working UI form that drives broken analysis and a blank or crashing canvas.
 
 ---
 
@@ -21,207 +21,168 @@ The highest risks for this project are not engineering unknowns — they are iOS
 
 ### Recommended Stack
 
-The stack centers on Vite 7.3.1 + React 19.2.4 + TypeScript 5.9.3, scaffolded with `@vitejs/plugin-react-swc`. Audio analysis uses Web Audio API (browser built-in: AnalyserNode, decodeAudioData) plus Meyda.js 5.6.3 (MIT license, 556 KB, confirmed extractors). Visualization uses raw Canvas 2D — PixiJS and Three.js are both overkill and add bundle weight for a 5-15 node graph. Tailwind 4.2.1 handles surrounding UI chrome, but requires the new CSS-first configuration pattern (`@import "tailwindcss"` in CSS, `@tailwindcss/vite` plugin) — the v3 `tailwind.config.js` pattern does not work and silently produces no styles. Zustand 5.0.11 manages shared audio state.
+The existing stack (React 19.2.0, TypeScript 5.9.3, Vite 7.3.1, Web Audio API, Meyda.js 5.6.3, Canvas 2D, Tailwind 4.2.1, Zustand 5.0.11) requires zero changes for v1.1. The only new production code is: extending `FrequencyBandSplitter.ts` with three new band definitions (`brass_low 80–500 Hz`, `brass_high 1000–6000 Hz`, `vibes_band 130–2100 Hz`), extending `InstrumentActivityScorer.ts` with 4 new `INSTRUMENT_BAND_MAP` entries, and replacing the switch-case in `NodeLayout.ts` with a circular polygon formula. `BrassWindDisambiguator.ts` for chroma-entropy-based sax-vs-keyboard disambiguation is designed and documented but is considered Phase 3 (v1.2 scope) pending threshold calibration on real recordings.
 
-Key version alert: Meyda.js 5.6.3 uses `ScriptProcessorNode` internally (deprecated but working on iOS Safari since iOS 7). This is acceptable for v1 but should be verified against Meyda v6 when it reaches stable.
+**Core technologies — unchanged from v1.0:**
+- **Meyda.js 5.6.3:** `chroma`, `spectralCentroid`, `spectralRolloff`, `spectralFlatness`, `rms`, `ZCR` all confirmed correct. Do NOT call `Meyda.extract('spectralFlux', ...)` — confirmed broken (negative-index bug); use the hand-rolled `computeSpectralFlux()` in `KbGuitarDisambiguator.ts` for all instruments.
+- **Web Audio API + Canvas 2D:** No change. The 10fps analysis / 60fps render architecture is fully sufficient for 2–8 instruments.
+- **TypeScript `InstrumentName` union:** Keep as a strict union (not loosened to `string`) — preserves compile-time safety for `INSTRUMENT_BAND_MAP` and `resolveBandsForInstrument`.
 
-**Core technologies:**
-- React 19 + TypeScript 5.9: UI lifecycle and type safety across audio buffer types
-- Vite 7 + plugin-react-swc: Fast HMR, clean WASM/worklet loading
-- Meyda.js 5.6.3 (MIT): Confirmed chroma, RMS, ZCR, spectralFlux, spectralCentroid extractors
-- Web Audio API (built-in): AnalyserNode FFT, decodeAudioData, AudioBufferSourceNode
-- Canvas 2D (built-in): Animated node graph — zero bundle weight, full control
-- Zustand 5.0.11: Selector-based state reads outside React render cycle
-- Tailwind 4.2.1: UI chrome only — CSS-first config, @tailwindcss/vite plugin required
-
-See `/Users/seijimatsuda/jazz_learning/.planning/research/STACK.md` for full alternatives analysis and iOS compat table.
+**What NOT to add:**
+- `d3-force`: circular layout is correct for n ≤ 8; force-directed converges to the same result with runtime overhead and non-determinism
+- `Essentia.js`: AGPL-3.0 license risk, 10 MB WASM bundle
+- Any new npm package: all needed capabilities are present in the existing stack
 
 ### Expected Features
 
-The MVP needs to deliver a coherent musically meaningful unit that a jazz musician would recognize as correct. The signal: "yes, that's a II-V-I" and "yes, the bass and drums are in the pocket." Features are grouped by dependency chain, not by complexity.
+v1.1 is scoped to two deliverables: correct frequency band support for new instruments and a canvas layout that adapts gracefully to 2–8 nodes. Feature research confirms this scope boundary. Disambiguation accuracy belongs to v1.2.
 
-**Must have (table stakes — universal audio tool expectations):**
-- Audio upload (MP3/WAV) via FileReader + loading progress feedback
-- Waveform display with playhead + transport controls (play/pause/seek)
-- BPM display (first thing a musician asks)
-- Chord name display with confidence indicator (always show confidence — never show a chord without it)
-- Smooth 60fps animation with no flicker
-- iOS Safari compatibility (non-negotiable — jazz musicians use iPhones)
+**Must have (table stakes):**
+- Instrument toggle UI in BandSetupPanel with all 8 instruments visible, grouped by family (Rhythm / Melodic / Horns), with 2–8 count validation — universal pattern for any multi-instrument tool
+- Circular layout algorithm replacing hardcoded 4-node diamond; handles 2–8 gracefully and deterministically
+- Canvas nodes, edges, and pocket line all guarded against absent instruments (lineup without bass or drums must not crash)
+- Pocket score conditional display: show when bass + drums both active, show drums-only consistency when drums present but bass absent, hide otherwise
+- Instrument family color coding on canvas nodes
+- Node count confirmation badge in setup UI
 
-**Must have (jazz-specific table stakes):**
-- Extended chord vocabulary: maj7, m7, dom7, dim7, m7b5, alt (showing "C major" instead of "Cmaj7" signals the tool doesn't understand jazz)
-- Chord function labels: tonic / subdominant / dominant / altered
-- Key detection (all chord function analysis depends on it)
-- Instrument role labeling: soloing / comping / holding / silent
-- Harmonic tension arc (0.0–1.0 continuous) + vertical tension meter
+**Should have (differentiators that ship with v1.1):**
+- Semantic node ordering before angle assignment: rhythm section adjacent, front-line horns grouped
+- Edge type classification for all 22 new instrument pairs (e.g., `saxophone_trumpet` as `melodic`, `bass_saxophone` as `support`)
+- Dynamic edge weight threshold scaling with node count (`0.3 + (nodeCount - 4) * 0.05`) to prevent hairball rendering at 8 nodes
+- Node radius and label font scaling inversely with instrument count to prevent overlap on mobile (iPhone SE 320px)
 
-**Core differentiators (launch-critical):**
-- Animated node graph (instrument communication network) — the signature feature; no existing tool does this
-- Pocket score (bass-drums sync ±80ms cross-correlation) — educators have no existing tool for this
-- Tension-tinted edges — visual encoding of harmonic state in the relationship graph
-- Role-based node visual states (soloists look different than compers)
-- Beat-synchronized canvas pulse (visualization breathes with the music)
-
-**Should have (Phase 2):**
-- Call-and-response detection + conversation log
-- Timeline tension heatmap (navigate to harmonically interesting moments)
-- Bar/beat grid overlay (requires accurate meter inference)
-- Pre-loaded example tracks with annotations
-- User annotations + JSON/image export
-- Node detail panel (sparklines, role breakdown pie)
-
-**Defer to v2+:**
-- Pitch detection (YIN/autocorrelation) — accuracy on mixed recordings will undermine trust
-- MIDI export / score generation — unsolved problem at useful accuracy
-- Social features / accounts — backend required, low v1 ROI
-- Stem separation — not browser-feasible without server
-
-**Anti-features to explicitly avoid:**
-- Stem isolation "solo/mute" buttons — implies the app can isolate instruments (it cannot)
-- Roman numeral notation by default — jazz musicians read chord names, not Roman numerals
-- Real-time microphone analysis — completely different product with latency/noise problems
-
-See `/Users/seijimatsuda/jazz_learning/.planning/research/FEATURES.md` for full dependency graph.
+**Defer to v1.2+:**
+- Horn disambiguation (sax vs. trumpet vs. trombone on mixed recordings) — requires calibration on real audio
+- Sax vs. keyboard chroma entropy disambiguation — `BrassWindDisambiguator.ts` is designed; thresholds 0.3/0.5 are estimates, not validated
+- Vibes vs. keyboard disambiguation — hardest pair; inharmonic partial detection not implemented
+- Session preset templates (quartet, quintet, etc.)
+- Per-instrument calibration windows
 
 ### Architecture Approach
 
-The architecture is driven by two concurrent execution loops that must never block each other. The analysis loop (`setInterval` ~100ms, ~10fps) reads AnalyserNode FFT data, runs the DSP pipeline (FrequencyBandSplitter → Meyda → InstrumentActivityScorer → RoleClassifier → ChordDetector + BeatDetector → PocketScorer), and writes to `audioStateRef.current`. The render loop (`requestAnimationFrame`, 60fps) reads `audioStateRef.current` and calls the Canvas drawing functions. `audioStateRef` is a plain mutable React ref — it never triggers re-renders. React components read coarse state (chord name, BPM, tension value) via `setInterval` polling at ~2fps, not from the analysis loop directly.
+The existing two-loop architecture (10fps analysis writes into `audioStateRef`; 60fps render reads from it) remains completely unchanged in v1.1. What changes is that `CanvasRenderer` must receive the active lineup at construction time and derive all dependent state from it. The lineup is finalized before `VisualizerCanvas` mounts (the component is gated behind `isFileLoaded` in App.tsx), so no dynamic lineup update mechanism is required — the renderer is constructed with the correct lineup on every mount.
 
-**Major components:**
-1. `AudioPipeline` — Creates AudioContext inside user gesture, wires MediaElementSource → AnalyserNode → destination
-2. `AnalysisLoop` — 10fps orchestrator: reads FFT, calls all DSP modules, writes audioStateRef
-3. `FrequencyBandSplitter` — Slices 2048-bin FFT into per-instrument sub-bands using `hzToBin(hz, sampleRate, fftSize)` (sample-rate-aware)
-4. `InstrumentActivityScorer` + `RoleClassifier` — Per-band RMS → 0.0-1.0 activity → role enum
-5. `ChordDetector` — Chroma extraction → cosine similarity against 8 jazz chord templates → 300ms smoothing
-6. `BeatDetector` + `PocketScorer` — Dual-stream (drum transients 6-10kHz + bass onsets 20-250Hz) → BPM + pocket score
-7. `CanvasRenderer` — rAF loop: reads audioStateRef, draws node graph with glows, edges, beat pulse
-8. React UI components — Band config panel, chord display, tension meter, timeline (read audioStateRef via polling)
+**Files that must be modified (10 total — no new files required):**
 
-Two AnalyserNode instances are required: one with `smoothingTimeConstant = 0.8` for visualization, one with `smoothingTimeConstant = 0.0` for transient/onset detection in BeatDetector.
-
-See `/Users/seijimatsuda/jazz_learning/.planning/research/ARCHITECTURE.md` for full data flow diagram and all 7 anti-patterns.
+| File | Change |
+|------|--------|
+| `src/audio/types.ts` | `PitchAnalysisState` from fixed `{keyboard, guitar}` to `{instruments: Record<string, InstrumentPitchState>}` |
+| `src/audio/InstrumentActivityScorer.ts` | Expand `InstrumentName` union to 8; add 4 `INSTRUMENT_BAND_MAP` entries; generalize `resolveBandsForInstrument` with `MID_RANGE_INSTRUMENTS` set |
+| `src/audio/AnalysisTick.ts` | Update pitch detection section to iterate `state.pitch.instruments` record; update call-response guard |
+| `src/canvas/nodes/NodeLayout.ts` | Replace `count: 2 \| 3 \| 4` switch-case with circular polygon formula for 2–8 |
+| `src/canvas/CanvasRenderer.ts` | Accept `lineup: string[]` in constructor; derive `instrumentOrder`, `nodePositions`, `nodeAnimStates`, `edgeAnimStates`, `pairs` from lineup; fix pocket line guard; update `resize()`; expand `getNodeLayout()` return type |
+| `src/canvas/edges/drawCommunicationEdges.ts` | Remove module-level `PAIRS` IIFE; accept pairs array as parameter from `CanvasRenderer` |
+| `src/canvas/edges/edgeTypes.ts` | Add 22 new pair entries to `EDGE_TYPE` |
+| `src/components/BandSetupPanel.tsx` | Add 4 instruments to `AVAILABLE_INSTRUMENTS`, `INSTRUMENT_ICONS`, `BAND_LABELS` |
+| `src/components/VisualizerCanvas.tsx` | Pass lineup to `CanvasRenderer` constructor; update click handler to use `instruments` from `getNodeLayout()` |
+| `src/App.tsx` | Build `pitch.instruments` record dynamically for all melodic instruments in lineup (exclude drums) |
 
 ### Critical Pitfalls
 
-Ranked by rewrite risk (items 1-3 are zero-tolerance — they break the entire app if missed):
+Ranked by crash/silent-failure severity:
 
-1. **iOS AudioContext outside user gesture** — Creates a suspended context that silently fails. Create AudioContext inside the `onClick` handler of the play/upload button. Never create it in `useEffect` on mount or at module scope. Detection: works on Chrome desktop, completely silent on iPhone.
+1. **Module-level `PAIRS` IIFE in `drawCommunicationEdges.ts`** (V1, zero-tolerance) — `PAIRS` is computed once at module import from the static `INSTRUMENT_ORDER` constant. New instrument edges are silently absent — no runtime error, just invisible edges. Fix: remove the IIFE; compute pairs from the lineup inside `CanvasRenderer` and pass as a function parameter.
 
-2. **`ctx.shadowBlur` on animated Canvas elements** — 60fps Gaussian blur on 4+ nodes collapses iOS framerate to 15-30fps. Use pre-rendered offscreen glow compositing instead: multiple overlapping circles with decreasing opacity, drawn once to an offscreen canvas and composited. Do not use `shadowBlur` on any element that animates. This must be the chosen strategy before writing any Canvas visual code — retrofitting is a full rewrite.
+2. **`computeNodePositions` only handles `count: 2 | 3 | 4`** (V2, zero-tolerance) — No `default` branch in the switch-case; calling with 5–8 returns `undefined`; canvas crashes on `undefined.x` in the rAF loop. TypeScript will raise a compile error at the call site — treat this as the detection, not a warning to suppress. Fix: replace with circular polygon formula `x = cx + rx * cos(2π * i / n)`.
 
-3. **iOS sample rate 48kHz vs desktop 44.1kHz** — Silently invalidates all frequency band splitting. Never hardcode FFT bin indices. Always compute with `hzToBin(hz, audioCtx.sampleRate, analyser.fftSize)`. Detection: bass band appears quieter on iOS, results differ systematically from desktop for same file.
+3. **`CanvasRenderer` constructor hardcodes 4 nodes and 6 pairs** (V3, zero-tolerance) — Constructor has no lineup parameter; `nodeAnimStates` is always length 4; `resize()` also hardcodes `computeNodePositions(4)`. Fix: add `lineup: string[]` parameter; derive all state from it.
 
-4. **ScriptProcessorNode vs AudioWorklet decision** — Meyda 5.6.3 uses ScriptProcessorNode (verified from source). This is acceptable but creates main-thread audio callbacks that compete with Canvas rAF. Use Meyda's offline `Meyda.extract()` at 10fps (not MeydaAnalyzer which runs at audio clock rate). Verify AudioWorklet availability in Meyda during Phase 1.
+4. **Pocket line assumes bass and drums are always present** (V4, zero-tolerance) — `INSTRUMENT_ORDER.indexOf('bass')` returns `-1` for lineups without bass; `this.nodePositions[-1].x` throws. Fix: guard with `if (bassIdx >= 0 && drumsIdx >= 0)` before calling `drawPocketLine`.
 
-5. **Swing tempo double-counting** — Standard onset detection counts swing eighth notes as beats, reporting 2x the actual BPM. Build rubato confidence gate (IOI coefficient of variation > 0.3 → display "—") and halve BPM when 2:1 swing ratio is detected. This affects pocket score too — suppress it when BPM confidence is low. Highly visible to the target audience.
+5. **Sax and keyboard share the `mid` band** (V5, moderate) — Both assigned to `['mid']` produces nearly identical, highly correlated activity scores. When sax is playing, keyboard registers as active. Fix for v1.1: define dedicated `sax_body` band or add chroma polyphony score disambiguation; at minimum document as known limitation in the UI.
 
-Moderate pitfalls to address in Phase 2: rootless jazz voicings undermining chord accuracy (build "low confidence / Unknown" display state from day one), GC jank from per-frame typed array allocation (pre-allocate all `Float32Array`/`Uint8Array` buffers once at AudioContext setup), Canvas devicePixelRatio scaling (set `canvas.width = rect.width * dpr` + `ctx.scale(dpr, dpr)` before drawing anything).
+6. **Calibration peak set by loudest shared-band instrument** (V10, moderate) — In a 3-instrument mid-range lineup (sax + keyboard + guitar), calibration peak is set by whoever is loudest in the opening 3 seconds. Quieter instruments are permanently underscored. Fix: scale effective thresholds by number of instruments sharing the band (`peak / N`).
 
-See `/Users/seijimatsuda/jazz_learning/.planning/research/PITFALLS.md` for all 14 pitfalls with code examples and detection patterns.
+7. **Edge count scales quadratically to 28 at 8 instruments** (V9, moderate on older iOS) — 28 `ctx.save/restore` pairs per frame at 60fps. Fix: batch non-animated edges; apply opacity early-exit (`currentOpacity < 0.01`); apply dynamic edge threshold to prune low-weight edges.
 
 ---
 
 ## Implications for Roadmap
 
-The dependency chain from FEATURES.md + the build order from ARCHITECTURE.md converge on the same 5-phase structure. All phases are sequential through Phase 4 (each depends on the prior phase's outputs). Phase 5 can begin partway through Phase 3.
+Based on the dependency graph in ARCHITECTURE.md and the severity ranking in PITFALLS.md, a 3-phase structure is recommended:
 
-### Phase 1: Audio Pipeline Foundation
+### Phase 1: Data Layer and Structural Refactor
 
-**Rationale:** Nothing else can be built without a working audio pipeline. iOS Safari pitfalls 1, 3, 4, 12 must all be addressed here — they are foundational decisions that cannot be retrofitted.
+**Rationale:** The four zero-tolerance pitfalls (V1–V4) are foundational architectural problems. No feature work is safe until they are fixed. This phase has no visible user-facing output — it is pure architecture. Build order within the phase follows TypeScript compilation dependencies: types first, then consumers.
 
-**Delivers:** AudioContext (user-gesture safe, iOS-compatible), MediaElementSource → AnalyserNode graph, `getByteFrequencyData` at 10fps, `FrequencyBandSplitter` with sample-rate-aware `hzToBin()`, dual AnalyserNodes (smooth for viz, raw for transients), `audioStateRef` structure defined, TypeScript interfaces for AudioState finalized.
+**Delivers:** A codebase that compiles cleanly for 8 instruments, does not crash at any lineup count from 2–8, and correctly propagates the active lineup through the full analysis and render pipeline.
 
-**Addresses:** File upload, waveform display, transport controls, loading state.
+**Addresses:**
+- Expand `InstrumentName` union to 8 instruments
+- Add 4 `INSTRUMENT_BAND_MAP` entries (saxophone, trumpet, trombone, vibes)
+- Add 3 new frequency bands to `FrequencyBandSplitter.ts` (`brass_low`, `brass_high`, `vibes_band`)
+- Change `PitchAnalysisState` to dynamic `{instruments: Record<string, InstrumentPitchState>}`
+- Generalize `resolveBandsForInstrument` with `MID_RANGE_INSTRUMENTS` set
+- Update `AnalysisTick.ts` pitch section to iterate the dynamic record
+- Update `App.tsx` pitch initialization to cover all melodic instruments (exclude drums)
+- Add `lineup: string[]` to `CanvasRenderer` constructor; derive all state from it
+- Remove `PAIRS` IIFE from `drawCommunicationEdges.ts`; accept pairs as parameter
+- Replace `computeNodePositions(count: 2 | 3 | 4)` with circular polygon formula for 2–8
+- Guard pocket line on `bassIdx >= 0 && drumsIdx >= 0`
+- Add all 22 new pair entries to `EDGE_TYPE` in `edgeTypes.ts`
+- Define canonical instrument name constants to eliminate fragile inline string matching (V13)
 
-**Must avoid:**
-- Pitfall 1: AudioContext on mount (create in click handler only)
-- Pitfall 3: Hardcoded bin indices (always use hzToBin with sampleRate)
-- Pitfall 4: minDecibels clipping jazz dynamics (use Float32 data or calibration pass)
-- Pitfall 12: Single AnalyserNode with smoothing (need two: one smooth, one raw)
-- Pitfall 10: No cleanup on unmount (write useEffect cleanup from day one)
+**Avoids:** V1 (IIFE), V2 (layout crash), V3 (renderer constructor), V4 (pocket crash), V13 (fragile string matching), V14 (edge type silent defaults)
 
-**Research flag:** Verify Meyda.js ScriptProcessorNode vs AudioWorklet default in v5.6.3 via Context7 before writing any analysis code.
+**Research flag:** No additional research needed. All 13 change sites are explicitly identified in ARCHITECTURE.md with file paths and line numbers. TypeScript will surface any remaining compile errors as validation.
 
-### Phase 2: Core DSP Modules
+---
 
-**Rationale:** With a working FFT pipeline, the three independent analysis modules (activity scoring, beat detection, chord detection) can be developed. These are independent of each other and can be tested via console output before any Canvas work. The `audioStateRef` structure is finalized by end of this phase.
+### Phase 2: UI and Canvas Feature Completion
 
-**Delivers:** InstrumentActivityScorer (RMS per band → 0.0-1.0), BeatDetector (dual-stream drum transients + bass onsets, swing ratio detection, rubato suppression), ChordDetector (chroma → cosine similarity against 8 jazz templates, 300ms smoothing, confidence gap display).
+**Rationale:** With Phase 1 structurally correct, Phase 2 adds the user-visible features and canvas polish that make v1.1 feel complete. Items within this phase are largely independent of each other and can be parallelized.
 
-**Addresses:** BPM display, chord name with confidence badge, instrument activity detection.
+**Delivers:** A fully functional 2–8 instrument UI with correct visual behavior, family color coding, and iOS-safe canvas rendering.
 
-**Must avoid:**
-- Pitfall 7: Swing double-counting (implement IOI coefficient of variation gate in BeatDetector, not as a later addition)
-- Pitfall 6: Rootless voicings (build "low confidence / Unknown" chord display state from the start — a jazz pianist will see it immediately in testing)
-- Pitfall 9: Verify Meyda chroma sample rate handling (test same file on iOS vs Chrome; note whether chroma differs)
+**Addresses:**
+- BandSetupPanel: add 4 new instruments with icons and frequency labels; group by family; add count badge; enforce 2–8 validation
+- Wire `VisualizerCanvas.tsx` to read lineup from Zustand and pass to `CanvasRenderer`; update click handler to use `instruments` from `getNodeLayout()`
+- Pocket score conditional display in UI (hide when bass or drums absent; adapt when only one present)
+- Instrument family color coding on canvas nodes (horns / keyboard-melodic / rhythm)
+- Dynamic edge weight threshold scaling with node count
+- Node radius and label font scaling inversely with instrument count
+- Abbreviated 3-letter node labels for 7–8 instruments (Sax, Tpt, Tbn, Vbs, Kbd, Gtr, Bss, Dms)
+- Gate melody/call-response UI display on `lineup.includes('keyboard') && lineup.includes('guitar')` (V12)
+- Batch non-animated edges to reduce `ctx.save/restore` overhead at 8 instruments (V9 mitigation)
 
-**Research flag:** Meyda chroma internal sample rate mapping (LOW confidence claim) — verify empirically in this phase.
+**Avoids:** V9 (edge rendering performance), V11 (node overlap on mobile), V12 (misleading melody UI for horn-only lineups)
 
-### Phase 3: Derived Analysis + Stable State Shape
+**Research flag:** iOS canvas resize with variable node count needs empirical testing on a physical device (iPhone SE 320px viewport, 8 instruments). No additional research needed before starting; test during execution with a real device before shipping.
 
-**Rationale:** RoleClassifier depends on activity scores (Phase 2 output). PocketScorer depends on BeatDetector timestamps (Phase 2). TensionScorer depends on ChordDetector output. This phase finalizes `audioStateRef` structure — the Canvas renderer cannot be built until state shape is stable.
+---
 
-**Delivers:** RoleClassifier (solo/comp/hold/silent state machine with history), PocketScorer (±80ms cross-correlation, pocket quality enum), TensionScorer (chroma → tension 0.0-1.0 with smoothing), finalized `audioStateRef` TypeScript interface.
+### Phase 3: Disambiguation and Accuracy (v1.2 scope)
 
-**Addresses:** Role-based node visual states, pocket score display, harmonic tension arc.
+**Rationale:** Disambiguation of overlapping instrument pairs (sax/keyboard, vibes/keyboard, multi-horn) cannot be calibrated without real jazz recordings. Attempting this in v1.1 before frequency bands have been validated in production would be premature optimization. Ship Phase 1 + Phase 2 as v1.1, validate on real audio, then address accuracy in v1.2.
 
-**Must avoid:** Pocket score displayed when BPM confidence is below threshold (rubato tracks will produce garbage — implement the suppression gate here, not as a fix later).
+**Delivers (v1.2):**
+- `BrassWindDisambiguator.ts`: chroma polyphony score (Shannon entropy) for sax-vs-keyboard disambiguation — thresholds 0.3/0.5 require empirical calibration on real recordings before use
+- Spectral rolloff as secondary signal (keyboard ~2500–4000 Hz; sax ~1500–2500 Hz)
+- `spectralFlatness` for vibes-vs-keyboard (vibes = sparse inharmonic peaks, lower flatness; keyboard polyphony = denser spectrum)
+- Multi-horn disambiguation using spectral centroid hierarchy (trombone centroid ~600–1500 Hz < saxophone ~1000–2500 Hz < trumpet ~1500–4000 Hz)
+- Calibration threshold scaling by number of shared-band instruments
 
-**Research flag:** Standard patterns — no additional research needed. RoleClassifier heuristics are tunable post-launch.
+**Avoids (v1.2):** V5 (sax/keyboard), V6 (trumpet/guitar), V7 (trombone/bass), V8 (vibes/keyboard), V10 (calibration)
 
-### Phase 4: Canvas Renderer
+**Research flag:** Phase 3 needs `/gsd:research-phase` during planning. Chroma entropy thresholds, spectral rolloff ranges, and spectral flatness cutoffs for these specific instrument pairs cannot be established from acoustics literature alone — they require empirical testing on real mixed jazz recordings.
 
-**Rationale:** Canvas rendering depends on a stable `audioStateRef` shape (Phase 3). All glow strategy decisions must be made before writing any visual code — retrofitting from shadowBlur to compositing is a full rewrite.
-
-**Delivers:** CanvasRenderer with node layout engine (2-4 instruments), static node drawing + labels, edge drawing (communication lines), animation layer (glows via offscreen compositing, ripples, beat pulse on drum transients), tension-tinted edges, devicePixelRatio scaling.
-
-**Addresses:** Animated node graph (core differentiator), tension-tinted edges, beat-synchronized pulse, role-based visual states.
-
-**Must avoid:**
-- Pitfall 8: `ctx.shadowBlur` on animated nodes — use pre-rendered offscreen glow compositing from day one
-- Pitfall 5: Per-frame typed array allocation — all buffers pre-allocated at setup
-- Pitfall 11: Canvas blurriness on Retina/iOS — set `canvas.width = rect.width * dpr` + `ctx.scale(dpr, dpr)` before any drawing
-
-**Research flag:** Standard Canvas patterns — well-documented in MDN. No research phase needed. Two-canvas layering strategy (background / animated) is the correct approach.
-
-### Phase 5: React UI Components + Polish
-
-**Rationale:** React UI components can begin partway through Phase 3 once `audioStateRef` shape is known. They read from the shared ref via `setInterval` polling at ~2fps, keeping React out of the hot path.
-
-**Delivers:** BandSetupPanel (instrument configuration), TensionMeter (reads tensionScore), ChordDisplay with chord name + function label + confidence badge, Timeline scrubber, Key detection display, chord function labels (tonic/dominant/subdominant/altered).
-
-**Addresses:** All jazz-specific table stakes features that display in React UI.
-
-**Must avoid:** React Context for audio state (use Zustand or direct ref polling — context at 60fps is 60 re-renders/second). Anti-Pattern 1 from ARCHITECTURE.md: driving Canvas via React state updates.
-
-**Research flag:** Standard React patterns — no research phase needed.
-
-### Phase 6: Advanced Features (Post-MVP)
-
-**Rationale:** Call-and-response detection depends on role classification (Phase 3) + pitch detection on mixed audio (known accuracy limitations). Key detection depends on chord detection being stable. These add depth to a working core.
-
-**Delivers:** Call-and-response detection + conversation log, key detection with rolling window, timeline tension heatmap, bar/beat grid overlay (requires meter inference), user annotations, export (JSON/image), pre-loaded example tracks (CORS considerations apply).
-
-**Research flag:** Pitch detection accuracy on mixed recordings (known MIR open problem — set expectations before building). Bar/beat grid overlay requires meter inference (5/4, 7/4 are common in jazz — not only 4/4).
+---
 
 ### Phase Ordering Rationale
 
-- Phases 1-3 are a strict dependency chain: FFT pipeline → DSP modules → derived analysis. Cannot be reordered.
-- Phase 4 (Canvas) must follow Phase 3 because the renderer needs a finalized state shape to draw from.
-- Phase 5 (React UI) can begin partway through Phase 3 — components that display chord name and tension score only need those fields defined.
-- Phase 6 is additive and can be planned and scoped after the MVP is validated with jazz musicians.
-- The three zero-tolerance iOS pitfalls (Pitfalls 1, 3, 8) all belong in Phase 1 or Phase 2. Building iOS-first prevents the "works on Chrome, broken on iPhone" failure mode that is the most common post-launch finding for Web Audio apps.
+- Phase 1 before Phase 2 is non-negotiable. Four zero-tolerance crashes exist. Building UI without fixing them produces a working form that drives a broken canvas.
+- Phase 2 items are deliberately independent of each other within the phase. BandSetupPanel changes and VisualizerCanvas wiring touch non-overlapping code and can be done in parallel.
+- Phase 3 is explicitly out of v1.1 scope. Both FEATURES.md (MVP recommendation section) and STACK.md (confidence assessment) confirm that shipping frequency band definitions first and then calibrating disambiguation is the correct sequence.
+- The 8-step build order in ARCHITECTURE.md must be followed within Phase 1: it reflects actual TypeScript compilation order (types → consumers → renderers → wiring).
 
 ### Research Flags
 
-Needs verification during Phase 1 planning/execution:
-- **Phase 1:** Meyda.js ScriptProcessorNode vs AudioWorklet default (MEDIUM confidence) — verify with Context7 before writing analysis code
-- **Phase 2:** Meyda chroma internal sample rate handling (LOW confidence claim) — test empirically: run same audio file through chroma on iOS vs Chrome desktop, compare vectors
+Phases needing deeper research during planning:
+- **Phase 3 (v1.2 disambiguation):** Chroma entropy thresholds (0.3/0.5) are acoustics-reasoning estimates, not empirically validated. Spectral flatness cutoffs for vibes-vs-keyboard have no implementation precedent in this codebase. Flag this entire phase for `/gsd:research-phase`.
 
-Standard patterns (skip research phase):
-- **Phase 4:** Canvas 2D animation, layering, glow compositing — well-documented in MDN Canvas Optimization guide
-- **Phase 5:** React + Zustand integration — standard, well-documented patterns
-- **All phases:** Web Audio API pipeline — MDN documentation is comprehensive and HIGH confidence
+Phases with standard patterns (no additional research needed):
+- **Phase 1 (structural refactor):** All 13 change sites are explicitly identified with file paths and line numbers in ARCHITECTURE.md. Standard TypeScript refactor; compiler validates correctness.
+- **Phase 2 (UI + canvas):** Circular polygon layout formula is standard graph drawing math. Canvas edge batching and opacity early-exit are well-documented Canvas 2D optimization patterns. BandSetupPanel additions are straightforward data-driven UI.
 
 ---
 
@@ -229,46 +190,46 @@ Standard patterns (skip research phase):
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Versions verified from installed packages (Meyda, React, Vite, Tailwind) and npm registry. iOS compat from MDN browser-compat-data package v7.3.6. |
-| Features | HIGH | Feature categorization from well-established audio tool conventions and jazz pedagogy. Complexity estimates are MEDIUM (iOS behavior may shift estimates). |
-| Architecture | HIGH | Two-loop pattern and all anti-patterns verified against MDN official documentation. Component boundaries derived from Web Audio API constraints (AnalyserNode is main-thread only — not an inference). |
-| Pitfalls | HIGH (critical), MEDIUM/LOW (some) | Pitfalls 1, 3, 4, 5, 8, 10, 11, 12, 13, 14 verified against MDN docs. Pitfall 2 (Meyda AudioWorklet default) and Pitfall 9 (Meyda chroma sample rate) are MEDIUM/LOW — need Context7 verification before implementation. Pitfalls 6 and 7 (rootless voicings, swing detection) are HIGH for the problem being real; specific algorithm parameters are training knowledge estimates. |
+| Stack | HIGH | No new dependencies needed. Meyda 5.6.3 features verified against installed package source. Circular layout is standard verified formula. d3-force explicitly evaluated and rejected. |
+| Features | HIGH for table stakes; MEDIUM for differentiators | Toggle/listing/validation features are unambiguous. iOS canvas resize behavior with variable node count is untested — empirical validation required in Phase 2. |
+| Architecture | HIGH | All 13 change sites identified from direct read of 17 source files with line numbers confirmed. Module-level IIFE pitfall confirmed by direct reading of `drawCommunicationEdges.ts`. |
+| Pitfalls | HIGH for structural (V1–V4, V9, V12–V14); MEDIUM for acoustic (V5–V8, V10) | Structural pitfalls from direct codebase audit. Acoustic pitfall severity from physics-verified frequency data (UNSW, DPA Microphones); specific calibration behavior is theoretical until tested on real recordings. |
 
-**Overall confidence:** HIGH for the architectural approach and critical pitfall prevention. MEDIUM for analysis accuracy expectations (chord detection and beat detection accuracy on real jazz recordings will require empirical calibration).
+**Overall confidence:** HIGH for Phase 1 and Phase 2 execution. MEDIUM for Phase 3 accuracy improvements (empirical calibration required).
 
 ### Gaps to Address
 
-- **Meyda AudioWorklet mode:** Whether Meyda 5.6.3 supports or defaults to AudioWorklet, and what the setup looks like. Verify with Context7 during Phase 1 planning. Decision affects Phase 1 architecture.
-- **Meyda chroma sample rate handling:** Whether Meyda internally hardcodes 44100Hz for chroma pitch-to-bin mapping. Verify empirically in Phase 2 by testing same file on iOS (48kHz) vs desktop Chrome (44.1kHz). If chroma differs, implement custom chroma mapping (~50 lines).
-- **iOS Safari AudioContext `{ sampleRate: 44100 }` constructor option:** MDN documents the option but does not confirm iOS Safari honors it. Read back `audioCtx.sampleRate` after creation and apply `hzToBin` regardless.
-- **Chord detection accuracy on real jazz recordings:** Template matching on mixed stereo with rootless voicings has documented accuracy limits. Calibrate thresholds empirically during Phase 2 with actual jazz recordings before committing to confidence threshold values.
-- **Beat detection accuracy on swing and odd meters:** IOI coefficient-of-variation threshold (0.3) and swing ratio detection are training knowledge estimates. Calibrate against actual jazz recordings (straight-time, swing, ballad, 5/4) during Phase 2.
-- **OffscreenCanvas iOS support:** Confirmed Baseline March 2023 (iOS 16.4+), but not the primary rendering strategy. Main-thread Canvas is the safe path; OffscreenCanvas is an optimization-only path if profiling reveals main thread budget issues.
+- **Chroma entropy thresholds (0.3/0.5):** Acoustics-reasoning estimates for sax-vs-keyboard disambiguation in `BrassWindDisambiguator.ts`. Cannot be validated without real mixed jazz recordings. Do not commit these values in v1.1 production code; flag for calibration in v1.2 planning.
+- **iOS canvas performance at 8 instruments:** Quadratic edge growth (6 edges at 4 instruments → 28 at 8) is mathematically certain. Whether it drops below 30fps on iPhone SE is an empirical question. Test on a physical device early in Phase 2 execution, before completing the full implementation.
+- **Vibes + keyboard simultaneous selection policy:** Whether to allow this combination (accepting known inaccuracy and documenting it) or prevent it in the UI is a product decision that must be made before Phase 2 ships. FEATURES.md suggests accepting the limitation with transparency. Confirm explicitly during Phase 2 planning.
+- **Layout geometry for 5–8 nodes:** Coordinates in ARCHITECTURE.md are starting points for visual iteration. They must be tested on the actual 800×400 canvas against the tension meter (right edge x ≈ 0.95) and BPM display (bottom-left y ≈ 0.95) as layout constraints. This is a Phase 2 execution task, not a research gap.
+- **Meyda `chroma` API input format:** `chroma` is a frequency-domain feature that accepts the amplitude spectrum, not the time-domain `rawTimeDataFloat` buffer. STACK.md flags this specifically. Confirm the correct input buffer at the call site in `BrassWindDisambiguator.ts` before shipping.
 
 ---
 
 ## Sources
 
-### Primary (HIGH confidence — verified against installed packages or official docs)
+### Primary (HIGH confidence)
+- Direct source audit of 17 project source files (ARCHITECTURE.md) — all change sites identified with file paths and line numbers
+- UNSW Acoustics (newt.phys.unsw.edu.au) — brass instrument harmonics, trumpet/trombone profiles, saxophone conical bore physics
+- Meyda.js 5.6.3 installed package source — `chroma`, `spectralCentroid`, `spectralRolloff`, `spectralFlatness`, `spectralFlux` bug confirmed
+- MDN browser-compat-data v7.3.6 — iOS Safari Web Audio API compatibility (v1.0 research)
+- johndcook.com + UNSW saxophone pages — fundamental Hz ranges for all woodwinds
+- DPA Microphones Acoustical Characteristics reference — instrument frequency zones
 
-- Meyda.js source: `node_modules/meyda/dist/node/main.js` (installed v5.6.3) — confirmed extractors, ScriptProcessorNode usage
-- MDN browser-compat-data v7.3.6: `data.json` — AudioContext, AnalyserNode, AudioWorkletNode, AudioBufferSourceNode iOS Safari compat tables
-- MDN Web Audio API: AnalyserNode, AudioContext.resume(), AudioWorklet, ScriptProcessorNode, sampleRate, Web Audio Best Practices, Autoplay guide
-- MDN Canvas: Optimizing Canvas, Visualizations with Web Audio API, OffscreenCanvas
-- npm registry: `react@19.2.4`, `vite@7.3.1`, `tailwindcss@4.2.1`, `@tailwindcss/vite@4.2.1`, `typescript@5.9.3`, `@vitejs/plugin-react-swc@4.2.3`, `zustand@5.0.11`
+### Secondary (MEDIUM confidence)
+- soundshockaudio.com tenor sax EQ guide — frequency zone breakdown
+- Cambridge Intelligence graph layout guide — circular layout principles
+- ISMIR 2018 jazz solo instrument classification (Fraunhofer) — spectral feature taxonomy for instrument recognition
+- Lead Instrument Detection from Multitrack Music (arxiv 2025, arXiv:2503.03232) — disambiguation signal references
+- Impedance Spectrum study for tenor sax and trumpet (University of Illinois REU) — harmonic profiles
 
-### Secondary (MEDIUM confidence — training knowledge, well-established domain patterns)
-
-- Music information retrieval literature: rootless voicing chord detection accuracy, swing beat detection double-tempo problem, IOI coefficient of variation for rubato detection
-- Jazz pedagogy: chord function label conventions (tonic/subdominant/dominant/altered), extended chord vocabulary expectations, instrument role concepts (soloing/comping/holding/silent)
-- Audio tool conventions: Transcribe!, Sonic Visualiser, iReal Pro, Peaks.js, Amazing Slow Downer feature set analysis
-
-### Tertiary (LOW confidence — verify before implementation)
-
-- Meyda.js chroma internal sample rate handling (44100Hz hardcoding) — needs Context7 verification
-- Meyda.js AudioWorklet support and default behavior in v5.6.3 — needs Context7 verification
-- iOS Safari behavior of `AudioContext({ sampleRate: 44100 })` constructor option — not confirmed in fetched sources
+### Tertiary (LOW confidence — validate before use)
+- Vibraphone inharmonic partials (Wikipedia) — cited as MEDIUM confidence in STACK.md; tremolo-based vibes disambiguation has no implementation precedent
+- Chroma polyphony score thresholds 0.3/0.5 — acoustics reasoning only, not empirically validated on real jazz recordings
 
 ---
-*Research completed: 2026-03-10*
+
+*Research completed: 2026-03-11*
+*v1.0 research: 2026-03-10*
 *Ready for roadmap: yes*

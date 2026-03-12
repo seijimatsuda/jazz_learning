@@ -1,252 +1,325 @@
 # Technology Stack
 
 **Project:** Jazz Learning — Browser-based audio analysis and visualization
-**Researched:** 2026-03-10
-**Research method:** npm registry queries, MDN browser-compat-data package inspection, Meyda.js source analysis
+**Researched:** 2026-03-10 (v1.0), updated 2026-03-11 (v1.1 milestone)
+**Research method:** npm registry queries, MDN browser-compat-data package inspection, Meyda.js source analysis, instrument acoustics sources (physics.unsw.edu.au, soundshockaudio.com)
 
 ---
 
-## Recommended Stack
+## v1.1 Milestone: What Changes and What Does Not
+
+**No new npm dependencies required for flexible instrument lineup.** All needed capabilities
+are present in the existing stack. One library (`d3-force`) is considered below and explicitly
+rejected for this milestone.
+
+| Category | v1.1 Action | Rationale |
+|----------|-------------|-----------|
+| React, Vite, TS, Tailwind, Zustand | No change | All sufficient |
+| Meyda.js 5.6.3 | No upgrade | ZCR, chroma, spectralCentroid, spectralRolloff all correct in 5.6.3 |
+| Web Audio API + Canvas 2D | No change | Existing pipeline fully sufficient |
+| d3-force | Do NOT add | Circular layout handles 2–8 nodes cleanly; force-directed adds runtime complexity with no visual benefit for fully-connected graphs at this scale |
+| `FrequencyBandSplitter.ts` | Extend | Add 3 new bands: `brass_low`, `brass_high`, `vibes` |
+| `InstrumentActivityScorer.ts` | Extend | Extend `InstrumentName` union + `INSTRUMENT_BAND_MAP` |
+| `NodeLayout.ts` | Refactor | Replace hardcoded switch(2\|3\|4) with circular formula for 2–8 |
+| New file: `BrassWindDisambiguator.ts` | Create | Chroma-entropy + spectral rolloff disambiguation for sax vs. keyboard |
+
+---
+
+## New Instruments: Frequency Profiles
+
+All fundamental ranges are physically fixed by instrument construction (HIGH confidence,
+physics.unsw.edu.au acoustics resources). Spectral centroid estimates are MEDIUM confidence
+(vary by player, dynamic level, playing style).
+
+### Tenor Saxophone
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Fundamental range | 110–830 Hz | Low Bb2 (110 Hz) to high F#5 (~740 Hz); altissimo to ~1.2 kHz |
+| Harmonic structure | Strong 2nd, 3rd, 4th harmonics; conical bore → even harmonics present | Distinguishes from clarinet (cylindrical = odd harmonics only) |
+| Presence/body band | 200–2000 Hz | Core tone; overlaps the `mid` band extensively |
+| Brightness | 3–10 kHz | Upper harmonics extend here; brighter than vibes, darker than trumpet |
+| Spectral centroid approx | ~1000–2500 Hz | Increases at louder dynamics; brightness tracks dynamics |
+| ZCR characteristic | Low | Continuous reed vibration → sustained, tonal — similar to keyboard, NOT guitar-like |
+| Spectral flux characteristic | Low sustained; narrow spike on tongued attacks | Tongued attacks produce brief flux spikes, not the broad strumming flux of guitar |
+
+**Alto saxophone:** Fundamental range ~147–1109 Hz (concert pitch). Same spectral shape as tenor, higher.
+
+**Primary challenge — overlap with keyboard:** Both instruments occupy 200–2000 Hz, both have
+low ZCR, both have low sustained spectral flux. The existing ZCR+flux approach from
+`KbGuitarDisambiguator.ts` is NOT sufficient. See disambiguation section below.
+
+### Trumpet (Bb)
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Fundamental range | 185–1175 Hz | F#3 (185 Hz) to C6 (~1175 Hz) |
+| Harmonic structure | Rich, 8+ harmonics; bell radiates higher frequencies preferentially | Brighter at loud dynamics — upper harmonics grow faster than fundamental |
+| Presence/attack band | 1–5 kHz | Characteristic "bite" and cut lives here |
+| Air/brilliance | 5–15 kHz | Significant upper harmonic energy distinguishes trumpet from trombone |
+| Spectral centroid approx | ~1500–4000 Hz | Higher centroid than trombone or sax |
+| ZCR characteristic | Low | Sustained brass tone; not useful for brass-vs-brass disambiguation |
+| Spectral flux characteristic | Low sustained; spikes on articulation | Similar to sax |
+
+**Overlap with guitar:** Guitar upper harmonics and trumpet fundamentals share 300–1200 Hz.
+Disambiguation: trumpet's spectral rolloff is significantly higher (energy extends to 15 kHz)
+vs. clean jazz guitar (falls off above ~4 kHz). Trumpet ZCR is lower than guitar (plucked vs. sustained breath).
+
+### Trombone (Tenor)
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Fundamental range | 82–466 Hz | E2 (82 Hz) to Bb4 (466 Hz) — lowest of the four new instruments |
+| Harmonic structure | Fundamental often weak; whole-tube instrument, even + odd harmonics present | Lower spectral centroid than trumpet by approximately an octave |
+| Presence band | 200–1500 Hz | Body of sound; overlaps `bass`, `mid`, and `mid_high` |
+| Air/shimmer | 2–8 kHz | Upper harmonics considerably lower energy here than trumpet |
+| Spectral centroid approx | ~600–1500 Hz | Clearly lower than trumpet |
+| ZCR characteristic | Low | Same as trumpet/sax |
+
+**Overlap with bass:** Trombone fundamentals (82–300 Hz) fall inside the existing `bass`
+band (20–250 Hz). When both bass and trombone are in the lineup, assign trombone
+`['brass_low', 'mid']` — averaging across both bands spans its full range. Spectral centroid
+disambiguates: upright bass centroid ~80–300 Hz; trombone centroid ~300–1500 Hz.
+
+### Vibraphone
+
+| Parameter | Value | Notes |
+|-----------|-------|-------|
+| Fundamental range | 131–2093 Hz | C3 (131 Hz) to C7 (2093 Hz) — widest range of new instruments |
+| Harmonic structure | Mostly INHARMONIC partials; bar modes at ~2x, ~3.9x fundamental (NOT integer multiples) | Key distinguishing feature from all other instruments in this app |
+| Resonator effect | Resonators amplify fundamental but NOT upper partials | Results in strong fundamental with suppressed harmonics — "hollow" spectrum |
+| Spectral flatness | Low (concentrated fundamental + sparse inharmonic partials) | Very different from keyboard polyphonic chords (denser spectrum) |
+| Spectral centroid approx | ~300–2000 Hz | Stays close to fundamental due to resonator suppression of upper partials |
+| ZCR characteristic | Low-moderate; struck then decaying | Attack transient then fast decay — distinct from sustained wind instruments |
+| Spectral flux characteristic | Moderate; struck percussion spike then fast decay | Attack-then-decay pattern distinguishable from sustained wind instruments |
+
+**Overlap with keyboard:** Vibes and keyboard share most of the same frequency range.
+Key disambiguation: vibraphone's partials are NOT at integer multiples of f0 (inharmonic);
+keyboard piano strings are near-harmonic. `spectralFlatness` — vibes will show lower flatness
+(sparse strong peaks) vs. keyboard polyphonic chords (denser spectrum). Chroma entropy also
+applies: vibes is effectively monophonic in jazz contexts.
+
+---
+
+## New Frequency Bands Required
+
+`buildDefaultBands()` in `FrequencyBandSplitter.ts` must be extended. Current bands were
+designed for the 4-instrument lineup. New instruments need additional band coverage.
+**Do NOT rename or remove existing bands** — existing instruments reference band names by
+string key.
+
+```
+Existing bands (no change):
+  bass:       20–250 Hz
+  drums_low:  60–300 Hz
+  mid:        250–2000 Hz
+  mid_high:   300–3000 Hz
+  drums_high: 2000–8000 Hz
+  ride:       6000–10000 Hz
+
+New bands to append:
+  brass_low:  80–500 Hz       trombone fundamentals, trumpet low register
+  brass_high: 1000–6000 Hz    trumpet/trombone upper harmonics, presence zone
+  vibes_band: 130–2100 Hz     vibraphone fundamental range (named vibes_band to avoid clash)
+```
+
+---
+
+## Updated INSTRUMENT_BAND_MAP
+
+The `InstrumentName` type and `INSTRUMENT_BAND_MAP` in `InstrumentActivityScorer.ts` must
+be extended:
+
+```typescript
+// Extend InstrumentName union
+export type InstrumentName =
+  | 'bass' | 'drums' | 'keyboard' | 'guitar'         // existing
+  | 'saxophone' | 'trumpet' | 'trombone' | 'vibes';   // new
+
+// Add to INSTRUMENT_BAND_MAP
+saxophone: ['mid'],
+trumpet:   ['mid_high', 'brass_high'],
+trombone:  ['brass_low', 'mid'],
+vibes:     ['mid', 'vibes_band'],
+```
+
+**Band fallback logic (extending `resolveBandsForInstrument`):**
+The existing INST-05 logic gives solo keyboard/guitar the full mid range. New rules:
+- Saxophone alone (no keyboard): claim `['mid', 'mid_high']`
+- Trombone alone (no bass): claim `['bass', 'brass_low', 'mid']`
+- One brass instrument (trumpet or trombone) alone: claim `['brass_low', 'brass_high']`
+
+---
+
+## Disambiguation Strategy: Sax vs. Keyboard
+
+The existing ZCR+flux approach from `KbGuitarDisambiguator.ts` is **not sufficient** here.
+Both sax and keyboard: low ZCR, low sustained spectral flux, overlapping frequency bands.
+
+**Primary signal: Chroma Polyphony Score** (uses `Meyda.extract('chroma', ...)`)
+
+`chroma` returns a 12-element Float32Array of pitch-class energy. Compute Shannon entropy
+of the chroma distribution to score polyphony:
+
+```typescript
+// New file: BrassWindDisambiguator.ts
+function chromaPolyphonyScore(chroma: Float32Array): number {
+  // Shannon entropy — high (>0.5) = polyphonic (keyboard), low (<0.3) = monophonic (sax/vibes)
+  let entropy = 0;
+  const sum = chroma.reduce((a, b) => a + b, 0);
+  if (sum === 0) return 0;
+  for (const c of chroma) {
+    const p = c / sum;
+    if (p > 0) entropy -= p * Math.log2(p);
+  }
+  return entropy / Math.log2(12); // normalize to [0, 1]
+}
+```
+
+`Meyda.extract('chroma', ...)` is confirmed correct in Meyda 5.6.3.
+
+**Important Meyda API note:** `chroma` is a frequency-domain feature. Per Meyda docs, it
+accepts the amplitude spectrum as input (not time-domain Float32Array). Verify against
+`meyda.js.org/audio-features.html` before calling. The `rawTimeDataFloat` buffer is correct
+for time-domain features (ZCR); for chroma, pass the amplitude spectrum.
+
+**Secondary signal: Spectral Rolloff**
+
+`Meyda.extract('spectralRolloff', ...)` returns the frequency (Hz) below which 99% of
+spectral energy sits.
+- Keyboard mid-register chord: rolloff ~2500–4000 Hz (broad harmonic spread across multiple notes)
+- Saxophone mid-register note: rolloff ~1500–2500 Hz (narrower, single-note harmonic series)
+
+Use rolloff as a secondary confirmation, not primary.
+
+**Vibes vs. Keyboard disambiguation:**
+Use `spectralFlatness` as primary signal. Vibes has sparse inharmonic peaks → low flatness.
+Keyboard polyphony produces denser spectrum → higher flatness. Chroma entropy is also
+applicable (vibes is monophonic in most jazz contexts).
+
+---
+
+## Layout Algorithm: Circular Layout for 2–8 Nodes
+
+**Decision: extend the existing circular/geometric layout in `NodeLayout.ts`. Do not add d3-force.**
+
+**Why circular wins over force-directed for this use case:**
+
+1. For a fully-connected graph (all-pairs edges, which this app uses), force-directed physics
+   with uniform edge weights and uniform repulsion converges to a near-circle anyway. The physics
+   simulation is doing work to arrive at the same result a direct formula produces instantly.
+
+2. No runtime simulation loop. Circular layout is O(n) — compute angles, done. Force-directed
+   needs ~100–300 ticks to settle per layout change. Even off-frame, it adds state complexity.
+
+3. Deterministic. Semantic adjacency (drums near bass for the pocket-line edge) can be encoded
+   directly into node ordering before angle assignment.
+
+4. `NodeLayout.ts` already uses geometric layouts (triangle for 3, diamond for 4). Extending
+   to 5–8 is a direct continuation of that pattern.
+
+**Circular layout formula to replace the current switch statement:**
+
+```typescript
+// Replace computeNodePositions(count: 2 | 3 | 4) with:
+export function computeNodePositions(count: number): NodePosition[] {
+  if (count < 2 || count > 8) throw new Error(`Lineup must be 2-8 instruments, got ${count}`);
+  const cx = 0.50;
+  const cy = 0.50;
+  const rx = 0.30;       // horizontal radius — leaves margin for node labels
+  const ry = 0.30;       // vertical radius
+  const startAngle = -Math.PI / 2; // start at top (12 o'clock position)
+  return Array.from({ length: count }, (_, i) => ({
+    x: cx + rx * Math.cos(startAngle + (2 * Math.PI * i) / count),
+    y: cy + ry * Math.sin(startAngle + (2 * Math.PI * i) / count),
+  }));
+}
+```
+
+**Node ordering within the circle:** Sort instruments into semantic order before computing
+positions so that rhythm-section instruments remain adjacent (preserving the pocket-line
+edge semantics):
+
+```
+Recommended sort order: [drums, bass, trombone, saxophone, vibes, keyboard, guitar, trumpet]
+                          (grouped: rhythm section → low horns → melodic center → high)
+```
+
+Instruments not in the lineup are simply absent from the array — the formula adapts.
+
+**Backward compatibility note:** The existing `INSTRUMENT_ORDER` constant and
+`computeNodePositions(count: 2 | 3 | 4)` are referenced in `CanvasRenderer.ts` and
+`NodeLayout.ts`. The refactor must either maintain the existing function signature for
+n=2,3,4 (returning the same fractional positions) or update all call sites.
+
+**When force-directed layout WOULD make sense:** If a future milestone adds cluster-based
+layout (e.g., "rhythm section cluster" vs. "horn section cluster" with intra-cluster short
+edges and inter-cluster long edges). At that point, `d3-force` v3.0.0 (pure ESM, Vite-compatible)
+with `@types/d3-force` from DefinitelyTyped is the right tool. Not needed now.
+
+---
+
+## Instrument Frequency Profile Quick Reference
+
+| Instrument | Fundamental Hz | Primary Bands | Key Spectral Signature | Primary Disambiguator |
+|------------|---------------|---------------|----------------------|-----------------------|
+| Bass | 40–300 | bass | Sub-bass energy; low ZCR; low centroid | Centroid < 300 Hz |
+| Drums | 60–10000 | drums_low, drums_high, ride | High ZCR; high flux; wideband | High ZCR + wideband flux |
+| Keyboard | 28–4186 | mid, mid_high | Polyphonic chroma; moderate centroid; sustained | High chroma entropy |
+| Guitar | 82–1175 | mid_high | High ZCR; high flux; mid-high centroid | High ZCR + high flux |
+| Saxophone | 110–1200 | mid | Monophonic chroma; narrow rolloff; sustained reed | Low chroma entropy |
+| Trumpet | 185–1175 | mid_high, brass_high | High centroid; bright harmonics to 15 kHz | High spectral rolloff |
+| Trombone | 82–466 | brass_low, mid | Low centroid; overlaps bass register | Centroid 300–1500 Hz |
+| Vibes | 131–2093 | mid, vibes_band | Inharmonic partials; strong fundamental; attack-decay | Low spectral flatness; flux spike + decay |
+
+---
+
+## Existing Stack (Full, No Changes)
 
 ### Core Framework
 
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| React | 19.2.4 | UI component tree, state, lifecycle | Current stable. React 19 ships concurrent features and Actions — both useful for async audio file loading. No reason to pin to v18. |
-| TypeScript | 5.9.3 | Type safety across audio pipeline | Audio API has many `Float32Array`, `AudioNode`, `AudioBuffer` types. TypeScript catches buffer-size mismatches and feature-name typos at compile time. Worth the setup cost. |
-| Vite | 7.3.1 | Dev server + bundler | Native ESM dev server means fast HMR. Audio worklets and WASM modules load cleanly. `@vitejs/plugin-react-swc` preferred over `plugin-react` for speed. |
-| @vitejs/plugin-react-swc | 4.2.3 | React JSX transform + Fast Refresh | SWC-based, faster than Babel-based plugin-react. No meaningful DX difference. |
+| React | 19.2.0 | UI component tree, state, lifecycle | Current stable. Concurrent features useful for async audio file loading. |
+| TypeScript | 5.9.3 | Type safety across audio pipeline | Catches buffer-size mismatches and feature-name typos at compile time. |
+| Vite | 7.3.1 | Dev server + bundler | Native ESM dev server. Audio worklets and WASM load cleanly. Fast HMR. |
 
 ### Audio Analysis
 
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| Web Audio API | Browser built-in | FFT via AnalyserNode, file decode via decodeAudioData, playback via AudioBufferSourceNode | Native browser API. Zero bundle weight. AnalyserNode provides FFT without any library. |
-| Meyda.js | 5.6.3 | Chroma, RMS, ZCR, spectral flux, MFCC, mel bands | The only production-stable browser audio feature extraction library. Confirmed 23 extractors including all four features required by this project. |
+| Web Audio API | Browser built-in | FFT via AnalyserNode, decode via decodeAudioData, playback via AudioBufferSourceNode | Native, zero bundle weight. |
+| Meyda.js | 5.6.3 | ZCR, chroma, spectralCentroid, spectralRolloff, spectralFlatness, rms | Only production-stable browser audio feature extraction library. MIT license. |
 
-**Meyda.js confirmed extractors (verified from v5.6.3 dist source):**
-- `chroma` — 12-bin chromagram, normalized
-- `rms` — Root mean square (volume/energy proxy)
-- `zcr` — Zero crossing rate (percussiveness/noisiness proxy)
-- `spectralFlux` — Frame-to-frame spectral change (onset/transient detection)
-- `spectralCentroid` — Brightness
-- `mfcc` — Mel-frequency cepstral coefficients (timbre)
-- `melBands` — Mel filter bank output
-- `energy` — Total signal energy
-- `loudness` — Perceptual loudness with Bark bands
-- `spectralFlatness`, `spectralRolloff`, `spectralSpread`, `spectralSlope`, `spectralSkewness`, `spectralKurtosis`, `spectralCrest`
-- `perceptualSpread`, `perceptualSharpness`
-- `amplitudeSpectrum`, `powerSpectrum`, `complexSpectrum`, `buffer`
+**Meyda 5.6.3 known bug (documented in KbGuitarDisambiguator.ts):**
+`Meyda.extract('spectralFlux', ...)` returns 0 or NaN due to a negative-index bug.
+Use the hand-rolled `computeSpectralFlux()` in `KbGuitarDisambiguator.ts` instead.
+Do NOT call Meyda's spectralFlux extractor for any instrument — old or new.
 
-**Confidence: HIGH** — Verified directly from installed package dist source.
-
-### Rendering / Visualization
+### Rendering
 
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| Canvas API | Browser built-in | Animated node graph with glows, ripples, edges | Native 2D canvas is the right tool for a custom animated graph. No library overhead. requestAnimationFrame loop at 60fps is straightforward. |
+| Canvas API | Browser built-in | Animated node graph | Custom audio-driven animation. Raw Canvas beats every library for this use case at 2–15 nodes. |
 
-For this project's specific rendering needs (custom node graph, per-frame audio-driven positions/opacity/glow radius), raw Canvas beats every alternative. See "Alternatives Considered" below.
-
-### Styling
+### Styling + State
 
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| Tailwind CSS | 4.2.1 | UI chrome outside the canvas | Utility-first for the surrounding player controls, file upload UI, and layout. |
-| @tailwindcss/vite | 4.2.1 | Tailwind v4 Vite integration | **Critical:** Tailwind v4 dropped `tailwind.config.js`. Config is now CSS-first via `@import "tailwindcss"` in your CSS entry point. Use the `@tailwindcss/vite` plugin, not `postcss-tailwindcss`. |
-
-### State Management
-
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| Zustand | 5.0.11 | Audio engine state (playback position, extracted features, node positions) | Audio feature data updates at 60fps. React context/useState will trigger full re-renders. Zustand's selector-based subscriptions let the Canvas loop read state without React knowing. Lightweight at zero deps. |
-
-**Pattern:** Audio processing loop writes to Zustand store. Canvas `requestAnimationFrame` loop reads from store. React UI subscribes only to coarse state (playing, loaded, etc.). This keeps React out of the hot path.
+| Tailwind CSS | 4.2.1 | UI chrome outside canvas | Utility-first. v4 CSS-first config. |
+| Zustand | 5.0.11 | Audio/UI state bridge | Selector-based subscriptions keep Canvas loop outside React render cycle. |
 
 ---
 
-## Alternatives Considered
+## What NOT to Add
 
-### Canvas vs PixiJS vs Three.js/React Three Fiber
-
-| | Canvas API (raw) | PixiJS 8 | React Three Fiber 9 |
-|-|-----------------|----------|---------------------|
-| Bundle size | 0 KB | ~70 MB uncompressed | Heavy |
-| Custom node graph | Full control | Requires Pixi abstraction | Overkill (3D engine for 2D graph) |
-| iOS Safari | Full support | Full support | Full support |
-| Glow/blur effects | `ctx.shadowBlur` or layered compositing | Filter API or shader | Shader |
-| 60fps suitability | Yes, if draw calls are batched | Yes, WebGL-backed | Yes |
-| Recommendation | Use this | Reasonable if graph gets very complex (>500 nodes) | Wrong tool |
-
-**Decision:** Raw Canvas. The node graph is 5-15 instruments. Raw Canvas is 100-200 lines, PixiJS adds ~2MB bundle and an abstraction layer you'd fight for custom glow effects. Use PixiJS only if node count exceeds 100 and perf issues appear.
-
-### Meyda.js vs Essentia.js vs Manual FFT
-
-| | Meyda.js 5.6.3 | Essentia.js 0.1.3 | Manual Web Audio FFT |
-|-|----------------|-------------------|---------------------|
-| Chroma extraction | Yes (confirmed) | Yes (more algorithms) | No, manual required |
-| License | MIT | **AGPL-3.0** | N/A |
-| Bundle size | 556 KB | 10.1 MB | 0 |
-| iOS Safari | Yes | Untested (WASM-heavy) | Yes |
-| Maintenance | Active, v6 in beta | Sparse (last stable 2021) | N/A |
-| Recommendation | Use this | Avoid (AGPL license risk, bundle size) | Use for FFT-only if Meyda not needed |
-
-**Decision:** Meyda.js. Essentia.js is AGPL which creates license obligations. Its 10 MB bundle (WASM) will hurt mobile load time. Meyda is MIT, 556 KB, has every feature needed, and the maintainers are active (v6 beta exists as of 2025).
-
-### Tailwind v3 vs v4
-
-Tailwind v4.2.1 is latest stable. v4 is a significant rewrite:
-- No `tailwind.config.js` — configuration moves to CSS via `@theme` directives
-- Requires `@tailwindcss/vite` plugin (not postcss)
-- Faster build (Rust/Oxide engine)
-- Use v4 unless you're copying config from an existing v3 project
-
-### React Context vs Zustand for audio state
-
-React context triggers re-render on every state change. At 60fps feature extraction, this means 60 re-renders per second. Zustand's subscriptions are outside React's render cycle. For audio-driven UIs, Zustand is the correct choice.
-
----
-
-## iOS Safari — Web Audio API Specifics
-
-**Confidence: HIGH** — All data from MDN browser-compat-data v7.3.6 package.
-
-### What Works
-
-| API | iOS Safari since | Notes |
-|-----|-----------------|-------|
-| `AudioContext` (unprefixed) | iOS 14.5 | iOS 13 and earlier need `webkitAudioContext` prefix |
-| `AudioWorkletNode` | iOS 14.5 | Available, but has quirks (see below) |
-| `AnalyserNode` | iOS 6 | Reliable across all versions |
-| `AudioBufferSourceNode` | iOS 6 | Reliable for file playback |
-| `decodeAudioData` | iOS 6 | Reliable |
-| `OfflineAudioContext` (unprefixed) | iOS 14.5 | Old iOS needs `webkitOfflineAudioContext` |
-| `ScriptProcessorNode` | iOS 7 | Deprecated but broadly supported |
-
-### Critical iOS Safari Quirks
-
-**1. AudioContext must be created from a user gesture**
-
-iOS Safari silences audio created outside a user interaction event. The `AudioContext` must be created (or `.resume()` called) inside a `click`, `touchstart`, or `pointerdown` handler. This is not optional — it silences all audio otherwise.
-
-```typescript
-// CORRECT: Create inside gesture handler
-button.addEventListener('click', () => {
-  const audioCtx = new AudioContext();
-  // Now safe to proceed
-});
-
-// WRONG: Create at module load time
-const audioCtx = new AudioContext(); // Silent on iOS
-```
-
-**2. AudioContext starts in 'suspended' state on iOS**
-
-Even when created inside a gesture, iOS AudioContext may start suspended. Always call `.resume()` and await it before processing.
-
-```typescript
-const audioCtx = new AudioContext();
-await audioCtx.resume();
-// Now actually running
-```
-
-**3. `BaseAudioContext.resume` MDN compat entry is empty for iOS Safari**
-
-The MDN compat data has an empty object `{}` for `safari_ios` on `.resume()`. This likely means the method exists but has edge-case behavior. Always wrap `.resume()` in a try/catch and check `.state` after.
-
-```typescript
-if (audioCtx.state === 'suspended') {
-  try {
-    await audioCtx.resume();
-  } catch (e) {
-    // Fallback: reconnect nodes
-  }
-}
-```
-
-**4. Meyda.js v5.6.3 uses deprecated ScriptProcessorNode**
-
-`ScriptProcessorNode` (`createScriptProcessor` + `onaudioprocess`) is deprecated but still works on iOS Safari (supported since iOS 7). For this project this is acceptable — the node is deprecated but not removed, and Meyda's real-time callback pattern depends on it. Monitor for v6 stable which may address this.
-
-Confirmed from Meyda v5.6.3 source:
-```
-this._m.spn = this._m.audioContext.createScriptProcessor(...)
-this._m.spn.onaudioprocess = function(e) { ... }
-```
-
-**5. AudioWorkletNode available iOS 14.5+ but has registration quirks**
-
-AudioWorklet processor files must be fetched relative to the page origin. In Vite, put worklet `.js` files in `/public/` and register with an absolute path. Do not inline worklet code as blob URLs — iOS Safari does not support AudioWorklet blob URL registration reliably.
-
-**6. Large file decoding blocks the main thread**
-
-`decodeAudioData` on iOS Safari is synchronous-feeling for large files (10+ minutes of audio). Wrap in a loading state and consider chunking or using a Web Worker for the decode step.
-
-**7. webkitAudioContext fallback**
-
-For coverage below iOS 14.5 (older iPhones still in use):
-```typescript
-const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-const audioCtx = new AudioContextClass();
-```
-
----
-
-## Recommended Installation
-
-```bash
-# Scaffold
-npm create vite@latest jazz-learning -- --template react-swc-ts
-
-# Audio analysis
-npm install meyda
-
-# State management
-npm install zustand
-
-# Styling (Tailwind v4 — CSS-first setup)
-npm install tailwindcss @tailwindcss/vite
-
-# Types
-npm install -D @types/react @types/react-dom
-```
-
-**Tailwind v4 Vite config (vite.config.ts):**
-```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import tailwindcss from '@tailwindcss/vite'
-
-export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
-})
-```
-
-**Tailwind v4 CSS entry (src/index.css):**
-```css
-@import "tailwindcss";
-/* No config.js needed. Custom theme goes here via @theme directive. */
-```
-
-**No postcss.config.js needed** — the `@tailwindcss/vite` plugin replaces the PostCSS approach.
-
----
-
-## What NOT to Use
-
-| Technology | Reason to Avoid |
-|------------|----------------|
-| Essentia.js | AGPL-3.0 license risk, 10 MB WASM bundle, sparse maintenance |
-| PixiJS / Three.js | Overkill for a 5-15 node graph. Adds bundle weight and abstraction friction |
-| D3.js | SVG-based force graphs lag at 60fps with audio-driven per-frame updates. Canvas is faster for this use case |
-| Framer Motion | Designed for CSS/SVG animations, not per-frame Canvas rendering driven by audio data |
-| React Context for audio state | Causes 60 re-renders/second. Use Zustand |
-| `create-react-app` | Dead project, no longer maintained |
-| Meyda v6.0.0-beta.2 | Beta, not production stable. Still uses ScriptProcessorNode anyway |
-| `tailwind.config.js` pattern | Does not work in Tailwind v4. Will silently produce no styles if you use the v3 setup pattern |
+| Technology | Reason |
+|------------|--------|
+| d3-force | Circular layout is correct for n ≤ 8; force-directed adds runtime complexity with no visual benefit for fully-connected uniform-weight graphs |
+| Essentia.js | AGPL-3.0 license risk, 10 MB WASM bundle |
+| PixiJS / Three.js | Overkill for 2–15 node graph |
+| Meyda v6.0.0-beta | Not production stable |
+| Any new npm package for v1.1 | None needed |
 
 ---
 
@@ -254,19 +327,27 @@ export default defineConfig({
 
 | Area | Confidence | Source |
 |------|------------|--------|
-| Meyda.js version and extractors | HIGH | Installed package source inspection |
-| Meyda.js ScriptProcessorNode usage | HIGH | Installed package source inspection |
-| React / Vite / Tailwind versions | HIGH | npm registry |
-| iOS Safari AudioContext compat | HIGH | MDN browser-compat-data v7.3.6 package |
-| iOS Safari resume() quirks | MEDIUM | MDN compat data shows empty entry; behavior based on known platform patterns |
-| Tailwind v4 CSS-first config | HIGH | Package structure inspection + exports analysis |
-| OffscreenCanvas iOS support | LOW | Not verified in this research session (Bash was cut off); known from training to have arrived in Safari 16.4, ~iOS 16.4+ |
+| Instrument fundamental ranges | HIGH | Physics.unsw.edu.au acoustics pages; instrument construction is fixed physics |
+| Spectral centroid estimates | MEDIUM | Qualitative from multiple sources; varies by player and dynamics |
+| Meyda.js chroma + spectralRolloff correctness | HIGH | Installed package dist source inspection (v1.0 research) |
+| Meyda.js spectralFlux bug | HIGH | Confirmed in KbGuitarDisambiguator.ts comment + original research |
+| Circular layout algorithm | HIGH | Standard graph drawing formula; O(n) deterministic |
+| d3-force ESM + Vite compatibility | HIGH | d3js.org docs; d3-force v3.0.0 adopts `"type": "module"` |
+| Vibraphone inharmonic partials | MEDIUM | Wikipedia + general acoustics literature |
+| Chroma polyphony score (sax vs keyboard) | MEDIUM | Acoustics reasoning; not empirically tuned yet — thresholds (0.3/0.5) need calibration |
 
 ---
 
 ## Sources
 
-- npm registry: `meyda@5.6.3`, `react@19.2.4`, `vite@7.3.1`, `tailwindcss@4.2.1`, `@tailwindcss/vite@4.2.1`, `typescript@5.9.3`, `@vitejs/plugin-react-swc@4.2.3`, `zustand@5.0.11`
-- Meyda source inspection: `node_modules/meyda/dist/node/main.js` (installed from npm)
-- MDN browser-compat-data v7.3.6: `data.json` — AudioContext, BaseAudioContext, AnalyserNode, AudioWorkletNode, ScriptProcessorNode, OfflineAudioContext, AudioBufferSourceNode compat tables
-
+- [Meyda.js audio features](https://meyda.js.org/audio-features.html) — feature list, chroma, spectralCentroid, spectralRolloff, spectralFlatness (HIGH confidence)
+- [d3-force documentation (d3js.org)](https://d3js.org/d3-force) — forces available, ESM, pure module (HIGH confidence)
+- [Brass instrument acoustics — UNSW](https://newt.phys.unsw.edu.au/jw/brassacoustics.html) — trumpet/trombone harmonic profiles (HIGH confidence)
+- [Saxophone acoustics — UNSW](https://newt.phys.unsw.edu.au/music/saxophone/) — harmonic structure, conical bore (HIGH confidence)
+- [Saxophone frequency ranges — johndcook.com](https://www.johndcook.com/blog/2021/02/26/saxophone-ranges/) — fundamental Hz ranges (HIGH confidence)
+- [Tenor sax EQ guide — soundshockaudio.com](https://soundshockaudio.com/how-to-eq-tenor-sax/) — frequency zone breakdown (MEDIUM confidence)
+- [Vibraphone — Wikipedia (via WebSearch)](https://en.wikipedia.org/wiki/Vibraphone) — inharmonic partials, resonator effect (MEDIUM confidence)
+- [Pitch of brass instruments — Wikipedia (via WebSearch)](https://en.wikipedia.org/wiki/Pitch_of_brass_instruments) — trombone/trumpet ranges
+- [Circular layout — Wikipedia](https://en.wikipedia.org/wiki/Circular_layout) — standard algorithm reference
+- [Musical Instrument Recognition by XGBoost (arxiv.org)](https://arxiv.org/pdf/2206.00901) — spectral features for instrument recognition
+- MDN browser-compat-data v7.3.6 (v1.0 research) — iOS Safari Web Audio API compat
