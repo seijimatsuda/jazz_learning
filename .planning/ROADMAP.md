@@ -13,7 +13,7 @@
 **Milestone Goal:** Improve analysis accuracy by disambiguating overlapping instrument pairs (sax/keyboard, vibes/keyboard, trombone/bass, multi-horn), add instrument family visual identity (color coding, spatial grouping, typed edge animations), and close v1.1 tech debt.
 
 - [x] **Phase 12: Disambiguation Engine** — Raw/display score split, spectral extractors, and all 4 instrument pair disambiguators
-- [ ] **Phase 13: Visual Family Identity** — Instrument family color coding, spatial clustering, and typed edge animations
+- [x] **Phase 13: Visual Family Identity** — Instrument family color coding, spatial clustering, and typed edge animations
 - [ ] **Phase 14: Tech Debt and Polish** — Remove dead code, add crash guards, fix lineup pattern brittleness
 
 ## Phase Details
@@ -49,8 +49,8 @@ Plans:
 **Plans**: 2 plans in 2 waves
 
 Plans:
-- [ ] 13-01-PLAN.md — Family ring stroke on nodes (VIS-01) + family-sorted circular layout (VIS-02) (Wave 1)
-- [ ] 13-02-PLAN.md — Per-type edge animation: rhythmic beat-pulse, melodic gradient, support breathe (VIS-03) (Wave 2)
+- [x] 13-01-PLAN.md — Family ring stroke on nodes (VIS-01) + family-sorted circular layout (VIS-02) (Wave 1)
+- [x] 13-02-PLAN.md — Per-type edge animation: rhythmic beat-pulse, melodic gradient, support breathe (VIS-03) (Wave 2)
 
 ### Phase 14: Tech Debt and Polish
 **Goal**: Codebase is cleaned up from v1.1 audit findings — no dead code paths, no crash risks from malformed data
@@ -81,5 +81,5 @@ Plans:
 | 10. Band Setup UI and Canvas Layout | v1.1 | 3/3 | Complete | 2026-03-12 |
 | 11. Gap Closures | v1.1 | 2/2 | Complete | 2026-03-12 |
 | 12. Disambiguation Engine | v1.2 | 6/6 | Complete | 2026-03-12 |
-| 13. Visual Family Identity | v1.2 | 0/2 | Not started | - |
+| 13. Visual Family Identity | v1.2 | 2/2 | Complete | 2026-03-12 |
 | 14. Tech Debt and Polish | v1.2 | 0/? | Not started | - |

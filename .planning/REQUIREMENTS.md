@@ -23,9 +23,9 @@
 
 ### Visual Family Identity
 
-- [ ] **VIS-01**: Instrument family color coding via ring stroke on canvas nodes (fill remains role-based)
-- [ ] **VIS-02**: Family-sorted circular layout clusters related instruments (horns together, rhythm together)
-- [ ] **VIS-03**: Edge animation style varies by communication type (rhythmic: beat-pulse, melodic: gradient, support: opacity breathe)
+- [x] **VIS-01**: Instrument family color coding via ring stroke on canvas nodes (fill remains role-based)
+- [x] **VIS-02**: Family-sorted circular layout clusters related instruments (horns together, rhythm together)
+- [x] **VIS-03**: Edge animation style varies by communication type (rhythmic: beat-pulse, melodic: gradient, support: opacity breathe)
 
 ### Tech Debt
 
