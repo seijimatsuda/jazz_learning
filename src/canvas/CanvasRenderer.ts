@@ -44,6 +44,28 @@ type ChordChangeCallback = (
 const INITIAL_BASE_RADIUS = 28;
 
 // ---------------------------------------------------------------------------
+// Family sort order for circular layout clustering (VIS-02)
+// ---------------------------------------------------------------------------
+
+/**
+ * Defines the angular position order of instrument families on the ring layout.
+ * Lower values appear earlier (closer to drums at index 1 on the ring).
+ *
+ * strings (2) is adjacent to keyboard (1) — jazz guitar and keyboard share harmonic/chordal roles,
+ * so clustering them is musically meaningful (comping pair cluster).
+ * woodwind (3) and brass (4) cluster the horn section together.
+ *
+ * Bass is always at center (index 0) and is NOT sorted — only ring instruments are sorted.
+ */
+const FAMILY_SORT_ORDER: Record<string, number> = {
+  rhythm:   0,  // drums — adjacent start of ring
+  keyboard: 1,  // keyboard, vibes — harmonic cluster
+  strings:  2,  // guitar — adjacent to keyboard (shared chordal roles)
+  woodwind: 3,  // saxophone — horn section start
+  brass:    4,  // trumpet, trombone — horn section end
+};
+
+// ---------------------------------------------------------------------------
 // Confidence indicator helpers (Phase 12 — DISC-04)
 // ---------------------------------------------------------------------------
 
@@ -194,6 +216,29 @@ export class CanvasRenderer {
       this.instrumentOrder = ['bass', ...lineup.filter(i => i !== 'bass')];
     } else {
       this.instrumentOrder = [...lineup];
+    }
+
+    // Family-sort ring instruments so same-family instruments appear adjacent (VIS-02).
+    // Bass stays at index 0 (center). All remaining ring instruments are sorted by FAMILY_SORT_ORDER.
+    // MUST run BEFORE computeNodePositions, nodeAnimStates, buildPairs — all index-dependent.
+    if (this.instrumentOrder[0] === 'bass') {
+      // Bass present — sort ring instruments (indices 1..N)
+      const ringInstruments = this.instrumentOrder.slice(1);
+      ringInstruments.sort((a, b) => {
+        const fa = INSTRUMENT_FAMILIES[a] ?? 'rhythm';
+        const fb = INSTRUMENT_FAMILIES[b] ?? 'rhythm';
+        return (FAMILY_SORT_ORDER[fa] ?? 99) - (FAMILY_SORT_ORDER[fb] ?? 99);
+      });
+      this.instrumentOrder = ['bass', ...ringInstruments];
+    } else {
+      // Bass absent — sort all instruments by family (no center instrument)
+      const allInstruments = [...this.instrumentOrder];
+      allInstruments.sort((a, b) => {
+        const fa = INSTRUMENT_FAMILIES[a] ?? 'rhythm';
+        const fb = INSTRUMENT_FAMILIES[b] ?? 'rhythm';
+        return (FAMILY_SORT_ORDER[fa] ?? 99) - (FAMILY_SORT_ORDER[fb] ?? 99);
+      });
+      this.instrumentOrder = allInstruments;
     }
 
     // Dynamic layout based on instrument count
