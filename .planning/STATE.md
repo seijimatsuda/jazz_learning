@@ -5,22 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** v1.2 Tech Debt and Polish — Phase 14 in progress (plan 01 complete)
+**Current focus:** v1.2 Instrument Disambiguation — COMPLETE (all 3 phases shipped)
 
 ## Current Position
 
-Phase: 14 of 14 (Tech Debt and Polish) — In progress
-Plan: 1 of ? in current phase (14-01 complete)
-Status: In progress
-Last activity: 2026-03-12 — Completed 14-01-PLAN.md (DEBT-01, DEBT-02, DEBT-03)
+Phase: 14 of 14 (Tech Debt and Polish) — COMPLETE ✓ (verified)
+Plan: 1 of 1 in current phase (all complete)
+Status: Phase complete — goal verified 3/3
+Last activity: 2026-03-12 — Phase 14 verified, all success criteria met
 
-Progress: [███████░░░] 71% (Phase 14 Tech Debt in progress — 14-01 done)
+Progress: [██████████] 100% (v1.2 milestone complete — all 14 phases shipped)
 
 ## Performance Metrics
 
 **Velocity:**
 - v1.0: 8 phases, 38 plans, 2 days
 - v1.1: 3 phases, 9 plans, 1 day
+- v1.2: 3 phases, 9 plans, 1 day
 
 ## Accumulated Context
 
@@ -72,5 +73,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-12
-Stopped at: Completed 14-01-PLAN.md — DEBT-01, DEBT-02, DEBT-03 closed
+Stopped at: v1.2 milestone complete — all phases shipped
 Resume file: None

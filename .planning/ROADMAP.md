@@ -4,17 +4,17 @@
 
 - ✅ **v1.0 MVP** — Phases 1-8 (shipped 2026-03-11) → [Archive](milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Flexible Lineup** — Phases 9-11 (shipped 2026-03-12) → [Archive](milestones/v1.1-ROADMAP.md)
-- 🚧 **v1.2 Instrument Disambiguation** — Phases 12-14 (in progress)
+- ✅ **v1.2 Instrument Disambiguation** — Phases 12-14 (shipped 2026-03-12) → [Archive](milestones/v1.2-ROADMAP.md)
 
 ---
 
-### 🚧 v1.2 Instrument Disambiguation (In Progress)
+### ✅ v1.2 Instrument Disambiguation (Complete)
 
 **Milestone Goal:** Improve analysis accuracy by disambiguating overlapping instrument pairs (sax/keyboard, vibes/keyboard, trombone/bass, multi-horn), add instrument family visual identity (color coding, spatial grouping, typed edge animations), and close v1.1 tech debt.
 
 - [x] **Phase 12: Disambiguation Engine** — Raw/display score split, spectral extractors, and all 4 instrument pair disambiguators
 - [x] **Phase 13: Visual Family Identity** — Instrument family color coding, spatial clustering, and typed edge animations
-- [ ] **Phase 14: Tech Debt and Polish** — Remove dead code, add crash guards, fix lineup pattern brittleness
+- [x] **Phase 14: Tech Debt and Polish** — Remove dead code, add crash guards, fix lineup pattern brittleness
 
 ## Phase Details
 
@@ -63,7 +63,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 14-01-PLAN.md — Remove edge fallback, add pair key guard, make lineup reactive (Wave 1)
+- [x] 14-01-PLAN.md — Remove edge fallback, add pair key guard, make lineup reactive (Wave 1)
 
 ## Progress
 
@@ -82,4 +82,4 @@ Plans:
 | 11. Gap Closures | v1.1 | 2/2 | Complete | 2026-03-12 |
 | 12. Disambiguation Engine | v1.2 | 6/6 | Complete | 2026-03-12 |
 | 13. Visual Family Identity | v1.2 | 2/2 | Complete | 2026-03-12 |
-| 14. Tech Debt and Polish | v1.2 | 0/1 | Not started | - |
+| 14. Tech Debt and Polish | v1.2 | 1/1 | Complete | 2026-03-12 |

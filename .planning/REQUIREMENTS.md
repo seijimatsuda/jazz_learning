@@ -29,9 +29,9 @@
 
 ### Tech Debt
 
-- [ ] **DEBT-01**: Remove edge fallback operator (`?? 'support'` in drawCommunicationEdges.ts) that never triggers for valid lineups
-- [ ] **DEBT-02**: Add crash guard for malformed pair keys in drawCommunicationEdges.ts
-- [ ] **DEBT-03**: Address single-read lineup pattern brittleness in VisualizerCanvas
+- [x] **DEBT-01**: Remove edge fallback operator (`?? 'support'` in drawCommunicationEdges.ts) that never triggers for valid lineups
+- [x] **DEBT-02**: Add crash guard for malformed pair keys in drawCommunicationEdges.ts
+- [x] **DEBT-03**: Address single-read lineup pattern brittleness in VisualizerCanvas
 
 ## Future Requirements (v1.3+)
 
@@ -64,12 +64,12 @@
 | DISC-03 | Phase 12 | Complete |
 | DISC-04 | Phase 12 | Complete |
 | DISC-05 | Phase 12 | Complete |
-| VIS-01 | Phase 13 | Pending |
-| VIS-02 | Phase 13 | Pending |
-| VIS-03 | Phase 13 | Pending |
-| DEBT-01 | Phase 14 | Pending |
-| DEBT-02 | Phase 14 | Pending |
-| DEBT-03 | Phase 14 | Pending |
+| VIS-01 | Phase 13 | Complete |
+| VIS-02 | Phase 13 | Complete |
+| VIS-03 | Phase 13 | Complete |
+| DEBT-01 | Phase 14 | Complete |
+| DEBT-02 | Phase 14 | Complete |
+| DEBT-03 | Phase 14 | Complete |
 
 **Coverage:**
 - v1.2 requirements: 16 total
