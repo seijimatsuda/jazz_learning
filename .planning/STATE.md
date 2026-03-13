@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** v1.2 Instrument Disambiguation — Phase 13 complete and verified, ready for Phase 14 (Tech Debt)
+**Current focus:** v1.2 Tech Debt and Polish — Phase 14 in progress (plan 01 complete)
 
 ## Current Position
 
-Phase: 13 of 14 (Visual Family Identity) — COMPLETE ✓ (verified)
-Plan: 2 of 2 in current phase (all complete)
-Status: Phase complete — goal verified 5/5
-Last activity: 2026-03-12 — Phase 13 verified, all success criteria met
+Phase: 14 of 14 (Tech Debt and Polish) — In progress
+Plan: 1 of ? in current phase (14-01 complete)
+Status: In progress
+Last activity: 2026-03-12 — Completed 14-01-PLAN.md (DEBT-01, DEBT-02, DEBT-03)
 
-Progress: [██████░░░░] 67% (Phase 13 of 14 complete — next: Phase 14 Tech Debt)
+Progress: [███████░░░] 71% (Phase 14 Tech Debt in progress — 14-01 done)
 
 ## Performance Metrics
 
@@ -56,6 +56,9 @@ Recent decisions affecting current work:
 - 13-02: beatPulseIntensity added as last parameter to drawCommunicationEdges — preserves argument ordering, this.beatPulse/4 normalizes [0,4] to [0,1]
 - 13-02: edgeType stored in EdgeRenderData during Pass 1 collect — avoids repeated EDGE_TYPE[key] lookup in Pass 3 render loop
 - 13-02: supportBreathePhase advances at deltaMs * 0.0025 giving ~2513ms full cycle — distinctly slower than BPM-driven animations
+- 14-01: KEY_PATTERN validates both format (lowercase_lowercase) and presence in EDGE_TYPE — two-condition guard before Record lookup
+- 14-01: guard placed at Step 6 (just before EDGE_TYPE lookup), not top of loop — coordinate math and weight smoothing still run; only render buffer write skipped for invalid keys
+- 14-01: lineup reactive selector placed at component level (not inside useEffect) — React rules of hooks prohibits hooks inside effects
 
 ### Pending Todos
 
@@ -69,5 +72,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-12
-Stopped at: Phase 13 complete and verified — ready for Phase 14
+Stopped at: Completed 14-01-PLAN.md — DEBT-01, DEBT-02, DEBT-03 closed
 Resume file: None
