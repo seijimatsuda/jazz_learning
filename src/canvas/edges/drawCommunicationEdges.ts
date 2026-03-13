@@ -38,6 +38,7 @@ import { lerp, lerpExp } from '../nodes/NodeAnimState';
 import { drawGlow } from '../nodes/drawGlow';
 import type { EdgeAnimState } from './EdgeAnimState';
 import { EDGE_TYPE, EDGE_COLOR, TENSION_RED_RGB, TENSION_AMBER_RGB } from './edgeTypes';
+import type { EdgeType } from './edgeTypes';
 import type { NodePosition, PairTuple } from '../nodes/NodeLayout';
 
 // ---------------------------------------------------------------------------
@@ -61,6 +62,7 @@ interface EdgeRenderData {
   dashOffset: number;
   animState: EdgeAnimState;
   midX: number; midY: number;
+  edgeType: EdgeType;
 }
 
 const edgeRenderBuf: EdgeRenderData[] = [];
@@ -73,6 +75,7 @@ for (let i = 0; i < 28; i++) {
     dashOffset: 0,
     animState: null!,
     midX: 0, midY: 0,
+    edgeType: 'support' as EdgeType,
   });
 }
 let edgeRenderCount = 0;
@@ -106,7 +109,8 @@ let edgeRenderCount = 0;
  * @param canvasH         - Logical canvas height in CSS pixels
  * @param currentTension  - Current harmonic tension [0,1] for EDGE-09/10
  * @param deltaMs         - Elapsed ms since last frame (capped at 100ms by caller)
- * @param instrumentCount - Number of instruments in lineup (used for CANV-04 threshold)
+ * @param instrumentCount    - Number of instruments in lineup (used for CANV-04 threshold)
+ * @param beatPulseIntensity - Normalized beat pulse strength [0,1] (this.beatPulse/4 from CanvasRenderer)
  */
 export function drawCommunicationEdges(
   ctx: CanvasRenderingContext2D,
@@ -119,7 +123,8 @@ export function drawCommunicationEdges(
   canvasH: number,
   currentTension: number,
   deltaMs: number,
-  instrumentCount: number,   // NEW — lineup.length from CanvasRenderer
+  instrumentCount: number,   // lineup.length from CanvasRenderer
+  beatPulseIntensity: number, // VIS-03: [0,1] normalized beat pulse for rhythmic edge boost
 ): void {
   // CANV-04: raise hide threshold when instrument count > 5 to keep graph readable
   const hideThreshold = instrumentCount > 5 ? 0.45 : 0.30;
@@ -206,7 +211,7 @@ export function drawCommunicationEdges(
     // -----------------------------------------------------------------------
     // Step 6: Determine base color from edge type
     // -----------------------------------------------------------------------
-    const edgeType = EDGE_TYPE[key];
+    const edgeType: EdgeType = EDGE_TYPE[key] ?? 'support';
     const baseColor = EDGE_COLOR[edgeType];
 
     // -----------------------------------------------------------------------
@@ -241,6 +246,7 @@ export function drawCommunicationEdges(
     slot.visualState = visualState;
     slot.dashOffset = animState.dashOffset;
     slot.animState = animState;
+    slot.edgeType = edgeType;
     edgeRenderCount++;
   }
 
@@ -263,22 +269,65 @@ export function drawCommunicationEdges(
   }
 
   // ---------------------------------------------------------------------------
-  // Pass 3 — Draw animated edges (save/restore for setLineDash isolation on iOS Safari)
+  // Pass 3 — Draw animated edges (VIS-03: per-type animation branches)
+  // save/restore required per edge for setLineDash isolation on iOS Safari
   // ---------------------------------------------------------------------------
   for (let i = 0; i < edgeRenderCount; i++) {
     const e = edgeRenderBuf[i];
     if (e.visualState !== 'animated') continue;
-    ctx.save();
-    ctx.globalAlpha = e.opacity;
-    ctx.strokeStyle = `rgb(${e.colorR},${e.colorG},${e.colorB})`;
-    ctx.lineWidth = e.lineWidth;
-    ctx.setLineDash([12, 8]);
-    ctx.lineDashOffset = -e.dashOffset;
-    ctx.beginPath();
-    ctx.moveTo(e.startX, e.startY);
-    ctx.lineTo(e.endX, e.endY);
-    ctx.stroke();
-    ctx.restore();
+
+    // VIS-03: Rhythmic — opacity and lineWidth boost proportional to beatPulse
+    if (e.edgeType === 'rhythmic') {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1.0, e.opacity + beatPulseIntensity * 0.3);
+      ctx.strokeStyle = `rgb(${e.colorR},${e.colorG},${e.colorB})`;
+      ctx.lineWidth = e.lineWidth + beatPulseIntensity * 2;
+      ctx.setLineDash([12, 8]);
+      ctx.lineDashOffset = -e.dashOffset;
+      ctx.beginPath();
+      ctx.moveTo(e.startX, e.startY);
+      ctx.lineTo(e.endX, e.endY);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // VIS-03: Melodic — inline gradient with flowing midpoint stop
+    if (e.edgeType === 'melodic') {
+      ctx.save();
+      // Gradient acceptable at <=3 animated melodic edges per frame (VIS-03 comment)
+      const grad = ctx.createLinearGradient(e.startX, e.startY, e.endX, e.endY);
+      const midStop = 0.3 + (e.dashOffset / 20) % 0.4;
+      grad.addColorStop(0, `rgba(${e.colorR},${e.colorG},${e.colorB},0)`);
+      grad.addColorStop(midStop, `rgba(${e.colorR},${e.colorG},${e.colorB},${e.opacity})`);
+      grad.addColorStop(1, `rgba(${e.colorR},${e.colorG},${e.colorB},0)`);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = e.lineWidth;
+      ctx.setLineDash([12, 8]);
+      ctx.lineDashOffset = -e.dashOffset;
+      ctx.beginPath();
+      ctx.moveTo(e.startX, e.startY);
+      ctx.lineTo(e.endX, e.endY);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // VIS-03: Support — slow sine-wave opacity breathing independent of BPM
+    if (e.edgeType === 'support') {
+      e.animState.supportBreathePhase = (e.animState.supportBreathePhase + deltaMs * 0.0025) % (Math.PI * 2);
+      const breatheOpacity = 0.5 + ((Math.sin(e.animState.supportBreathePhase) + 1) / 2) * 0.4;
+      ctx.save();
+      ctx.globalAlpha = breatheOpacity;
+      ctx.strokeStyle = `rgb(${e.colorR},${e.colorG},${e.colorB})`;
+      ctx.lineWidth = e.lineWidth;
+      ctx.setLineDash([12, 8]);
+      ctx.lineDashOffset = -e.dashOffset;
+      ctx.beginPath();
+      ctx.moveTo(e.startX, e.startY);
+      ctx.lineTo(e.endX, e.endY);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     // Advance dash offset for flowing animation (slightly slower than pocket line)
     e.animState.dashOffset = (e.animState.dashOffset + deltaMs * 0.04) % 20;
   }

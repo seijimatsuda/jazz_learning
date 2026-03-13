@@ -47,6 +47,8 @@ export interface EdgeAnimState {
   dashOffset: number;
   /** Wobble phase in radians for loose pocket line sine wave (EDGE-03) */
   wobblePhase: number;
+  /** Breathe phase in radians for support edge slow opacity oscillation (VIS-03) */
+  supportBreathePhase: number;
 
   // --- Timestamp gate (prevents re-triggering flash on same event) ---------
   /** Last BeatState.lastSyncEventSec value seen — -1 = never seen */
@@ -81,6 +83,7 @@ export function createEdgeAnimState(): EdgeAnimState {
     callResponseFlashIntensity: 0,
     dashOffset: 0,
     wobblePhase: 0,
+    supportBreathePhase: 0,
     lastSeenSyncEventSec: -1,
     flashGlowCanvas: createGlowLayer(30, '#ffffff'),          // sync flash — EDGE-05
     resolutionGlowCanvas: createGlowLayer(30, '#bfdbfe'),     // tension resolution — EDGE-10
