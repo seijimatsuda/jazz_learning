@@ -575,6 +575,7 @@ export class CanvasRenderer {
         currentTension,
         deltaMs,
         this.instrumentOrder.length,
+        this.beatPulse / 4,   // VIS-03: normalize [0,4] → [0,1] for edge beat boost
       );
     }
 
