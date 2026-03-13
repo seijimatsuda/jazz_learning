@@ -24,15 +24,15 @@ export function VisualizerCanvas({ audioStateRef, onCanvasReady }: VisualizerCan
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<CanvasRenderer | null>(null);
 
+  // Reactive lineup selector — re-runs effect when lineup changes (DEBT-03)
+  const lineup = useAppStore(s => s.lineup);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     // Notify parent that the canvas element is available (e.g. for PNG export)
     onCanvasReady?.(canvas);
-
-    // Read lineup from Zustand store at mount time
-    const lineup = useAppStore.getState().lineup;
 
     // Create renderer — starts rAF loop immediately, passing lineup for dynamic layout
     const renderer = new CanvasRenderer(canvas, audioStateRef, lineup);
@@ -117,7 +117,7 @@ export function VisualizerCanvas({ audioStateRef, onCanvasReady }: VisualizerCan
       renderer.destroy();
       rendererRef.current = null;
     };
-  }, [audioStateRef]);
+  }, [audioStateRef, lineup]);
 
   return (
     <canvas
