@@ -42,6 +42,13 @@ import type { EdgeType } from './edgeTypes';
 import type { NodePosition, PairTuple } from '../nodes/NodeLayout';
 
 // ---------------------------------------------------------------------------
+// Key validation pattern — guards EDGE_TYPE lookup (DEBT-02)
+// Accepts only 'lowercase_lowercase' keys matching instrument pair format
+// ---------------------------------------------------------------------------
+
+const KEY_PATTERN = /^[a-z]+_[a-z]+$/;
+
+// ---------------------------------------------------------------------------
 // Visual state type
 // ---------------------------------------------------------------------------
 
@@ -210,8 +217,13 @@ export function drawCommunicationEdges(
 
     // -----------------------------------------------------------------------
     // Step 6: Determine base color from edge type
+    // Guard: skip malformed keys before indexing EDGE_TYPE (DEBT-01, DEBT-02)
     // -----------------------------------------------------------------------
-    const edgeType: EdgeType = EDGE_TYPE[key] ?? 'support';
+    if (!KEY_PATTERN.test(key) || !(key in EDGE_TYPE)) {
+      console.warn(`[drawCommunicationEdges] Skipping invalid pair key: ${JSON.stringify(key)}`);
+      continue;
+    }
+    const edgeType: EdgeType = EDGE_TYPE[key];
     const baseColor = EDGE_COLOR[edgeType];
 
     // -----------------------------------------------------------------------
