@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** v1.2 Visual Family Identity — Phase 13 Plan 01 complete, ring strokes and family clustering live
+**Current focus:** v1.2 Visual Family Identity — Phase 13 Plans 01 and 02 complete, ring strokes, family clustering, and per-type edge animations live
 
 ## Current Position
 
 Phase: 13 of 14 (Visual Family Identity) — In progress
-Plan: 1 of 1 in current phase (complete)
-Status: Phase in progress — Plan 01 complete
-Last activity: 2026-03-13 — Completed 13-01-PLAN.md (VIS-01 + VIS-02)
+Plan: 2 of 2 in current phase (complete)
+Status: Phase complete — Plans 01 and 02 done
+Last activity: 2026-03-12 — Completed 13-02-PLAN.md (VIS-03)
 
-Progress: [████░░░░░░] 36% (Phase 13 Plan 01 of 14 complete)
+Progress: [████░░░░░░] 38% (Phase 13 Plans 01-02 of 14 complete)
 
 ## Performance Metrics
 
@@ -53,6 +53,9 @@ Recent decisions affecting current work:
 - 13-01: strings sort value 2 adjacent to keyboard value 1 — guitar and keyboard cluster for jazz comping/chordal role affinity
 - 13-01: ringColor inherits ctx.globalAlpha — Phase 12 confidence dimming applies equally to ring and fill (correct behavior)
 - 13-01: FAMILY_SORT_ORDER as module-level constant — preferred over constructor-scoped for readability
+- 13-02: beatPulseIntensity added as last parameter to drawCommunicationEdges — preserves argument ordering, this.beatPulse/4 normalizes [0,4] to [0,1]
+- 13-02: edgeType stored in EdgeRenderData during Pass 1 collect — avoids repeated EDGE_TYPE[key] lookup in Pass 3 render loop
+- 13-02: supportBreathePhase advances at deltaMs * 0.0025 giving ~2513ms full cycle — distinctly slower than BPM-driven animations
 
 ### Pending Todos
 
@@ -65,6 +68,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-13
-Stopped at: Completed 13-01-PLAN.md — VIS-01 (family ring strokes) and VIS-02 (family-sorted layout) complete
+Last session: 2026-03-12
+Stopped at: Completed 13-02-PLAN.md — VIS-03 (per-type communication edge animations) complete
 Resume file: None
