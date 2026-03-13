@@ -60,10 +60,10 @@ Plans:
   1. The `?? 'support'` fallback operator in drawCommunicationEdges.ts is removed and all edge types resolve correctly without it for every valid lineup
   2. Malformed pair keys (e.g., missing instrument, empty string, wrong separator) in drawCommunicationEdges.ts produce a logged warning and skip rendering instead of crashing the canvas
   3. The lineup configuration in VisualizerCanvas is read reactively from state (not captured once on mount), so hot-swapping between recordings with different lineups works without a full remount
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 14-01: TBD
+- [ ] 14-01-PLAN.md — Remove edge fallback, add pair key guard, make lineup reactive (Wave 1)
 
 ## Progress
 
@@ -82,4 +82,4 @@ Plans:
 | 11. Gap Closures | v1.1 | 2/2 | Complete | 2026-03-12 |
 | 12. Disambiguation Engine | v1.2 | 6/6 | Complete | 2026-03-12 |
 | 13. Visual Family Identity | v1.2 | 2/2 | Complete | 2026-03-12 |
-| 14. Tech Debt and Polish | v1.2 | 0/? | Not started | - |
+| 14. Tech Debt and Polish | v1.2 | 0/1 | Not started | - |
