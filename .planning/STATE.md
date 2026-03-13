@@ -5,16 +5,16 @@
 See: .planning/PROJECT.md (updated 2026-03-12)
 
 **Core value:** Musically meaningful visualization — instrument roles, chords, tension arcs, and pocket scoring accurate enough that a jazz musician recognizes the music by watching
-**Current focus:** v1.2 Instrument Disambiguation — Phase 12 complete and verified, ready for Phase 13 (Visual)
+**Current focus:** v1.2 Visual Family Identity — Phase 13 Plan 01 complete, ring strokes and family clustering live
 
 ## Current Position
 
-Phase: 12 of 14 (Disambiguation Engine) — COMPLETE ✓ (verified)
-Plan: 6 of 6 in current phase (all complete including gap closure)
-Status: Phase complete — goal verified 5/5
-Last activity: 2026-03-12 — Phase 12 verified, all success criteria met
+Phase: 13 of 14 (Visual Family Identity) — In progress
+Plan: 1 of 1 in current phase (complete)
+Status: Phase in progress — Plan 01 complete
+Last activity: 2026-03-13 — Completed 13-01-PLAN.md (VIS-01 + VIS-02)
 
-Progress: [████░░░░░░] 33% (Phase 12 of 14 complete — next: Phase 13 Visual)
+Progress: [████░░░░░░] 36% (Phase 13 Plan 01 of 14 complete)
 
 ## Performance Metrics
 
@@ -49,6 +49,10 @@ Recent decisions affecting current work:
 - 12-06: Second-pass classifyRole guards on displayActivityScore !== activityScore — avoids redundant calls when disambiguation had no effect
 - 12-06: Second pass passes instr.role (from first pass) as currentRole — hysteresis preserved across both passes
 - 12-06: onRoleChange fires only when disambiguated role differs from first-pass role — Zustand not over-triggered
+- 13-01: Ring drawn at radius+1.5 (not radius) — ring sits outside fill circle with 1.5px gap, no overlap
+- 13-01: strings sort value 2 adjacent to keyboard value 1 — guitar and keyboard cluster for jazz comping/chordal role affinity
+- 13-01: ringColor inherits ctx.globalAlpha — Phase 12 confidence dimming applies equally to ring and fill (correct behavior)
+- 13-01: FAMILY_SORT_ORDER as module-level constant — preferred over constructor-scoped for readability
 
 ### Pending Todos
 
@@ -61,6 +65,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-12
-Stopped at: Phase 12 complete and verified — ready for Phase 13
+Last session: 2026-03-13
+Stopped at: Completed 13-01-PLAN.md — VIS-01 (family ring strokes) and VIS-02 (family-sorted layout) complete
 Resume file: None
