@@ -76,7 +76,7 @@ export function getRoleFillColor(role: RoleLabel): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Draws a filled circle and instrument label at the given canvas coordinates.
+ * Draws a filled circle, optional family ring stroke, and instrument label.
  *
  * @param ctx       - Canvas 2D rendering context
  * @param x         - Absolute pixel X of node center
@@ -84,6 +84,9 @@ export function getRoleFillColor(role: RoleLabel): string {
  * @param radius    - Current rendered radius (from animState.currentRadius — includes nudge/pulse)
  * @param fillColor - Fill color string (from getRoleFillColor or animation override)
  * @param label     - Instrument name to display below the node (already capitalized by caller)
+ * @param ringColor - Optional family ring color (VIS-01). When provided, draws a 3px stroke
+ *                    ring at radius+1.5 OUTSIDE the fill circle. Inherits ctx.globalAlpha so
+ *                    Phase 12 confidence dimming applies equally to ring and fill.
  */
 export function drawNode(
   ctx: CanvasRenderingContext2D,
@@ -92,12 +95,26 @@ export function drawNode(
   radius: number,
   fillColor: string,
   label: string,
+  ringColor?: string,
 ): void {
   // -- Filled circle ---------------------------------------------------------
   ctx.beginPath();
   ctx.arc(x, y, radius, 0, Math.PI * 2);
   ctx.fillStyle = fillColor;
   ctx.fill();
+
+  // -- Family ring stroke (VIS-01) -------------------------------------------
+  // Drawn OUTSIDE the fill circle at radius+1.5 so it never overlaps the fill.
+  // ctx.save/restore isolates lineWidth changes so subsequent edge draws are unaffected.
+  if (ringColor) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, radius + 1.5, 0, Math.PI * 2);
+    ctx.strokeStyle = ringColor;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.restore();
+  }
 
   // -- Label below circle ----------------------------------------------------
   ctx.fillStyle = 'rgba(255,255,255,0.7)';

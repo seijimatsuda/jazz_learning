@@ -24,6 +24,7 @@ import type { EdgeAnimState } from './edges/EdgeAnimState';
 import { drawPocketLine } from './edges/drawPocketLine';
 import { drawCommunicationEdges } from './edges/drawCommunicationEdges';
 import { drawNode, getRoleRadius, getRoleFillColor } from './nodes/drawNode';
+import { INSTRUMENT_FAMILIES, FAMILY_RING_COLOR } from '../audio/instrumentFamilies';
 import { drawGlow, pocketToGlowColor } from './nodes/drawGlow';
 import { createGlowLayer } from './offscreen/glowLayer';
 
@@ -559,6 +560,10 @@ export class CanvasRenderer {
       // Role-based fill color (VIZ-12)
       const fillColor = getRoleFillColor(role);
 
+      // Family ring color (VIS-01) — stable, non-animating ring outside fill circle
+      const family = INSTRUMENT_FAMILIES[instrument] ?? 'rhythm';
+      const ringColor = FAMILY_RING_COLOR[family] ?? '#64748b';
+
       // Capitalize label: 'guitar' → 'Guitar'
       const label = instrument.charAt(0).toUpperCase() + instrument.slice(1);
 
@@ -638,7 +643,7 @@ export class CanvasRenderer {
         }
 
         // -- 5. Draw drums node: circle -> label -> ripples (VIZ-06..09) -----
-        drawNode(ctx, x + ox, y + oy, animState.currentRadius, fillColor, label);
+        drawNode(ctx, x + ox, y + oy, animState.currentRadius, fillColor, label, ringColor);
         updateRipples(ctx, animState.ripples, nowMs);
       } else if (instrument === 'bass') {
         // -- Bass-specific animation (VIZ-03, VIZ-04, VIZ-05) ----------------
@@ -685,13 +690,13 @@ export class CanvasRenderer {
         drawGlow(ctx, animState.glowCanvas, x, y, finalGlowIntensity);
 
         // Draw node circle + label
-        drawNode(ctx, x, y, animState.currentRadius, fillColor, label);
+        drawNode(ctx, x, y, animState.currentRadius, fillColor, label, ringColor);
 
         // Draw ripples AFTER node circle so rings appear on top
         updateRipples(ctx, animState.ripples, nowMs);
       } else {
         // All other instruments — draw node circle + label only
-        drawNode(ctx, x, y, animState.currentRadius, fillColor, label);
+        drawNode(ctx, x, y, animState.currentRadius, fillColor, label, ringColor);
       }
 
       // Restore globalAlpha after confidence indicator dimming (Phase 12)

@@ -27,6 +27,26 @@ export const INSTRUMENT_FAMILIES: Record<string, string> = {
 };
 
 /**
+ * Maps each instrument family to its visual ring color.
+ * Used by CanvasRenderer to draw a colored ring stroke outside each node's fill circle,
+ * giving instant family identification (VIS-01).
+ *
+ * Colors chosen for perceptual distinctiveness on a dark background:
+ *   rhythm   → orange-500 (drums, bass — foundational rhythm section)
+ *   brass    → amber-400  (trumpet, trombone — warm metallic)
+ *   woodwind → emerald-400 (saxophone — cool reed tone)
+ *   keyboard → indigo-400  (keyboard, vibes — harmonic/chordal cluster)
+ *   strings  → fuchsia-400 (guitar — bright string color)
+ */
+export const FAMILY_RING_COLOR: Record<string, string> = {
+  rhythm:   '#f97316', // orange-500
+  brass:    '#fbbf24', // amber-400
+  woodwind: '#34d399', // emerald-400
+  keyboard: '#818cf8', // indigo-400
+  strings:  '#e879f9', // fuchsia-400
+};
+
+/**
  * The set of horn instruments counted for horn section disambiguation.
  * Trombone, saxophone, and trumpet share the mid-frequency range and
  * require spectral shape analysis to separate.
